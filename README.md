@@ -5,3 +5,5 @@ DDJ_Master
 1. Install go 
 	- version 1.1.2 required
 	- http://golang.org/doc/install
+2. Test installation
+	- run `go run test.go`
