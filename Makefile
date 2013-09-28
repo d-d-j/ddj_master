@@ -1,4 +1,5 @@
 all:
-	go build DDJ_Master/Master.go
+	export GOPATH=`pwd`
+	go build DDJ_Master
 clean:
-	rm Master
+	rm DDJ_Master
