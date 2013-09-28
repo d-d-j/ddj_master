@@ -6,4 +6,4 @@ DDJ_Master
 	- version 1.1.2 required
 	- http://golang.org/doc/install
 2. Test installation
-	- run `go run test.go`
+	- run `go run DDJ_Master/test.go <port>`

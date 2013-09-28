@@ -13,12 +13,10 @@ func main() {
 	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
 	log.Println("Start Master")
 
-	getService()
-
 	clientList := list.New()
 	in := make(chan string)
 	go client.IOHandler(in, clientList)
-	service := "127.0.0.1:8080"
+	service := "127.0.0.1:" + getPortFromArgument()
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
 		log.Println("Error: Could not resolve address")
@@ -37,13 +35,12 @@ func main() {
 				} else {
 					log.Println("Accept client")
 					go client.ClientHandler(connection, in, clientList)
-				}
-			}
+
 		}
 	}
 }
 
-func getService() string {
+func getPortFromArgument() string {
 
 	log.Println("Program arguments: ", os.Args[1:])
 
