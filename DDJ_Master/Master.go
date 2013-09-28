@@ -3,9 +3,11 @@ package main
 import (
 	"client"
 	"container/list"
+	"flag"
 	"log"
 	"net"
 	"os"
+	"strconv"
 )
 
 // Main: Starts a TCP server and waits infinitely for connections
@@ -36,6 +38,8 @@ func main() {
 					log.Println("Accept client")
 					go client.ClientHandler(connection, in, clientList)
 
+				}
+			}
 		}
 	}
 }
@@ -43,6 +47,8 @@ func main() {
 func getPortFromArgument() string {
 
 	log.Println("Program arguments: ", os.Args[1:])
-
-	return os.Args[1]
+	port := flag.Int("port", 8080, "port number")
+	flag.Parse()
+	log.Println("Port: ", *port)
+	return strconv.Itoa(*port)
 }
