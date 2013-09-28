@@ -1,11 +1,11 @@
 package main
 
 import (
-	"client"
 	"container/list"
 	"flag"
 	"log"
 	"net"
+	"node"
 	"os"
 	"strconv"
 )
@@ -15,9 +15,9 @@ func main() {
 	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
 	log.Println("Start Master")
 
-	clientList := list.New()
+	nodeList := list.New()
 	in := make(chan string)
-	go client.IOHandler(in, clientList)
+	go node.IOHandler(in, nodeList)
 	service := "127.0.0.1:" + getPortFromArgument()
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
@@ -30,13 +30,13 @@ func main() {
 		} else {
 			defer netListen.Close()
 			for {
-				log.Println("Waiting for clients")
+				log.Println("Waiting for nodes")
 				connection, error := netListen.Accept()
 				if error != nil {
-					log.Println("Client error: ", error)
+					log.Println("node error: ", error)
 				} else {
-					log.Println("Accept client")
-					go client.ClientHandler(connection, in, clientList)
+					log.Println("Accept node")
+					go node.NodeHandler(connection, in, nodeList)
 
 				}
 			}
