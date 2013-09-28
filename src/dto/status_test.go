@@ -3,10 +3,7 @@ package dto
 import "testing"
 
 func TestNewStatus(t *testing.T) {
-	var expected Status
-	expected.totalRam = 1024
-	expected.usedRam = 512
-	expected.gpuTemperature = 54
+	expected := Status{1024, 512, 54}
 	var actual = NewStatus(1024, 512, 54)
 	if !expected.Equal(actual) {
 		t.Error()
