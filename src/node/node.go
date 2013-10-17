@@ -41,7 +41,7 @@ func (c *Node) Close() {
 	c.RemoveMe()
 }
 
-// Comparason function to easily check equality with another Node
+// Comparison function to easily check equality with another Node
 // based on the name and connection
 func (c *Node) Equal(other *Node) bool {
 	if bytes.Equal([]byte(c.Name), []byte(other.Name)) {
