@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"time"
 )
 
 type Element struct {
@@ -38,8 +37,7 @@ func (e *Element) Equal(other *Element) bool {
 }
 
 func (e *Element) String() string {
-	t := time.Unix(e.time, 0)
-	return fmt.Sprintf("%d#%d %s [%f]", e.series, e.tag, t, e.value)
+	return fmt.Sprintf("%d#%d %d [%f]", e.series, e.tag, e.time, e.value)
 }
 
 func (e *Element) GobEncode() ([]byte, error) {

@@ -5,8 +5,10 @@ package node
 import (
 	"bytes"
 	"container/list"
+	"dto"
 	"log"
 	"net"
+	"time"
 )
 
 // Defines a Node with a name and connection object, and
@@ -67,12 +69,14 @@ func (c *Node) RemoveMe() {
 // (each Node.Outgoing stores this), and passes it to each Node.Incoming channel
 func IOHandler(Incoming <-chan string, NodeList *list.List) {
 	for {
-		log.Println("IOHandler: Waiting for input")
 		input := <-Incoming
-		log.Println("IOHandler: Handling ", input)
+		log.Println("Input:", input)
+		element := dto.NewElement(1, 2, time.Now().Unix(), 0.33)
+		output := element.String()
+		log.Println("IOHandler: Handling ", element)
 		for e := NodeList.Front(); e != nil; e = e.Next() {
 			Node := e.Value.(Node)
-			Node.Incoming <- input
+			Node.Incoming <- output
 		}
 	}
 }
@@ -88,13 +92,13 @@ func NodeReader(Node *Node) {
 			break
 		}
 		log.Println("NodeReader received ", Node.Name, "> ", string(buffer))
-		send := Node.Name + "> " + string(buffer)
-		Node.Outgoing <- send
+		//send := Node.Name + "> " + string(buffer)
+		//		Node.Outgoing <- send
 		for i := 0; i < 2048; i++ {
 			buffer[i] = 0x00
 		}
 	}
-	Node.Outgoing <- Node.Name + " is out"
+	//Node.Outgoing <- Node.Name + " is out"
 	log.Println("NodeReader stopped for ", Node.Name)
 }
 
@@ -104,16 +108,13 @@ func NodeSender(Node *Node) {
 	for {
 		select {
 		case buffer := <-Node.Incoming:
-			log.Println("NodeSender sending ", string(buffer), " to ", Node.Name)
-			count := 0
-			for i := 0; i < len(buffer); i++ {
-				if buffer[i] == 0x00 {
-					break
-				}
-				count++
-			}
-			log.Println("Send size: ", count)
-			Node.Conn.Write([]byte(buffer)[0:count])
+			log.Println("NodeSender sending ", buffer, " to ", Node.Name)
+
+			complete := make([]byte, 100)
+			buf := []byte(buffer)
+			copy(complete, buf)
+
+			Node.Conn.Write(complete)
 		case <-Node.Quit:
 			log.Println("Node ", Node.Name, " quitting")
 			Node.Conn.Close()
@@ -131,9 +132,9 @@ func NodeHandler(conn net.Conn, ch chan string, NodeList *list.List) {
 		log.Println("Node connection error: ", error)
 	}
 	name := string(buffer[0:bytesRead])
-	newNode := &Node{name, make(chan string), ch, conn, make(chan bool), NodeList}
+	newNode := &Node{name, make(chan string), make(chan string), conn, make(chan bool), NodeList}
 	go NodeSender(newNode)
-	go NodeReader(newNode)
+	//go NodeReader(newNode)
 	NodeList.PushBack(*newNode)
 	ch <- string(name + " has joined")
 }

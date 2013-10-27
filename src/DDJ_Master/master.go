@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
+	"code.google.com/p/gorest"
 	"container/list"
 	"flag"
 	"log"
 	"net"
+	"net/http"
 	"node"
 	"os"
 	"strconv"
@@ -15,9 +18,17 @@ func main() {
 	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
 	log.Println("Start Master")
 
+	gorest.RegisterService(new(InsertService)) //Register our service
+	http.Handle("/", gorest.Handle())
+	http.ListenAndServe(":8081", nil)
+
 	nodeList := list.New()
+	in2 := make(chan string)
 	in := make(chan string)
-	go node.IOHandler(in, nodeList)
+
+	go ReadStdIn(in2)
+
+	go node.IOHandler(in2, nodeList)
 	service := "127.0.0.1:" + getPortFromArgument()
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
@@ -41,6 +52,34 @@ func main() {
 				}
 			}
 		}
+	}
+}
+
+//Service Definition
+type InsertService struct {
+	gorest.RestService `root:"/tutorial/"`
+	helloWorld         gorest.EndPoint `method:"GET" path:"/hello-world/" output:"string"`
+	sayHello           gorest.EndPoint `method:"GET" path:"/hello/{name:string}" output:"string"`
+}
+
+func (serv InsertService) HelloWorld() string {
+	return "Hello World"
+}
+func (serv InsertService) SayHello(name string) string {
+	return "Hello " + name
+}
+
+func ReadStdIn(Incoming chan string) {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		line, err := reader.ReadString('\n')
+		Incoming <- line
+		if err != nil {
+			// You may check here if err == io.EOF
+			break
+		}
+
 	}
 }
 
