@@ -7,17 +7,17 @@ import (
 )
 
 type Element struct {
-	series, tag int32
-	time        int64
-	value       float32
+	Series, Tag int32
+	Time        int64
+	Value       float32
 }
 
-func NewElement(series int32, tag int32, time int64, value float32) *Element {
+func NewElement(Series int32, Tag int32, Time int64, Value float32) *Element {
 	e := new(Element)
-	e.series = series
-	e.tag = tag
-	e.time = time
-	e.value = value
+	e.Series = Series
+	e.Tag = Tag
+	e.Time = Time
+	e.Value = Value
 	return e
 }
 
@@ -37,25 +37,25 @@ func (e *Element) Equal(other *Element) bool {
 }
 
 func (e *Element) String() string {
-	return fmt.Sprintf("%d#%d %d [%f]", e.series, e.tag, e.time, e.value)
+	return fmt.Sprintf("%d#%d %d [%f]", e.Series, e.Tag, e.Time, e.Value)
 }
 
 func (e *Element) GobEncode() ([]byte, error) {
 	w := new(bytes.Buffer)
 	encoder := gob.NewEncoder(w)
-	err := encoder.Encode(e.series)
+	err := encoder.Encode(e.Series)
 	if err != nil {
 		return nil, err
 	}
-	err = encoder.Encode(e.tag)
+	err = encoder.Encode(e.Tag)
 	if err != nil {
 		return nil, err
 	}
-	err = encoder.Encode(e.time)
+	err = encoder.Encode(e.Time)
 	if err != nil {
 		return nil, err
 	}
-	err = encoder.Encode(e.value)
+	err = encoder.Encode(e.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -65,17 +65,17 @@ func (e *Element) GobEncode() ([]byte, error) {
 func (e *Element) GobDecode(buf []byte) error {
 	r := bytes.NewBuffer(buf)
 	decoder := gob.NewDecoder(r)
-	err := decoder.Decode(&e.series)
+	err := decoder.Decode(&e.Series)
 	if err != nil {
 		return err
 	}
-	err = decoder.Decode(&e.tag)
+	err = decoder.Decode(&e.Tag)
 	if err != nil {
 		return err
 	}
-	err = decoder.Decode(&e.time)
+	err = decoder.Decode(&e.Time)
 	if err != nil {
 		return err
 	}
-	return decoder.Decode(&e.value)
+	return decoder.Decode(&e.Value)
 }

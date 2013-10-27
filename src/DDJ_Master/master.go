@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"code.google.com/p/gorest"
 	"container/list"
+	"dto"
 	"flag"
 	"log"
 	"net"
@@ -18,17 +19,23 @@ func main() {
 	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
 	log.Println("Start Master")
 
-	gorest.RegisterService(new(InsertService)) //Register our service
-	http.Handle("/", gorest.Handle())
-	http.ListenAndServe(":8081", nil)
-
 	nodeList := list.New()
-	in2 := make(chan string)
+	in2 := Channel.Get()
 	in := make(chan string)
+
+	go node.IOHandler(in2, nodeList)
+
+	insertService := InsertService{}
 
 	go ReadStdIn(in2)
 
-	go node.IOHandler(in2, nodeList)
+	log.Println("Channel: ", in2)
+
+	gorest.RegisterService(&insertService) //Register our service
+	gorest.RegisterMarshaller("application/json", gorest.NewJSONMarshaller())
+	go http.Handle("/", gorest.Handle())
+	go http.ListenAndServe(":8081", nil)
+
 	service := "127.0.0.1:" + getPortFromArgument()
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
@@ -53,20 +60,34 @@ func main() {
 			}
 		}
 	}
+
 }
+
+type InsertChannel struct {
+	channel chan string
+}
+
+func (s *InsertChannel) Get() chan string {
+	return s.channel
+}
+
+var Channel interface {
+	Get() chan string
+} = &InsertChannel{make(chan string)}
 
 //Service Definition
 type InsertService struct {
-	gorest.RestService `root:"/tutorial/"`
-	helloWorld         gorest.EndPoint `method:"GET" path:"/hello-world/" output:"string"`
-	sayHello           gorest.EndPoint `method:"GET" path:"/hello/{name:string}" output:"string"`
+	gorest.RestService `root:"/"`
+	insertData         gorest.EndPoint `method:"POST" path:"/series/id/{id:int32}/data/" postdata:"dto.Element"`
 }
 
-func (serv InsertService) HelloWorld() string {
-	return "Hello World"
-}
-func (serv InsertService) SayHello(name string) string {
-	return "Hello " + name
+func (serv InsertService) InsertData(posted dto.Element, id int32) {
+	log.Println("Inserting new data to series: ", id)
+	log.Println("Data to insert: ", posted)
+	log.Println("Channel: ", Channel.Get())
+
+	Channel.Get() <- ""
+
 }
 
 func ReadStdIn(Incoming chan string) {
@@ -74,9 +95,8 @@ func ReadStdIn(Incoming chan string) {
 
 	for {
 		line, err := reader.ReadString('\n')
-		Incoming <- line
+		Incoming <- line + "line"
 		if err != nil {
-			// You may check here if err == io.EOF
 			break
 		}
 
