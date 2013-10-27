@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"code.google.com/p/gorest"
 	"container/list"
 	"dto"
@@ -26,8 +25,6 @@ func main() {
 	go node.IOHandler(in2, nodeList)
 
 	insertService := InsertService{}
-
-	go ReadStdIn(in2)
 
 	log.Println("Channel: ", in2)
 
@@ -64,16 +61,16 @@ func main() {
 }
 
 type InsertChannel struct {
-	channel chan string
+	channel chan dto.Element
 }
 
-func (s *InsertChannel) Get() chan string {
+func (s *InsertChannel) Get() chan dto.Element {
 	return s.channel
 }
 
 var Channel interface {
-	Get() chan string
-} = &InsertChannel{make(chan string)}
+	Get() chan dto.Element
+} = &InsertChannel{make(chan dto.Element)}
 
 //Service Definition
 type InsertService struct {
@@ -86,21 +83,8 @@ func (serv InsertService) InsertData(posted dto.Element, id int32) {
 	log.Println("Data to insert: ", posted)
 	log.Println("Channel: ", Channel.Get())
 
-	Channel.Get() <- ""
+	Channel.Get() <- posted
 
-}
-
-func ReadStdIn(Incoming chan string) {
-	reader := bufio.NewReader(os.Stdin)
-
-	for {
-		line, err := reader.ReadString('\n')
-		Incoming <- line + "line"
-		if err != nil {
-			break
-		}
-
-	}
 }
 
 func getPortFromArgument() string {

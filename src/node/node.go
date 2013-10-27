@@ -8,7 +8,6 @@ import (
 	"dto"
 	"log"
 	"net"
-	"time"
 )
 
 // Defines a Node with a name and connection object, and
@@ -67,16 +66,14 @@ func (c *Node) RemoveMe() {
 
 // Server listener goroutine - waits for data from the incoming channel
 // (each Node.Outgoing stores this), and passes it to each Node.Incoming channel
-func IOHandler(Incoming <-chan string, NodeList *list.List) {
+func IOHandler(Incoming <-chan dto.Element, NodeList *list.List) {
 	for {
 		input := <-Incoming
 		log.Println("Input:", input)
-		element := dto.NewElement(1, 2, time.Now().Unix(), 0.33)
-		output := element.String()
-		log.Println("IOHandler: Handling ", element)
+
 		for e := NodeList.Front(); e != nil; e = e.Next() {
 			Node := e.Value.(Node)
-			Node.Incoming <- output
+			Node.Incoming <- input.String()
 		}
 	}
 }
