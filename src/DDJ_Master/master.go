@@ -1,17 +1,15 @@
 package main
 
 import (
-	"code.google.com/p/gorest"
 	"config"
 	"container/list"
-	"dto"
 	"flag"
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"node"
 	"os"
+	"rest"
 	"strconv"
 )
 
@@ -21,7 +19,7 @@ func main() {
 	log.Println("Start Master")
 
 	nodeList := list.New()
-	in2 := Channel.Get()
+	in2 := rest.Channel.Get()
 	in := make(chan string)
 
 	go node.IOHandler(in2, nodeList)
@@ -33,14 +31,8 @@ func main() {
 	}
 	log.Println(cfg)
 
-	insertService := InsertService{}
-
 	portApi := fmt.Sprintf(":%d", cfg.Ports.Api)
-	log.Print("Start REST API on " + portApi)
-	gorest.RegisterService(&insertService) //Register our service
-	gorest.RegisterMarshaller("application/json", gorest.NewJSONMarshaller())
-	go http.Handle("/", gorest.Handle())
-	go http.ListenAndServe(portApi, nil)
+	rest.StartApi(portApi)
 
 	service := fmt.Sprintf("127.0.0.1:%d", cfg.Ports.NodeCommunication)
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
@@ -66,33 +58,6 @@ func main() {
 			}
 		}
 	}
-
-}
-
-type InsertChannel struct {
-	channel chan dto.Element
-}
-
-func (s *InsertChannel) Get() chan dto.Element {
-	return s.channel
-}
-
-var Channel interface {
-	Get() chan dto.Element
-} = &InsertChannel{make(chan dto.Element)}
-
-//Service Definition
-type InsertService struct {
-	gorest.RestService `root:"/"`
-	insertData         gorest.EndPoint `method:"POST" path:"/series/id/{id:int32}/data/" postdata:"dto.Element"`
-}
-
-func (serv InsertService) InsertData(posted dto.Element, id int32) {
-	log.Println("Inserting new data to series: ", id)
-	log.Println("Data to insert: ", posted)
-	log.Println("Channel: ", Channel.Get())
-
-	Channel.Get() <- posted
 
 }
 
