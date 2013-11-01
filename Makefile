@@ -1,8 +1,11 @@
-all:
+get:
+	GOPATH=`pwd`
 	go get code.google.com/p/gorest
 	go get code.google.com/p/gcfg
-	GOPATH=`pwd` go build DDJ_Master
-run:
-	GOPATH=`pwd` go run src/DDJ_Master/master.go
+	go get github.com/ugorji/go/codec
+all: get
+	go build DDJ_Master
+run: all
+	./DDJ_Master
 clean:
 	rm DDJ_Master
