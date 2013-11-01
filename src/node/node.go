@@ -15,7 +15,7 @@ import (
 // Also holds a pointer to the "global" list of all connected Nodes
 type Node struct {
 	Name     string
-	Incoming chan string
+	Incoming chan dto.Element
 	Outgoing chan string
 	Conn     net.Conn
 	Quit     chan bool
@@ -69,11 +69,11 @@ func (c *Node) RemoveMe() {
 func IOHandler(Incoming <-chan dto.Element, NodeList *list.List) {
 	for {
 		input := <-Incoming
-		log.Println("Input:", input)
+		log.Println("Input:", input.String())
 
 		for e := NodeList.Front(); e != nil; e = e.Next() {
 			Node := e.Value.(Node)
-			Node.Incoming <- input.String()
+			Node.Incoming <- input
 		}
 	}
 }
@@ -107,11 +107,13 @@ func NodeSender(Node *Node) {
 		case buffer := <-Node.Incoming:
 			log.Println("NodeSender sending ", buffer, " to ", Node.Name)
 
-			complete := make([]byte, 100)
-			buf := []byte(buffer)
-			copy(complete, buf)
+			buf, err := buffer.Encode()
+			if err != nil {
+				log.Println(err)
+				continue
+			}
 
-			Node.Conn.Write(complete)
+			Node.Conn.Write(buf)
 		case <-Node.Quit:
 			log.Println("Node ", Node.Name, " quitting")
 			Node.Conn.Close()
@@ -129,9 +131,9 @@ func NodeHandler(conn net.Conn, ch chan string, NodeList *list.List) {
 		log.Println("Node connection error: ", error)
 	}
 	name := string(buffer[0:bytesRead])
-	newNode := &Node{name, make(chan string), make(chan string), conn, make(chan bool), NodeList}
+	newNode := &Node{name, make(chan dto.Element), make(chan string), conn, make(chan bool), NodeList}
 	go NodeSender(newNode)
 	//go NodeReader(newNode)
 	NodeList.PushBack(*newNode)
-	ch <- string(name + " has joined")
+	// ch <- string(name + " has joined")
 }
