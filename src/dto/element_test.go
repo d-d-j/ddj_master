@@ -4,12 +4,12 @@ import "testing"
 
 func TestNewElement(t *testing.T) {
 	var expected Element
-	expected.series = 1
-	expected.tag = 2
-	expected.time = 0
-	expected.value = 0.33
+	expected.Series = 1
+	expected.Tag = 2
+	expected.Time = 0
+	expected.Value = 0.33
 	var actual = NewElement(1, 2, 0, 0.33)
-	if !expected.Equal(actual) {
+	if expected.String() != actual.String() {
 		t.Error()
 	}
 }
@@ -24,14 +24,14 @@ func TestString(t *testing.T) {
 
 func TestEncodeDecode(t *testing.T) {
 	expected := NewElement(1, 2, 0, 0.33)
-	buf, err := expected.GobEncode()
+	buf, err := expected.Encode()
 	if err != nil {
-		t.Error("Problem with encoding")
+		t.Error(err)
 	}
 	var actual Element
-	err = actual.GobDecode(buf)
+	err = actual.Decode(buf)
 	if err != nil {
-		t.Error("Problem with decoding")
+		t.Error(err)
 	}
 	if expected.String() != actual.String() {
 		t.Error("Got: ", actual, " when expected ", expected)

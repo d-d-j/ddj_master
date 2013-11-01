@@ -1,9 +1,9 @@
 package dto
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
+	"github.com/ugorji/go/codec"
+	"time"
 )
 
 type Element struct {
@@ -21,61 +21,25 @@ func NewElement(Series int32, Tag int32, Time int64, Value float32) *Element {
 	return e
 }
 
-func (e *Element) Equal(other *Element) bool {
-	left, err := e.GobEncode()
-	if err != nil {
-		return false
-	}
-	right, err := e.GobEncode()
-	if err != nil {
-		return false
-	}
-	if bytes.Equal(left, right) {
-		return true
-	}
-	return false
-}
-
 func (e *Element) String() string {
-	return fmt.Sprintf("%d#%d %d [%f]", e.Series, e.Tag, e.Time, e.Value)
+	t := time.Unix(e.Time, 0)
+	return fmt.Sprintf("%d#%d %s [%f]", e.Series, e.Tag, t, e.Value)
+
 }
 
-func (e *Element) GobEncode() ([]byte, error) {
-	w := new(bytes.Buffer)
-	encoder := gob.NewEncoder(w)
-	err := encoder.Encode(e.Series)
-	if err != nil {
-		return nil, err
-	}
-	err = encoder.Encode(e.Tag)
-	if err != nil {
-		return nil, err
-	}
-	err = encoder.Encode(e.Time)
-	if err != nil {
-		return nil, err
-	}
-	err = encoder.Encode(e.Value)
-	if err != nil {
-		return nil, err
-	}
-	return w.Bytes(), nil
+func (e *Element) Encode() ([]byte, error) {
+	var (
+		buf []byte
+		mh  codec.MsgpackHandle
+	)
+	enc := codec.NewEncoderBytes(&buf, &mh)
+	err := enc.Encode(e)
+	return buf, err
 }
 
-func (e *Element) GobDecode(buf []byte) error {
-	r := bytes.NewBuffer(buf)
-	decoder := gob.NewDecoder(r)
-	err := decoder.Decode(&e.Series)
-	if err != nil {
-		return err
-	}
-	err = decoder.Decode(&e.Tag)
-	if err != nil {
-		return err
-	}
-	err = decoder.Decode(&e.Time)
-	if err != nil {
-		return err
-	}
-	return decoder.Decode(&e.Value)
+func (e *Element) Decode(buf []byte) error {
+	var mh codec.MsgpackHandle
+	dec := codec.NewDecoderBytes(buf, &mh)
+	err := dec.Decode(e)
+	return err
 }
