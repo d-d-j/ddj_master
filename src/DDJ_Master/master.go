@@ -2,9 +2,11 @@ package main
 
 import (
 	"code.google.com/p/gorest"
+	"config"
 	"container/list"
 	"dto"
 	"flag"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -24,16 +26,23 @@ func main() {
 
 	go node.IOHandler(in2, nodeList)
 
+	log.Print("Load configuration: ")
+	cfg, err := config.Load()
+	if err != nil {
+		log.Panic("Problem with configuration: ", err)
+	}
+	log.Println(cfg)
+
 	insertService := InsertService{}
 
-	log.Println("Channel: ", in2)
-
+	portApi := fmt.Sprintf(":%d", cfg.Ports.Api)
+	log.Print("Start REST API on " + portApi)
 	gorest.RegisterService(&insertService) //Register our service
 	gorest.RegisterMarshaller("application/json", gorest.NewJSONMarshaller())
 	go http.Handle("/", gorest.Handle())
-	go http.ListenAndServe(":8081", nil)
+	go http.ListenAndServe(portApi, nil)
 
-	service := "127.0.0.1:" + getPortFromArgument()
+	service := fmt.Sprintf("127.0.0.1:%d", cfg.Ports.NodeCommunication)
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
 		log.Println("Error: Could not resolve address")
