@@ -4,6 +4,7 @@ package node
 // Imports required packages
 import (
 	"bytes"
+	"constants"
 	"container/list"
 	"dto"
 	"log"
@@ -85,13 +86,11 @@ func NodeReader(Node *Node) {
 
 	for Node.Read(buffer) {
 		log.Println("NodeReader received ", Node.Name, "> ", string(buffer))
-		//send := Node.Name + "> " + string(buffer)
-		//		Node.Outgoing <- send
 		for i := 0; i < 2048; i++ {
 			buffer[i] = 0x00
 		}
 	}
-	//Node.Outgoing <- Node.Name + " is out"
+
 	log.Println("NodeReader stopped for ", Node.Name)
 }
 
@@ -108,8 +107,16 @@ func NodeSender(Node *Node) {
 				continue
 			}
 
+			header := dto.TaskRequestHeader{1, constants.TASK_INSERT, (int32)(len(buf))}
+			headerBuf, err := header.Encode()
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
 			complete := make([]byte, 100)
-			copy(complete, buf)
+			copy(complete, headerBuf)
+			copy(complete[len(headerBuf):], buf)
 			log.Println("NodeSender sending ", complete, " to ", Node.Name)
 			Node.Conn.Write(complete)
 		case <-Node.Quit:
