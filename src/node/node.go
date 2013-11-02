@@ -3,18 +3,18 @@ package node
 
 // Imports required packages
 import (
-	"bytes"
 	"container/list"
 	"dto"
 	"log"
 	"net"
+	"sync/atomic"
 )
 
-// Defines a Node with a name and connection object, and
+// Defines a Node with a Id and connection object, and
 // some channels for sending and receiving text.
 // Also holds a pointer to the "global" list of all connected Nodes
 type Node struct {
-	Name     string
+	Id       int32
 	Incoming chan []byte
 	Outgoing chan string
 	Conn     net.Conn
@@ -43,9 +43,9 @@ func (c *Node) Close() {
 }
 
 // Comparison function to easily check equality with another Node
-// based on the name and connection
+// based on the Id and connection
 func (c *Node) Equal(other *Node) bool {
-	if bytes.Equal([]byte(c.Name), []byte(other.Name)) {
+	if c.Id == other.Id {
 		if c.Conn == other.Conn {
 			return true
 		}
@@ -58,15 +58,14 @@ func (c *Node) RemoveMe() {
 	for entry := c.NodeList.Front(); entry != nil; entry = entry.Next() {
 		Node := entry.Value.(Node)
 		if c.Equal(&Node) {
-			log.Println("RemoveMe: ", c.Name)
+			log.Println("RemoveMe: ", c.Id)
 			c.NodeList.Remove(entry)
 		}
 	}
 }
 
-// Server listener goroutine - waits for data from the incoming channel
-// (each Node.Outgoing stores this), and passes it to each Node.Incoming channel
 func IOHandler(Query <-chan dto.Query, NodeList *list.List) {
+	taskResponse := make(map[int32]chan string)
 	for {
 		query := <-Query
 		log.Println("Query", query)
@@ -77,6 +76,10 @@ func IOHandler(Query <-chan dto.Query, NodeList *list.List) {
 			headerBuf []byte
 			err       error
 		)
+
+		if query.Response != nil {
+			taskResponse[query.Id] = query.Response
+		}
 
 		if query.Load != nil {
 			buf, err = query.Load.Encode()
@@ -103,6 +106,7 @@ func IOHandler(Query <-chan dto.Query, NodeList *list.List) {
 
 			Node.Incoming <- complete
 		}
+
 	}
 }
 
@@ -112,13 +116,13 @@ func NodeReader(Node *Node) {
 	buffer := make([]byte, 2048)
 
 	for Node.Read(buffer) {
-		log.Println("NodeReader received ", Node.Name, "> ", string(buffer))
+		log.Println("NodeReader received ", Node.Id, "> ", string(buffer))
 		for i := 0; i < 2048; i++ {
 			buffer[i] = 0x00
 		}
 	}
 
-	log.Println("NodeReader stopped for ", Node.Name)
+	log.Println("NodeReader stopped for ", Node.Id)
 	Node.Close()
 }
 
@@ -128,28 +132,28 @@ func NodeSender(Node *Node) {
 	for {
 		select {
 		case buffer := <-Node.Incoming:
-			log.Println("NodeSender sending ", buffer, " to ", Node.Name)
+			log.Println("NodeSender sending ", buffer, " to ", Node.Id)
 			Node.Conn.Write(buffer)
 		case <-Node.Quit:
-			log.Println("Node ", Node.Name, " quitting")
+			log.Println("Node ", Node.Id, " quitting")
 			Node.Conn.Close()
 			break
 		}
 	}
 }
 
-// Creates a new Node object for each new connection using the name sent by the Node,
+var nextId int32
+
+func getId() int32 {
+	return atomic.AddInt32(&nextId, 1)
+}
+
+// Creates a new Node object for each new connection using the Id sent by the Node,
 // then starts the NodeSender and NodeReader goroutines to handle the IO
 func NodeHandler(conn net.Conn, ch chan string, NodeList *list.List) {
-	buffer := make([]byte, 1024)
-	bytesRead, error := conn.Read(buffer)
-	if error != nil {
-		log.Println("Node connection error: ", error)
-	}
-	name := string(buffer[0:bytesRead])
-	newNode := &Node{name, make(chan []byte), make(chan string), conn, make(chan bool), NodeList}
+
+	newNode := &Node{getId(), make(chan []byte), make(chan string), conn, make(chan bool), NodeList}
 	go NodeSender(newNode)
-	//go NodeReader(newNode)
+	go NodeReader(newNode)
 	NodeList.PushBack(*newNode)
-	// ch <- string(name + " has joined")
 }
