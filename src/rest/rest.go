@@ -6,14 +6,21 @@ import (
 	"dto"
 	"log"
 	"net/http"
+	"sync/atomic"
 )
 
+var nextId int32
+
+func getId() int32 {
+	return atomic.AddInt32(&nextId, 1)
+}
+
 type InsertChannel struct {
-	insert chan dto.Element
+	insert chan dto.Query
 	query  chan dto.Query
 }
 
-func (s *InsertChannel) Get() chan dto.Element {
+func (s *InsertChannel) Get() chan dto.Query {
 	return s.insert
 }
 
@@ -22,9 +29,9 @@ func (s *InsertChannel) QueryChannel() chan dto.Query {
 }
 
 var Channel interface {
-	Get() chan dto.Element
+	Get() chan dto.Query
 	QueryChannel() chan dto.Query
-} = &InsertChannel{make(chan dto.Element), make(chan dto.Query)}
+} = &InsertChannel{make(chan dto.Query), make(chan dto.Query)}
 
 func StartApi(port string) {
 
@@ -46,8 +53,8 @@ type InsertService struct {
 
 func (serv InsertService) InsertData(posted dto.Element) {
 	log.Println("Data to insert: ", posted)
-
-	Channel.Get() <- posted
+	header := dto.TaskRequestHeader{getId(), constants.TASK_INSERT, 0}
+	Channel.Get() <- dto.Query{header, nil, &posted}
 
 }
 
@@ -56,7 +63,8 @@ func (serv InsertService) SelectAll() string {
 
 	response := make(chan string)
 	//TODO add ID
-	Channel.QueryChannel() <- dto.Query{1, constants.TASK_SELECT_ALL, response}
+	header := dto.TaskRequestHeader{getId(), constants.TASK_SELECT_ALL, 0}
+	Channel.QueryChannel() <- dto.Query{header, response, nil}
 
 	return <-response
 }

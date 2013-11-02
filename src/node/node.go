@@ -67,13 +67,13 @@ func (c *Node) RemoveMe() {
 
 // Server listener goroutine - waits for data from the incoming channel
 // (each Node.Outgoing stores this), and passes it to each Node.Incoming channel
-func IOHandler(Insert <-chan dto.Element, Query <-chan dto.Query, NodeList *list.List) {
+func IOHandler(Insert <-chan dto.Query, Query <-chan dto.Query, NodeList *list.List) {
 	for {
 		select {
 		case input := <-Insert:
 			log.Println("Input:", input.String())
 
-			buf, err := input.Encode()
+			buf, err := input.Load.Encode()
 			if err != nil {
 				log.Println(err)
 				continue

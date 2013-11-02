@@ -13,9 +13,9 @@ type TaskRequestHeader struct {
 }
 
 type Query struct {
-	Id       int32
-	Code     int32
+	TaskRequestHeader
 	Response chan string
+	Load     Dto
 }
 
 func (q *TaskRequestHeader) String() string {
