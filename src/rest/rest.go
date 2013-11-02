@@ -16,12 +16,7 @@ func getId() int32 {
 }
 
 type InsertChannel struct {
-	insert chan dto.Query
-	query  chan dto.Query
-}
-
-func (s *InsertChannel) Get() chan dto.Query {
-	return s.insert
+	query chan dto.Query
 }
 
 func (s *InsertChannel) QueryChannel() chan dto.Query {
@@ -29,9 +24,8 @@ func (s *InsertChannel) QueryChannel() chan dto.Query {
 }
 
 var Channel interface {
-	Get() chan dto.Query
 	QueryChannel() chan dto.Query
-} = &InsertChannel{make(chan dto.Query), make(chan dto.Query)}
+} = &InsertChannel{make(chan dto.Query)}
 
 func StartApi(port string) {
 
@@ -54,7 +48,7 @@ type InsertService struct {
 func (serv InsertService) InsertData(posted dto.Element) {
 	log.Println("Data to insert: ", posted)
 	header := dto.TaskRequestHeader{getId(), constants.TASK_INSERT, 0}
-	Channel.Get() <- dto.Query{header, nil, &posted}
+	Channel.QueryChannel() <- dto.Query{header, nil, &posted}
 
 }
 

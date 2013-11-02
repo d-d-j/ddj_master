@@ -16,9 +16,8 @@ func main() {
 	log.Println("Start Master")
 
 	nodeList := list.New()
-	in2 := rest.Channel.Get()
 
-	go node.IOHandler(in2, rest.Channel.QueryChannel(), nodeList)
+	go node.IOHandler(rest.Channel.QueryChannel(), nodeList)
 
 	log.Print("Load configuration: ")
 	cfg, err := config.Load()

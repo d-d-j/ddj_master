@@ -4,7 +4,6 @@ package node
 // Imports required packages
 import (
 	"bytes"
-	"constants"
 	"container/list"
 	"dto"
 	"log"
@@ -67,54 +66,42 @@ func (c *Node) RemoveMe() {
 
 // Server listener goroutine - waits for data from the incoming channel
 // (each Node.Outgoing stores this), and passes it to each Node.Incoming channel
-func IOHandler(Insert <-chan dto.Query, Query <-chan dto.Query, NodeList *list.List) {
+func IOHandler(Query <-chan dto.Query, NodeList *list.List) {
 	for {
-		select {
-		case input := <-Insert:
-			log.Println("Input:", input.String())
+		query := <-Query
+		log.Println("Query", query)
+		header := query.TaskRequestHeader
 
-			buf, err := input.Load.Encode()
+		var (
+			buf       []byte
+			headerBuf []byte
+			err       error
+		)
+
+		if query.Load != nil {
+			buf, err = query.Load.Encode()
 			if err != nil {
 				log.Println(err)
 				continue
 			}
+		}
 
-			header := dto.TaskRequestHeader{1, constants.TASK_INSERT, (int32)(len(buf))}
-			headerBuf, err := header.Encode()
-			if err != nil {
-				log.Println(err)
-				continue
-			}
+		header.Size = (int32)(len(buf))
+		headerBuf, err = header.Encode()
+		if err != nil {
+			log.Println(err)
+			continue
+		}
 
-			complete := make([]byte, 100)
-			copy(complete, headerBuf)
-			copy(complete[len(headerBuf):], buf)
+		complete := make([]byte, 100)
+		copy(complete, headerBuf)
+		copy(complete[len(headerBuf):], buf)
 
-			//TODO: Replace this with StoreManager
-			for e := NodeList.Front(); e != nil; e = e.Next() {
-				Node := e.Value.(Node)
+		//TODO: Replace this with StoreManager
+		for e := NodeList.Front(); e != nil; e = e.Next() {
+			Node := e.Value.(Node)
 
-				Node.Incoming <- complete
-			}
-
-		case q := <-Query:
-			log.Println("Query", q)
-			header := dto.TaskRequestHeader{q.Id, q.Code, 0}
-			headerBuf, err := header.Encode()
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-
-			complete := make([]byte, 100)
-			copy(complete, headerBuf)
-
-			//TODO: Replace this with StoreManager
-			for e := NodeList.Front(); e != nil; e = e.Next() {
-				Node := e.Value.(Node)
-
-				Node.Incoming <- complete
-			}
+			Node.Incoming <- complete
 		}
 	}
 }
