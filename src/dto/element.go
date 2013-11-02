@@ -1,8 +1,9 @@
 package dto
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
-	"github.com/ugorji/go/codec"
 	"time"
 )
 
@@ -28,18 +29,18 @@ func (e *Element) String() string {
 }
 
 func (e *Element) Encode() ([]byte, error) {
-	var (
-		buf []byte
-		mh  codec.MsgpackHandle
-	)
-	enc := codec.NewEncoderBytes(&buf, &mh)
-	err := enc.Encode(e)
-	return buf, err
+	buf := new(bytes.Buffer)
+
+	err := binary.Write(buf, binary.LittleEndian, e)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func (e *Element) Decode(buf []byte) error {
-	var mh codec.MsgpackHandle
-	dec := codec.NewDecoderBytes(buf, &mh)
-	err := dec.Decode(e)
-	return err
+
+	buffer := bytes.NewBuffer(buf)
+	return binary.Read(buffer, binary.LittleEndian, e)
 }

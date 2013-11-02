@@ -84,10 +84,6 @@ func NodeReader(Node *Node) {
 	buffer := make([]byte, 2048)
 
 	for Node.Read(buffer) {
-		if bytes.Equal(buffer, []byte("/quit")) {
-			Node.Close()
-			break
-		}
 		log.Println("NodeReader received ", Node.Name, "> ", string(buffer))
 		//send := Node.Name + "> " + string(buffer)
 		//		Node.Outgoing <- send
@@ -105,7 +101,6 @@ func NodeSender(Node *Node) {
 	for {
 		select {
 		case buffer := <-Node.Incoming:
-			log.Println("NodeSender sending ", buffer, " to ", Node.Name)
 
 			buf, err := buffer.Encode()
 			if err != nil {
@@ -113,7 +108,10 @@ func NodeSender(Node *Node) {
 				continue
 			}
 
-			Node.Conn.Write(buf)
+			complete := make([]byte, 100)
+			copy(complete, buf)
+			log.Println("NodeSender sending ", complete, " to ", Node.Name)
+			Node.Conn.Write(complete)
 		case <-Node.Quit:
 			log.Println("Node ", Node.Name, " quitting")
 			Node.Conn.Close()
