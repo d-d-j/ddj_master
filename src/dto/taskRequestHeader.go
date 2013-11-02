@@ -7,9 +7,15 @@ import (
 )
 
 type TaskRequestHeader struct {
-	Id   int64
+	Id   int32
 	Code int32
 	Size int32
+}
+
+type Query struct {
+	Id       int32
+	Code     int32
+	Response chan string
 }
 
 func (q *TaskRequestHeader) String() string {

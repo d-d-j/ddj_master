@@ -2,22 +2,29 @@ package rest
 
 import (
 	"code.google.com/p/gorest"
+	"constants"
 	"dto"
 	"log"
 	"net/http"
 )
 
 type InsertChannel struct {
-	channel chan dto.Element
+	insert chan dto.Element
+	query  chan dto.Query
 }
 
 func (s *InsertChannel) Get() chan dto.Element {
-	return s.channel
+	return s.insert
+}
+
+func (s *InsertChannel) QueryChannel() chan dto.Query {
+	return s.query
 }
 
 var Channel interface {
 	Get() chan dto.Element
-} = &InsertChannel{make(chan dto.Element)}
+	QueryChannel() chan dto.Query
+} = &InsertChannel{make(chan dto.Element), make(chan dto.Query)}
 
 func StartApi(port string) {
 
@@ -33,13 +40,23 @@ func StartApi(port string) {
 //Service Definition
 type InsertService struct {
 	gorest.RestService `root:"/"`
-	insertData         gorest.EndPoint `method:"POST" path:"/series/id/{id:int32}/data/" postdata:"dto.Element"`
+	insertData         gorest.EndPoint `method:"POST" path:"/data/" postdata:"dto.Element"`
+	selectAll          gorest.EndPoint `method:"GET" path:"/data/" output:"string"`
 }
 
-func (serv InsertService) InsertData(posted dto.Element, id int32) {
-	log.Println("Inserting new data to series: ", id)
+func (serv InsertService) InsertData(posted dto.Element) {
 	log.Println("Data to insert: ", posted)
 
 	Channel.Get() <- posted
 
+}
+
+func (serv InsertService) SelectAll() string {
+	log.Println("Selecting all data")
+
+	response := make(chan string)
+	//TODO add ID
+	Channel.QueryChannel() <- dto.Query{1, constants.TASK_SELECT_ALL, response}
+
+	return <-response
 }
