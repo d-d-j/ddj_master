@@ -110,8 +110,12 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 		case result := <-Result:
 			log.Println("Result: ", result.String(), result.Load)
 			ch := taskResponse[result.Id]
-			log.Println("Pass result data to proper client")
-			ch <- result.Load
+			log.Println(ch)
+			if ch != nil {
+				log.Println("Pass result data to proper client")
+				ch <- result.Load
+				delete(taskResponse, result.Id)
+			}
 		}
 
 	}
