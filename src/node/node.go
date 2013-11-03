@@ -16,7 +16,7 @@ import (
 type Node struct {
 	Id       int32
 	Incoming chan []byte
-	Outgoing chan []byte
+	Outgoing chan dto.Result
 	Conn     net.Conn
 	Quit     chan bool
 	NodeList *list.List
@@ -64,8 +64,8 @@ func (c *Node) RemoveMe() {
 	}
 }
 
-func IOHandler(Query <-chan dto.Query, Result <-chan []byte, NodeList *list.List) {
-	taskResponse := make(map[int32]chan string)
+func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.List) {
+	taskResponse := make(map[int32]chan []dto.Dto)
 	for {
 		select {
 		case query := <-Query:
@@ -90,7 +90,7 @@ func IOHandler(Query <-chan dto.Query, Result <-chan []byte, NodeList *list.List
 				}
 			}
 
-			header.Size = (int32)(len(buf))
+			header.LoadSize = (int32)(len(buf))
 			headerBuf, err = header.Encode()
 			if err != nil {
 				log.Println(err)
@@ -109,6 +109,7 @@ func IOHandler(Query <-chan dto.Query, Result <-chan []byte, NodeList *list.List
 			}
 		case result := <-Result:
 			log.Println("Result: ", result)
+
 		}
 
 	}
@@ -120,11 +121,29 @@ func NodeReader(Node *Node) {
 	buffer := make([]byte, 2048)
 
 	for Node.Read(buffer) {
-		log.Println("NodeReader received ", Node.Id, "> ", string(buffer))
-		Node.Outgoing <- buffer
-		for i := 0; i < 2048; i++ {
-			buffer[i] = 0x00
+		log.Println("NodeReader received data from", Node.Id)
+		var r dto.Result
+		err := r.DecodeHeader(buffer)
+		if err != nil {
+			log.Println(err)
 		}
+		buffer = buffer[r.TaskRequestHeader.Size():]
+		if r.Code == 2 {
+			length := int(r.LoadSize / 24)
+			load := make([]dto.Dto, length)
+			for i := 0; i < length; i++ {
+				var e dto.Element
+				err = e.Decode(buffer[i*(e.Size()+4):])
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				load[i] = &e
+			}
+			r.Load = load
+		}
+		log.Println(r)
+		Node.Outgoing <- r
 	}
 
 	log.Println("NodeReader stopped for ", Node.Id)
@@ -155,7 +174,7 @@ func getId() int32 {
 
 // Creates a new Node object for each new connection using the Id sent by the Node,
 // then starts the NodeSender and NodeReader goroutines to handle the IO
-func NodeHandler(conn net.Conn, ch chan []byte, NodeList *list.List) {
+func NodeHandler(conn net.Conn, ch chan dto.Result, NodeList *list.List) {
 
 	newNode := &Node{getId(), make(chan []byte), ch, conn, make(chan bool), NodeList}
 	go NodeSender(newNode)

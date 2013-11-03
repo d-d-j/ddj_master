@@ -28,7 +28,6 @@ func (r *Result) EncodeHeader() ([]byte, error) {
 
 func (r *Result) DecodeHeader(buf []byte) error {
 
-	buffer := bytes.NewBuffer(buf)
-	return binary.Read(buffer, binary.LittleEndian, r.TaskRequestHeader)
+	return r.TaskRequestHeader.Decode(buf)
 
 }

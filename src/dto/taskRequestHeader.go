@@ -7,19 +7,19 @@ import (
 )
 
 type TaskRequestHeader struct {
-	Id   int32
-	Code int32
-	Size int32
+	Id       int32
+	Code     int32
+	LoadSize int32
 }
 
 type Query struct {
 	TaskRequestHeader
-	Response chan string
+	Response chan []Dto
 	Load     Dto
 }
 
 func (q *TaskRequestHeader) String() string {
-	return fmt.Sprintf("#%d Code: %d [%X]", q.Id, q.Code, q.Size)
+	return fmt.Sprintf("#%d Code: %d [%X]", q.Id, q.Code, q.LoadSize)
 }
 
 func (q *TaskRequestHeader) Encode() ([]byte, error) {
@@ -38,4 +38,9 @@ func (q *TaskRequestHeader) Decode(buf []byte) error {
 	buffer := bytes.NewBuffer(buf)
 	return binary.Read(buffer, binary.LittleEndian, q)
 
+}
+
+func (q *TaskRequestHeader) Size() int {
+
+	return binary.Size(q)
 }

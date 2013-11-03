@@ -44,3 +44,8 @@ func (e *Element) Decode(buf []byte) error {
 	buffer := bytes.NewBuffer(buf)
 	return binary.Read(buffer, binary.LittleEndian, e)
 }
+
+func (e *Element) Size() int {
+
+	return binary.Size(e)
+}

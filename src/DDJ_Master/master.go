@@ -3,6 +3,7 @@ package main
 import (
 	"config"
 	"container/list"
+	"dto"
 	"fmt"
 	"log"
 	"net"
@@ -17,7 +18,7 @@ func main() {
 
 	nodeList := list.New()
 
-	in := make(chan []byte)
+	in := make(chan dto.Result)
 	go node.IOHandler(rest.Channel.QueryChannel(), in, nodeList)
 
 	log.Print("Load configuration: ")
@@ -47,7 +48,7 @@ func main() {
 
 }
 
-func WaitForNodes(netListen net.Listener, nodes *list.List, in chan []byte) {
+func WaitForNodes(netListen net.Listener, nodes *list.List, in chan dto.Result) {
 	for {
 		log.Println("Waiting for nodes")
 		connection, error := netListen.Accept()
