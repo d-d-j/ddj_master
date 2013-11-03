@@ -22,3 +22,7 @@ _cgo_export.*
 _testmain.go
 
 *.exe
+
+#packages
+src/code.google.com*
+src/github.com*

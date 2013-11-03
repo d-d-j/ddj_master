@@ -42,7 +42,7 @@ func StartApi(port string) {
 type InsertService struct {
 	gorest.RestService `root:"/"`
 	insertData         gorest.EndPoint `method:"POST" path:"/data/" postdata:"dto.Element"`
-	selectAll          gorest.EndPoint `method:"GET" path:"/data/" output:"string"`
+	selectAll          gorest.EndPoint `method:"GET" path:"/data/" output:"[]dto.Dto"`
 }
 
 func (serv InsertService) InsertData(posted dto.Element) {
@@ -52,10 +52,10 @@ func (serv InsertService) InsertData(posted dto.Element) {
 
 }
 
-func (serv InsertService) SelectAll() string {
+func (serv InsertService) SelectAll() []dto.Dto {
 	log.Println("Selecting all data")
 
-	response := make(chan string)
+	response := make(chan []dto.Dto)
 	//TODO add ID
 	header := dto.TaskRequestHeader{getId(), constants.TASK_SELECT_ALL, 0}
 	Channel.QueryChannel() <- dto.Query{header, response, nil}
