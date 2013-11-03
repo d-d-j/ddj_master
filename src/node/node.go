@@ -26,10 +26,11 @@ type Node struct {
 // Defines a read function for a Node, reading from the connection into
 // a buffer passed in. Returns true if read was successful, false otherwise
 func (c *Node) Read(buffer []byte) bool {
+	log.Println(c.Id, " try to read ", len(buffer), " bytes")
 	bytesRead, error := c.Conn.Read(buffer)
 	if error != nil {
 		c.Close()
-		log.Println(error)
+		log.Println("Problem with connection: ", error)
 		return false
 	}
 	log.Println("Read ", bytesRead, " bytes")
@@ -111,7 +112,7 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 		case result := <-Result:
 			log.Println("Result: ", result.String(), result.Load)
 			ch := taskResponse[result.Id]
-			log.Println(ch)
+			log.Println("Response channel", ch)
 			if ch != nil {
 				log.Println("Pass result data to proper client")
 				ch <- result.Load
@@ -133,6 +134,10 @@ func NodeReader(Node *Node) {
 		err := r.DecodeHeader(buffer)
 		if err != nil {
 			log.Println(err)
+		}
+		log.Println("Response header: ", r.TaskRequestHeader)
+		if r.LoadSize == 0 {
+			continue
 		}
 		buffer := make([]byte, r.LoadSize)
 		Node.Read(buffer)
