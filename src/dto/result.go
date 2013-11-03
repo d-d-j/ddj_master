@@ -2,48 +2,33 @@ package dto
 
 import (
 	"bytes"
-	"encoding/gob"
+	"encoding/binary"
 	"fmt"
 )
 
 type Result struct {
-	id   int64
-	code int32
-}
-
-func (r *Result) Equal(other *Result) bool {
-	if r.id == other.id && r.code == other.code {
-		return true
-	}
-	return false
+	TaskRequestHeader
+	Load []Dto
 }
 
 func (r *Result) String() string {
-	return fmt.Sprintf("#%d Code: %d", r.id, r.code)
+	return fmt.Sprintf("#%d Code: %d", r.Id, r.Code)
 }
 
-func (r *Result) GobEncode() ([]byte, error) {
-	w := new(bytes.Buffer)
-	encoder := gob.NewEncoder(w)
+func (r *Result) EncodeHeader() ([]byte, error) {
+	buf := new(bytes.Buffer)
 
-	err := encoder.Encode(r.id)
+	err := binary.Write(buf, binary.LittleEndian, r.TaskRequestHeader)
 	if err != nil {
 		return nil, err
 	}
-	err = encoder.Encode(r.code)
-	if err != nil {
-		return nil, err
-	}
-	return w.Bytes(), nil
+
+	return buf.Bytes(), nil
 }
 
-func (r *Result) GobDecode(buf []byte) error {
-	b := bytes.NewBuffer(buf)
-	decoder := gob.NewDecoder(b)
-	err := decoder.Decode(&r.id)
-	if err != nil {
-		return err
-	}
-	return decoder.Decode(&r.code)
+func (r *Result) DecodeHeader(buf []byte) error {
+
+	buffer := bytes.NewBuffer(buf)
+	return binary.Read(buffer, binary.LittleEndian, r.TaskRequestHeader)
 
 }

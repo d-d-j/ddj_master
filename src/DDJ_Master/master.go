@@ -17,7 +17,8 @@ func main() {
 
 	nodeList := list.New()
 
-	go node.IOHandler(rest.Channel.QueryChannel(), nodeList)
+	in := make(chan []byte)
+	go node.IOHandler(rest.Channel.QueryChannel(), in, nodeList)
 
 	log.Print("Load configuration: ")
 	cfg, err := config.Load()
@@ -42,12 +43,11 @@ func main() {
 	}
 	defer netListen.Close()
 
-	WaitForNodes(netListen, nodeList)
+	WaitForNodes(netListen, nodeList, in)
 
 }
 
-func WaitForNodes(netListen net.Listener, nodes *list.List) {
-	in := make(chan string)
+func WaitForNodes(netListen net.Listener, nodes *list.List, in chan []byte) {
 	for {
 		log.Println("Waiting for nodes")
 		connection, error := netListen.Accept()
