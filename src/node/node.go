@@ -137,6 +137,8 @@ func NodeReader(Node *Node) {
 		}
 		log.Println("Response header: ", r.TaskRequestHeader)
 		if r.LoadSize == 0 {
+			r.Load = make([]dto.Dto, 0)
+			Node.Outgoing <- r
 			continue
 		}
 		buffer := make([]byte, r.LoadSize)
