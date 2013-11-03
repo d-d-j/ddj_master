@@ -43,22 +43,36 @@ type InsertService struct {
 	gorest.RestService `root:"/"`
 	insertData         gorest.EndPoint `method:"POST" path:"/data/" postdata:"dto.Element"`
 	selectAll          gorest.EndPoint `method:"GET" path:"/data/" output:"[]dto.Dto"`
+	getOptions         gorest.EndPoint `method:"OPTIONS" path:"/data"`
 }
 
 func (serv InsertService) InsertData(posted dto.Element) {
+	serv.setHeader()
 	log.Println("Data to insert: ", posted)
 	header := dto.TaskRequestHeader{getId(), constants.TASK_INSERT, 0}
 	Channel.QueryChannel() <- dto.Query{header, nil, &posted}
-
 }
 
 func (serv InsertService) SelectAll() []dto.Dto {
+	serv.setHeader()
 	log.Println("Selecting all data")
 
 	response := make(chan []dto.Dto)
-	//TODO add ID
 	header := dto.TaskRequestHeader{getId(), constants.TASK_SELECT_ALL, 0}
 	Channel.QueryChannel() <- dto.Query{header, response, nil}
 
 	return <-response
+}
+
+func (serv InsertService) GetOptions() {
+	serv.setHeader()
+	log.Println("Return available options: ")
+}
+
+func (serv InsertService) setHeader() {
+	rb := serv.ResponseBuilder()
+	rb.CacheNoCache()
+	rb.AddHeader("Access-Control-Allow-Origin", "*")
+	rb.AddHeader("Allow", "GET, POST")
+	rb.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, x-requested-with")
 }

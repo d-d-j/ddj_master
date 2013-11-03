@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ApiTester</title>
+</head>
+<style type="text/css">
+    body, input {
+        font-family: Arial;
+        font-size: 13px;
+        margin: 0;
+        padding: 0;
+    }
+
+    #content {
+        border-bottom: 2px solid #eee;
+        border-left: 2px solid #eee;
+        border-right: 2px solid #eee;
+        margin: 0 auto;
+        width: 1260px;
+    }
+
+    table {
+        margin: 10px;
+    }
+
+    #apiUrl {
+        background-color: #eee;
+        padding: 10px 20px 10px 20px;
+    }
+
+    #apiUrl input {
+        width: 100%;
+    }
+
+    .requestUrl {
+        width: 200px;
+    }
+
+    .requestParams {
+        display: block;
+    }
+
+    td {
+        vertical-align: top;
+    }
+
+    textarea {
+        font-family: "Courier New";
+        width: 300px;
+    }
+
+    pre {
+        margin: 0;
+    }
+
+    .error {
+        background-color: rgb(255, 240, 240);
+    }
+
+    .success {
+        background-color: rgb(240, 255, 240);
+    }
+
+    .simulation {
+        background-color: #ffff99;
+    }
+
+    .throbber {
+        display: none;
+        vertical-align: -3px;
+    }
+
+    pre {
+        white-space: pre-wrap; /* css-3 */
+        white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+        white-space: -pre-wrap; /* Opera 4-6 */
+        white-space: -o-pre-wrap; /* Opera 7 */
+        word-wrap: break-word; /* Internet Explorer 5.5+ */
+        width: 590px;
+    }
+    .requestResponse {
+        font-family: consolas, monospace;
+    }
+    .string {
+        color: blue;
+    }
+    .number {
+        color: darkorange;
+    }
+    .boolean {
+        color: magenta;
+    }
+    .null {
+        color: red;
+    }
+    .key {
+        font-weight: bold;
+    }
+</style>
+
+<body>
+    <div id="content">
+        <div id="apiUrl">
+            <h3>
+                API URL</h3>
+            <input type="text" id="url" value="http://localhost:8888">
+        </div>
+        <div>
+        <object data="version.txt" type="text/plain"
+        width="100%" style="height: 5em">
+        </object>
+        </div>
+        <table cellpadding="5">
+            <tbody id="requests">
+                <tr>
+                    <th>
+                        Operation
+                    </th>
+                    <th>
+                        Request URL
+                    </th>
+                    <th>
+                        Request Params
+                    </th>
+                    <th>
+                        Request Response
+                    </th>
+                </tr>
+                <tr id="requestTemplate">
+                    <td>
+                    </td>
+                    <td>
+                        <input type="text" class="requestUrl" value="">
+                    </td>
+                    <td>
+                        <textarea class="requestParams" rows="12"></textarea>
+                        <input type="button" value="Execute" class="execute">
+                        <img src="http://upload.wikimedia.org/wikipedia/commons/d/de/Ajax-loader.gif" class="throbber">
+                    </td>
+                    <td>
+                        <pre class="requestResponse"></pre>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+
+    var requests = [
+        {
+            name: "Select All",
+            url: "/data",
+            method: "GET",
+            requestParams: ""
+        },
+        {
+            name: "Insert Value",
+            url: "/data",
+            method: "POST",
+            requestParams: "{\n\"series\":1,\n\"tag\":1,\n\"time\":1383501407,\n\"value\":0.5\n}"
+        }
+    ];
+
+    $(function () {
+
+        $(requests).each(function (index, request) {
+            var template = $("#requestTemplate").clone();
+
+            template.attr("id", "");
+            template.attr("data-method", request.method);
+            if (request.simulation) {
+                template.addClass("simulation");
+            }
+
+            $("td:first", template).text(request.name);
+            $(".requestUrl", template).val(request.url);
+
+            if (request.requestParams) {
+                $(".requestParams", template).val(request.requestParams);
+            } else {
+                $(".requestParams", template).hide();
+            }
+
+
+            $("#requests").append(template);
+        });
+
+        $("#requestTemplate").remove();
+
+        $(".execute").click(function (event) {
+            var section = $(event.target).parents("tr");
+            section.removeClass("error").removeClass("success");
+            $(".throbber", section).show();
+            $(".requestResponse", section).text("Processing...");
+            section.removeClass("success");
+
+            $(".requestUrl", section).val();
+
+            $.ajax($("#url").val() + $(".requestUrl", section).val(), {
+                contentType: "application/json",
+                data: $(".requestParams", section).val(),
+                type: section.attr("data-method"),
+                complete: function () {
+                    $(".throbber", section).hide();
+                },
+                success: function () {
+                    section.addClass("success");
+                    console.log(arguments);
+                    var json = "";
+                    if (arguments[2].responseText === "") {
+                        json = arguments[2].statusText;
+                    } else {
+                        json = JSON.parse(arguments[2].responseText);
+                    }
+                    var str = JSON.stringify(json, undefined, 4);
+                    console.log(str);
+                    $(".requestResponse", section).html(syntaxHighlight(str));
+                },
+                error: function () {
+                    section.addClass("error");
+                    $(".requestResponse", section).text("ERROR");
+                }
+            })
+        })
+
+        function syntaxHighlight(json) {
+            if (typeof json != 'string') {
+                json = JSON.stringify(json, undefined, 2);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key';
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+    });
+</script>
+
+</html>
