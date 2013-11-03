@@ -108,8 +108,10 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 				Node.Incoming <- complete
 			}
 		case result := <-Result:
-			log.Println("Result: ", result)
-
+			log.Println("Result: ", result.String(), result.Load)
+			ch := taskResponse[result.Id]
+			log.Println("Pass result data to proper client")
+			ch <- result.Load
 		}
 
 	}
@@ -142,7 +144,7 @@ func NodeReader(Node *Node) {
 			}
 			r.Load = load
 		}
-		log.Println(r)
+		log.Println("Send response to IOHandler")
 		Node.Outgoing <- r
 	}
 
