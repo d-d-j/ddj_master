@@ -3,6 +3,7 @@ package node
 
 // Imports required packages
 import (
+	"constants"
 	"container/list"
 	"dto"
 	"log"
@@ -124,17 +125,18 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 // Node reading goroutine - reads incoming data from the tcp socket,
 // sends it to the Node.Outgoing channel (to be picked up by IOHandler)
 func NodeReader(Node *Node) {
-	buffer := make([]byte, 2048)
 
+	var r dto.Result
+	buffer := make([]byte, r.TaskRequestHeader.Size())
 	for Node.Read(buffer) {
 		log.Println("NodeReader received data from", Node.Id)
-		var r dto.Result
 		err := r.DecodeHeader(buffer)
 		if err != nil {
 			log.Println(err)
 		}
-		buffer = buffer[r.TaskRequestHeader.Size():]
-		if r.Code == 2 {
+		buffer := make([]byte, r.LoadSize)
+		Node.Read(buffer)
+		if r.Code == constants.TASK_SELECT_ALL {
 			length := int(r.LoadSize / 24)
 			load := make([]dto.Dto, length)
 			for i := 0; i < length; i++ {
@@ -150,6 +152,7 @@ func NodeReader(Node *Node) {
 		}
 		log.Println("Send response to IOHandler")
 		Node.Outgoing <- r
+		buffer = make([]byte, r.TaskRequestHeader.Size())
 	}
 
 	log.Println("NodeReader stopped for ", Node.Id)
