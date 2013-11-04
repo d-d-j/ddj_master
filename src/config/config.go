@@ -9,6 +9,9 @@ type Config struct {
 		Api               int32
 		NodeCommunication int32
 	}
+	Logging struct {
+		File string
+	}
 }
 
 var instantiated *Config = nil

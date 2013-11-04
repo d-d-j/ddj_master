@@ -26,3 +26,7 @@ _testmain.go
 #packages
 src/code.google.com*
 src/github.com*
+
+#logs
+logs/*
+*.log

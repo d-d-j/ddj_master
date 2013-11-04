@@ -1,11 +1,11 @@
 package main
 
 import (
+	log "code.google.com/p/log4go"
 	"config"
 	"container/list"
 	"dto"
 	"fmt"
-	"log"
 	"net"
 	"node"
 	"rest"
@@ -13,20 +13,22 @@ import (
 
 // Main: Starts a TCP server and waits infinitely for connections
 func main() {
-	log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
-	log.Println("Start Master")
+
+	log.Info("Start Master")
 
 	nodeList := list.New()
 
 	in := make(chan dto.Result)
 	go node.IOHandler(rest.Channel.QueryChannel(), in, nodeList)
 
-	log.Print("Load configuration: ")
+	log.Debug("Load configuration")
 	cfg, err := config.Load()
 	if err != nil {
-		log.Panic("Problem with configuration: ", err)
+		log.Critical("Problem with configuration: ", err)
 	}
-	log.Println(cfg)
+	log.Info(cfg)
+
+	log.LoadConfiguration("log.cfg")
 
 	portApi := fmt.Sprintf(":%d", cfg.Ports.Api)
 	rest.StartApi(portApi)
@@ -34,13 +36,13 @@ func main() {
 	service := fmt.Sprintf("127.0.0.1:%d", cfg.Ports.NodeCommunication)
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
-		log.Panic("Error: Could not resolve address")
+		log.Critical("Error: Could not resolve address")
 	}
 
-	log.Println("Listening on: ", tcpAddr.String())
+	log.Info("Listening on: ", tcpAddr.String())
 	netListen, error := net.Listen(tcpAddr.Network(), tcpAddr.String())
 	if error != nil {
-		log.Panic(error)
+		log.Error(error)
 	}
 	defer netListen.Close()
 
@@ -50,12 +52,12 @@ func main() {
 
 func WaitForNodes(netListen net.Listener, nodes *list.List, in chan dto.Result) {
 	for {
-		log.Println("Waiting for nodes")
+		log.Info("Waiting for nodes")
 		connection, error := netListen.Accept()
 		if error != nil {
-			log.Println("node error: ", error)
+			log.Error("node error: ", error)
 		} else {
-			log.Println("Accept node: ", connection.RemoteAddr())
+			log.Info("Accept node: ", connection.RemoteAddr())
 			go node.NodeHandler(connection, in, nodes)
 		}
 	}

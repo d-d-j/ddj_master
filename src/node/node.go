@@ -3,10 +3,10 @@ package node
 
 // Imports required packages
 import (
+	log "code.google.com/p/log4go"
 	"constants"
 	"container/list"
 	"dto"
-	"log"
 	"net"
 	"sync/atomic"
 )
@@ -26,14 +26,14 @@ type Node struct {
 // Defines a read function for a Node, reading from the connection into
 // a buffer passed in. Returns true if read was successful, false otherwise
 func (c *Node) Read(buffer []byte) bool {
-	log.Println(c.Id, " try to read ", len(buffer), " bytes")
+	log.Debug(c.Id, " try to read ", len(buffer), " bytes")
 	bytesRead, error := c.Conn.Read(buffer)
 	if error != nil {
 		c.Close()
-		log.Println("Problem with connection: ", error)
+		log.Error("Problem with connection: ", error)
 		return false
 	}
-	log.Println("Read ", bytesRead, " bytes")
+	log.Debug("Read ", bytesRead, " bytes")
 	return true
 }
 
@@ -60,7 +60,7 @@ func (c *Node) RemoveMe() {
 	for entry := c.NodeList.Front(); entry != nil; entry = entry.Next() {
 		Node := entry.Value.(Node)
 		if c.Equal(&Node) {
-			log.Println("RemoveMe: ", c.Id)
+			log.Debug("RemoveMe: ", c.Id)
 			c.NodeList.Remove(entry)
 		}
 	}
@@ -71,7 +71,7 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 	for {
 		select {
 		case query := <-Query:
-			log.Println("Query", query)
+			log.Debug("Query", query)
 			header := query.TaskRequestHeader
 
 			var (
@@ -87,7 +87,7 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 			if query.Load != nil {
 				buf, err = query.Load.Encode()
 				if err != nil {
-					log.Println(err)
+					log.Error(err)
 					continue
 				}
 			}
@@ -95,7 +95,7 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 			header.LoadSize = (int32)(len(buf))
 			headerBuf, err = header.Encode()
 			if err != nil {
-				log.Println(err)
+				log.Error(err)
 				continue
 			}
 
@@ -110,11 +110,11 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 				Node.Incoming <- complete
 			}
 		case result := <-Result:
-			log.Println("Result: ", result.String(), result.Load)
+			log.Debug("Result: ", result.String(), result.Load)
 			ch := taskResponse[result.Id]
-			log.Println("Response channel", ch)
+			log.Debug("Response channel", ch)
 			if ch != nil {
-				log.Println("Pass result data to proper client")
+				log.Debug("Pass result data to proper client")
 				ch <- result.Load
 				delete(taskResponse, result.Id)
 			}
@@ -130,12 +130,12 @@ func NodeReader(Node *Node) {
 	var r dto.Result
 	buffer := make([]byte, r.TaskRequestHeader.Size())
 	for Node.Read(buffer) {
-		log.Println("NodeReader received data from", Node.Id)
+		log.Debug("NodeReader received data from", Node.Id)
 		err := r.DecodeHeader(buffer)
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 		}
-		log.Println("Response header: ", r.TaskRequestHeader)
+		log.Debug("Response header: ", r.TaskRequestHeader)
 		if r.LoadSize == 0 {
 			r.Load = make([]dto.Dto, 0)
 			Node.Outgoing <- r
@@ -150,19 +150,19 @@ func NodeReader(Node *Node) {
 				var e dto.Element
 				err = e.Decode(buffer[i*(e.Size()+4):])
 				if err != nil {
-					log.Println(err)
+					log.Error(err)
 					continue
 				}
 				load[i] = &e
 			}
 			r.Load = load
 		}
-		log.Println("Send response to IOHandler")
+		log.Debug("Send response to IOHandler")
 		Node.Outgoing <- r
 		buffer = make([]byte, r.TaskRequestHeader.Size())
 	}
 
-	log.Println("NodeReader stopped for ", Node.Id)
+	log.Debug("NodeReader stopped for ", Node.Id)
 	Node.Close()
 }
 
@@ -172,10 +172,10 @@ func NodeSender(Node *Node) {
 	for {
 		select {
 		case buffer := <-Node.Incoming:
-			log.Println("NodeSender sending ", buffer, " to ", Node.Id)
+			log.Debug("NodeSender sending ", buffer, " to ", Node.Id)
 			Node.Conn.Write(buffer)
 		case <-Node.Quit:
-			log.Println("Node ", Node.Id, " quitting")
+			log.Info("Node ", Node.Id, " quitting")
 			Node.Conn.Close()
 			break
 		}

@@ -2,9 +2,9 @@ package rest
 
 import (
 	"code.google.com/p/gorest"
+	log "code.google.com/p/log4go"
 	"constants"
 	"dto"
-	"log"
 	"net/http"
 	"sync/atomic"
 )
@@ -31,7 +31,7 @@ func StartApi(port string) {
 
 	insertService := InsertService{}
 
-	log.Print("Start REST API on " + port)
+	log.Info("Start REST API on " + port)
 	gorest.RegisterService(&insertService) //Register our service
 	gorest.RegisterMarshaller("application/json", gorest.NewJSONMarshaller())
 	go http.Handle("/", gorest.Handle())
@@ -48,14 +48,14 @@ type InsertService struct {
 
 func (serv InsertService) InsertData(posted dto.Element) {
 	serv.setHeader()
-	log.Println("Data to insert: ", posted)
+	log.Debug("Data to insert: ", posted)
 	header := dto.TaskRequestHeader{getId(), constants.TASK_INSERT, 0}
 	Channel.QueryChannel() <- dto.Query{header, nil, &posted}
 }
 
 func (serv InsertService) SelectAll() []dto.Dto {
 	serv.setHeader()
-	log.Println("Selecting all data")
+	log.Debug("Selecting all data")
 
 	response := make(chan []dto.Dto)
 	header := dto.TaskRequestHeader{getId(), constants.TASK_SELECT_ALL, 0}
@@ -66,7 +66,7 @@ func (serv InsertService) SelectAll() []dto.Dto {
 
 func (serv InsertService) GetOptions() {
 	serv.setHeader()
-	log.Println("Return available options: ")
+	log.Debug("Return available options: ")
 }
 
 func (serv InsertService) setHeader() {
