@@ -71,7 +71,7 @@ func (serv InsertService) SelectAll() []dto.Dto {
 
 func (serv InsertService) GetOptions() {
 	serv.setHeader()
-	log.Debug("Return available options: ")
+	log.Debug("Return available options")
 }
 
 func (serv InsertService) setHeader() {
