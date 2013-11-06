@@ -54,10 +54,7 @@ func (serv InsertService) InsertData(posted dto.Element) {
 	Channel.QueryChannel() <- dto.Query{header, responseChan, &posted}
 
 	response := <-responseChan
-	if response == nil {
-		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
-			[]byte("The server is currently unable to handle the request due to lack of node"))
-	}
+	serv.set503HeaderWhenArgumentIsNil(response)
 }
 
 func (serv InsertService) SelectAll() []dto.Dto {
@@ -68,10 +65,7 @@ func (serv InsertService) SelectAll() []dto.Dto {
 	header := dto.TaskRequestHeader{getId(), constants.TASK_SELECT_ALL, 0}
 	Channel.QueryChannel() <- dto.Query{header, responseChan, nil}
 	response := <-responseChan
-	if response == nil {
-		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
-			[]byte("The server is currently unable to handle the request due to lack of node"))
-	}
+	serv.set503HeaderWhenArgumentIsNil(response)
 	return response
 }
 
@@ -86,4 +80,12 @@ func (serv InsertService) setHeader() {
 	rb.AddHeader("Access-Control-Allow-Origin", "*")
 	rb.AddHeader("Allow", "GET, POST")
 	rb.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, x-requested-with")
+}
+
+func (serv InsertService) set503HeaderWhenArgumentIsNil(arg []dto.Dto) {
+	if arg == nil {
+		log.Error("Return HTTP 503")
+		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
+			[]byte("The server is currently unable to handle the request"))
+	}
 }

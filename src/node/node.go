@@ -101,6 +101,7 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 
 			//TODO: Replace this with StoreManager
 			if NodeList.Len() == 0 {
+				log.Warn("No node connected")
 				query.Response <- nil
 			} else if query.Code == constants.TASK_SELECT_ALL {
 				taskResponse[query.Id] = query.Response
