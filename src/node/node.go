@@ -80,10 +80,6 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 				err       error
 			)
 
-			if query.Response != nil {
-				taskResponse[query.Id] = query.Response
-			}
-
 			if query.Load != nil {
 				buf, err = query.Load.Encode()
 				if err != nil {
@@ -104,9 +100,17 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 			copy(complete[len(headerBuf):], buf)
 
 			//TODO: Replace this with StoreManager
+			if NodeList.Len() == 0 {
+				query.Response <- nil
+			} else if query.Code == constants.TASK_SELECT_ALL {
+				taskResponse[query.Id] = query.Response
+			} else {
+				response := make([]dto.Dto, 0)
+				query.Response <- response
+			}
+
 			for e := NodeList.Front(); e != nil; e = e.Next() {
 				Node := e.Value.(Node)
-
 				Node.Incoming <- complete
 			}
 		case result := <-Result:
@@ -135,7 +139,7 @@ func NodeReader(Node *Node) {
 		if err != nil {
 			log.Error(err)
 		}
-		log.Debug("Response header: ", r.TaskRequestHeader)
+		log.Fine("Response header: ", r.TaskRequestHeader)
 		if r.LoadSize == 0 {
 			r.Load = make([]dto.Dto, 0)
 			Node.Outgoing <- r
@@ -162,8 +166,7 @@ func NodeReader(Node *Node) {
 		buffer = make([]byte, r.TaskRequestHeader.Size())
 	}
 
-	log.Debug("NodeReader stopped for ", Node.Id)
-	Node.Close()
+	log.Info("NodeReader stopped for ", Node.Id)
 }
 
 // Node sending goroutine - waits for data to be sent over Node.Incoming
@@ -172,7 +175,7 @@ func NodeSender(Node *Node) {
 	for {
 		select {
 		case buffer := <-Node.Incoming:
-			log.Debug("NodeSender sending ", buffer, " to ", Node.Id)
+			log.Fine("NodeSender sending ", buffer, " to ", Node.Id)
 			Node.Conn.Write(buffer)
 		case <-Node.Quit:
 			log.Info("Node ", Node.Id, " quitting")

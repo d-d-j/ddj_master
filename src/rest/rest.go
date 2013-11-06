@@ -49,19 +49,30 @@ type InsertService struct {
 func (serv InsertService) InsertData(posted dto.Element) {
 	serv.setHeader()
 	log.Debug("Data to insert: ", posted)
+	responseChan := make(chan []dto.Dto)
 	header := dto.TaskRequestHeader{getId(), constants.TASK_INSERT, 0}
-	Channel.QueryChannel() <- dto.Query{header, nil, &posted}
+	Channel.QueryChannel() <- dto.Query{header, responseChan, &posted}
+
+	response := <-responseChan
+	if response == nil {
+		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
+			[]byte("The server is currently unable to handle the request due to lack of node"))
+	}
 }
 
 func (serv InsertService) SelectAll() []dto.Dto {
 	serv.setHeader()
 	log.Debug("Selecting all data")
 
-	response := make(chan []dto.Dto)
+	responseChan := make(chan []dto.Dto)
 	header := dto.TaskRequestHeader{getId(), constants.TASK_SELECT_ALL, 0}
-	Channel.QueryChannel() <- dto.Query{header, response, nil}
-
-	return <-response
+	Channel.QueryChannel() <- dto.Query{header, responseChan, nil}
+	response := <-responseChan
+	if response == nil {
+		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
+			[]byte("The server is currently unable to handle the request due to lack of node"))
+	}
+	return response
 }
 
 func (serv InsertService) GetOptions() {
