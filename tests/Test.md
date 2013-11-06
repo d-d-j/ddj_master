@@ -9,7 +9,7 @@ It will make 10K request in 4 threads
 
 ### Get all data
 
-		ab -n 10000 -c 4 -p http://localhost:8888/data
+		ab -n 10000 -c 4 http://localhost:8888/data
 
 ### Insert data
 

@@ -1,27 +1,52 @@
 #!/bin/bash
 
-usage() { echo "Usage: $0 [-n repetition number] [-q call query]" 1>&2; exit 1; }
+#!/bin/bash
 
-while getopts "n:q" o; do
+usage() { cat << EOF
+Usage: $0
+OPTIONS
+    -n Number of requests to perform
+    -c Number of multiple requests to make
+    -P POST
+    -G GET
+EOF
+}
+
+requests_count=
+concuret_request_count=
+post=
+get=
+
+while getopts "n:c:PG" o; do
     case "${o}" in
         n)
-            s=${OPTARG}
-            x=1;
-            while [ $x -le $s ] ;
-				do
-					value=$[100 + (RANDOM % 100)]$[1000 + (RANDOM % 1000)]
-					value=$[RANDOM % 15].${value:1:2}${value:4:3}
-					series=$[(RANDOM % 10)]
-					tag=$[(RANDOM % 10)]
-					curl -X POST -d "{\"series\":$series,\"tag\":$tag,\"time\":`date -u +%s`,\"value\":$value}" http://localhost:8888/data --header "Content-Type:application/json"
-					x=$[x + 1]
-				done
+            requests_count=${OPTARG}
             ;;
-        q)
-            curl http://localhost:8888/data
+        c)
+            concuret_request_count=${OPTARG}
             ;;
+        P)
+            post=true
+            get = false
+            ;;
+        G)
+            get=true
+            post = false
+            ;;
+        \? ) echo "Unknown option: -$OPTARG" >&2; exit 1;;
+        :  ) echo "Missing option argument for -$OPTARG" >&2; exit 1;;
         *)
             usage
             ;;
     esac
 done
+
+if $get
+    then
+    ab -n $requests_count -c $concuret_request_count http://localhost:8888/data
+fi
+
+if $post
+    then
+    ab -n $requests_count -c $concuret_request_count -p insert.json -T "'application/x-www-form-urlencoded'"  http://localhost:8888/data
+fi
