@@ -14,8 +14,8 @@ type TaskRequestHeader struct {
 
 type Query struct {
 	TaskRequestHeader
-	Response chan []Dto
-	Load     Dto
+	Response chan []	Dto
+	Load     			Dto
 }
 
 func (q *TaskRequestHeader) String() string {

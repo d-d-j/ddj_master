@@ -8,6 +8,8 @@ const (
 
 //TaskType
 const (
+	ERROR			int32 = 0
 	TASK_INSERT     int32 = 1
 	TASK_SELECT_ALL int32 = 2
+	FLUSH			int32 = 3
 )
