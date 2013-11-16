@@ -44,6 +44,7 @@ func main() {
 	if error != nil {
 		log.Error(error)
 	}
+
 	defer netListen.Close()
 
 	WaitForNodes(netListen, nodeList, in)
