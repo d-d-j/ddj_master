@@ -1,4 +1,3 @@
-//http://dev.badgerr.co.uk/erlsrv/file/4f624b6bc22c/gostuff/chatserv.go
 package node
 
 // Imports required packages
@@ -115,7 +114,7 @@ func IOHandler(Query <-chan dto.Query, Result <-chan dto.Result, NodeList *list.
 				Node.Incoming <- complete
 			}
 		case result := <-Result:
-			log.Debug("Result: ", result.String(), result.Load)
+			log.Fine("Result: ", result.String(), result.Load)
 			ch := taskResponse[result.Id]
 			log.Debug("Response channel", ch)
 			if ch != nil {
@@ -176,7 +175,7 @@ func NodeSender(Node *Node) {
 	for {
 		select {
 		case buffer := <-Node.Incoming:
-			log.Fine("NodeSender sending ", buffer, " to ", Node.Id)
+			log.Debug("NodeSender sending ", buffer, " to ", Node.Id)
 			Node.Conn.Write(buffer)
 		case <-Node.Quit:
 			log.Info("Node ", Node.Id, " quitting")
