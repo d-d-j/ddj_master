@@ -16,6 +16,12 @@ type Balancer struct {
 	done chan *Worker
 }
 
+func NewBalancer(work chan Request, workersCount int) Balancer {
+	done := make(chan *Worker)
+	p := NewWorkersPool(workersCount, done)
+	return Balancer{p, done}
+}
+
 func (b *Balancer) balance(work chan Request) {
 	log.Info("Balancer started")
 	for {

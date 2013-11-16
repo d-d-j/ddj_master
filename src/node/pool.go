@@ -2,10 +2,14 @@ package node
 
 type Pool []*Worker
 
-type Worker struct {
-	requests chan Request
-	pending  int
-	index    int
+func NewWorkersPool(size int, done chan *Worker) Pool {
+	pool := make(Pool, size)
+	for index, worker := range pool {
+		worker.index = index
+		worker.requests = make(chan Request)
+		go worker.work(done)
+	}
+	return pool
 }
 
 func (p Pool) Less(i, j int) bool {
@@ -34,4 +38,18 @@ func (p *Pool) Push(x interface{}) {
 	item := x.(*Worker)
 	item.index = n
 	*p = append(*p, item)
+}
+
+type Worker struct {
+	requests chan Request
+	pending  int
+	index    int
+}
+
+func (w *Worker) work(done chan *Worker) {
+	for {
+		req := <-w.requests
+		req.c <- req.fn()
+		done <- w
+	}
 }
