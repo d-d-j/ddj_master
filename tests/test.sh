@@ -26,12 +26,12 @@ while getopts "n:c:PG" o; do
             concuret_request_count=${OPTARG}
             ;;
         P)
-            post=true
-            get = false
+            post="true"
+            get="false"
             ;;
         G)
-            get=true
-            post = false
+            get="true"
+            post="false"
             ;;
         \? ) echo "Unknown option: -$OPTARG" >&2; exit 1;;
         :  ) echo "Missing option argument for -$OPTARG" >&2; exit 1;;
@@ -41,12 +41,15 @@ while getopts "n:c:PG" o; do
     esac
 done
 
-if $get
-    then
-    ab -n $requests_count -c $concuret_request_count http://localhost:8888/data
-fi
+echo "Get: $get"
+echo "Post: $post"
 
-if $post
-    then
+if $get; then
+    echo "Select All"
+    ab -n $requests_count -c $concuret_request_count http://localhost:8888/data
+else
+ if $post; then
+    echo "Insert"
     ab -n $requests_count -c $concuret_request_count -p insert.json -T "'application/x-www-form-urlencoded'"  http://localhost:8888/data
+fi
 fi
