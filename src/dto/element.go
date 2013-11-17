@@ -8,15 +8,15 @@ import (
 )
 
 type Element struct {
-	Series, Tag int32
+	Tag, Metric int32
 	Time        int64
 	Value       float32
 }
 
-func NewElement(Series int32, Tag int32, Time int64, Value float32) *Element {
+func NewElement(Tag int32, Metric int32, Time int64, Value float32) *Element {
 	e := new(Element)
-	e.Series = Series
 	e.Tag = Tag
+	e.Metric = Metric
 	e.Time = Time
 	e.Value = Value
 	return e
@@ -24,7 +24,7 @@ func NewElement(Series int32, Tag int32, Time int64, Value float32) *Element {
 
 func (e *Element) String() string {
 	t := time.Unix(e.Time, 0)
-	return fmt.Sprintf("%d#%d %s [%f]", e.Series, e.Tag, t, e.Value)
+	return fmt.Sprintf("%d#%d %s [%f]", e.Tag, e.Metric, t, e.Value)
 
 }
 
