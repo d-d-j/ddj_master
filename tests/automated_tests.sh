@@ -2,7 +2,7 @@
 
 rm test.temp
 rm newtest.tst
-echo Requests per second: 0 [#/sec] (mean) concurency 0 >> newtest.tst
+echo 'Requests per second: 0 [#/sec] (mean) concurency 0' >> newtest.tst
 
 ./test.sh -n 20000 -c 1 -P > test.temp
 record=$(grep '#/sec' test.temp)
@@ -47,11 +47,3 @@ echo $record concurency 30 >> newtest.tst
 ./test.sh -n 20000 -c 40 -P > test.temp
 record=$(grep '#/sec' test.temp)
 echo $record concurency 40 >> newtest.tst
-
-./test.sh -n 20000 -c 60 -P > test.temp
-record=$(grep '#/sec' test.temp)
-echo $record concurency 60 >> newtest.tst
-
-./test.sh -n 20000 -c 100 -P > test.temp
-record=$(grep '#/sec' test.temp)
-echo $record concurency 100 >> newtest.tst
