@@ -47,3 +47,5 @@ echo $record concurency 30 >> newtest.tst
 ./test.sh -n 20000 -c 40 -P > test.temp
 record=$(grep '#/sec' test.temp)
 echo $record concurency 40 >> newtest.tst
+
+gnuplot newtest.gnuplot
