@@ -14,7 +14,7 @@ type Server struct {
 	port string
 }
 
-func (sv Server) StartApi() <- chan Request {
+func (sv Server) StartApi() <-chan Request {
 
 	c := make(chan Request)
 	insertService := NewInsertService(c)

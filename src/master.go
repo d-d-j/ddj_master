@@ -2,13 +2,12 @@ package main
 
 import (
 	log "code.google.com/p/log4go"
-	"config"
 	"container/list"
-	"dto"
 	"fmt"
 	"net"
-	"node"
-	"rest"
+	"ddj"
+	"ddj_RestApi"
+	"ddj_TaskManager"
 )
 
 // Main: Starts a TCP server and waits infinitely for connections
@@ -16,39 +15,40 @@ func main() {
 
 	log.Info("Start Master")
 
-	nodeList := list.New()
-
-	in := make(chan dto.Result)
-	go node.IOHandler(rest.Channel.QueryChannel(), in, nodeList)
-
+	// Load master configuration
 	log.Debug("Load configuration")
-	cfg, err := config.Load()
+	cfg, err := ddj.LoadConfig()
 	if err != nil {
 		log.Critical("Problem with configuration: ", err)
 	}
 	log.Info(cfg)
-
 	log.LoadConfiguration("log.cfg")
 
-	portApi := fmt.Sprintf(":%d", cfg.Ports.Api)
-	rest.StartApi(portApi)
-
+	// Start rest api server with tcp services for inserts and selects
+	portNum := fmt.Sprintf(":%d", cfg.Ports.RestApi)
+	var server = ddj_RestApi.Server{portNum}
+	chanReq := server.StartApi()
 	service := fmt.Sprintf("127.0.0.1:%d", cfg.Ports.NodeCommunication)
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
 		log.Critical("Error: Could not resolve address")
 	}
-
 	log.Info("Listening on: ", tcpAddr.String())
 	netListen, error := net.Listen(tcpAddr.Network(), tcpAddr.String())
 	if error != nil {
 		log.Error(error)
 	}
+	defer netListen.Close()	// fire netListen.Close() when program ends
 
-	defer netListen.Close()
+	// Initialize task manager (balancer)
+	bal := ddj_TaskManager.NewBalancer(cfg.Constants.WorkersCount)
+	go bal.balance(chanReq)
 
+	// TODO: Initialize node manager
+	nodeList := list.New()
 	WaitForNodes(netListen, nodeList, in)
 
+	// TODO: Wait for console instructions (q - quit for example)
 }
 
 func WaitForNodes(netListen net.Listener, nodes *list.List, in chan dto.Result) {

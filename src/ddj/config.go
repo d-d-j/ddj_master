@@ -6,18 +6,21 @@ import (
 
 type Config struct {
 	Ports struct {
-		Api               int32
-		NodeCommunication int32
+		RestApi             int32
+		NodeCommunication 	int32
 	}
 	Logging struct {
-		File string
+		File 				string
+	}
+	Constants struct {
+		WorkersCount		int32
 	}
 }
 
 var instantiated *Config = nil
 var path = "master.cfg"
 
-func Load() (*Config, error) {
+func LoadConfig() (*Config, error) {
 
 	if instantiated == nil {
 		instantiated = new(Config)
