@@ -3,8 +3,8 @@ package ddj_RestApi
 import (
 	"code.google.com/p/gorest"
 	log "code.google.com/p/log4go"
-	"constants"
-	"dto"
+	"ddj_Dto"
+	"ddj"
 )
 
 //Service Definition
@@ -22,12 +22,12 @@ func NewInsertService(c <-chan Request) *InsertService {
 	return is
 }
 
-func (serv InsertService) InsertData(posted dto.Element) {
+func (serv InsertService) InsertData(posted ddj_Dto.Element) {
 
 	serv.setHeader()
 	log.Debug("Data to insert: ", posted)
-	responseChan := make(chan []dto.Dto)
-	serv.reqChan <- Request{constants.TASK_INSERT, &posted, responseChan}
+	responseChan := make(chan []ddj_Dto.Dto)
+	serv.reqChan <- Request{ddj.TASK_INSERT, &posted, responseChan}
 	response := <-responseChan
 	serv.set503HeaderWhenArgumentIsNil(response)
 }
@@ -47,7 +47,7 @@ func (serv InsertService) setHeader() {
 	rb.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, x-requested-with")
 }
 
-func (serv InsertService) set503HeaderWhenArgumentIsNil(arg []dto.Dto) {
+func (serv InsertService) set503HeaderWhenArgumentIsNil(arg []ddj_Dto.Dto) {
 
 	if arg == nil {
 		log.Error("Return HTTP 503")
