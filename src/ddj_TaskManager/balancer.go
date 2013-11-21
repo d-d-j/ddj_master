@@ -1,28 +1,32 @@
-package node
+package ddj_TaskManager
 
 import (
 	log "code.google.com/p/log4go"
 	"container/heap"
-	"dto"
+	"ddj_RestApi"
 )
 
-type Request struct {
-	fn func() dto.Result
-	c  chan dto.Result
-}
+/* TODO: 	Implement stop function for balancer
+			it should wait for all workers to finish their jobs
+			but it shouldn't delegate more tasks to workers
+			after that balance function should return
+ */
 
 type Balancer struct {
 	pool Pool
 	done chan *Worker
 }
 
-func NewBalancer(work chan Request, workersCount int) Balancer {
+func NewBalancer(workersCount int) *Balancer {
+	b := new(Balancer)
 	done := make(chan *Worker)
 	p := NewWorkersPool(workersCount, done)
-	return Balancer{p, done}
+	b.pool = p
+	b.done = done
+	return b
 }
 
-func (b *Balancer) balance(work chan Request) {
+func (b *Balancer) balance(work <-chan ddj_RestApi.Request) {
 	log.Info("Balancer started")
 	for {
 		select {
@@ -34,7 +38,7 @@ func (b *Balancer) balance(work chan Request) {
 	}
 }
 
-func (b *Balancer) dispach(req Request) {
+func (b *Balancer) dispach(req ddj_RestApi.Request) {
 	w := heap.Pop(&b.pool).(*Worker)
 	log.Fine("Dispach request to ", w)
 	w.requests <- req
