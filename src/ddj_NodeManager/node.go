@@ -1,4 +1,4 @@
-package node
+package ddj_NodeManager
 
 // Imports required packages
 import (

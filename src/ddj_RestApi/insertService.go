@@ -1,4 +1,4 @@
-package ddjRestApi
+package ddj_RestApi
 
 import (
 	"code.google.com/p/gorest"

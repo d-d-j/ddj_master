@@ -1,4 +1,4 @@
-package dto
+package ddj_Dto
 
 type Dto interface {
 	String() string

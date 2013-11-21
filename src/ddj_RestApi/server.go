@@ -1,4 +1,4 @@
-package ddjRestApi
+package ddj_RestApi
 
 import (
 	log "code.google.com/p/log4go"

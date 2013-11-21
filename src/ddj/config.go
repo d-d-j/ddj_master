@@ -1,4 +1,4 @@
-package config
+package ddj
 
 import (
 	"code.google.com/p/gcfg"
