@@ -31,14 +31,14 @@ func (b *Balancer) balance(work <-chan ddj_RestApi.Request) {
 	for {
 		select {
 		case req := <-work:
-			b.dispach(req)
+			b.dispatch(req)
 		case w := <-b.done:
 			b.completed(w)
 		}
 	}
 }
 
-func (b *Balancer) dispach(req ddj_RestApi.Request) {
+func (b *Balancer) dispatch(req ddj_RestApi.Request) {
 	w := heap.Pop(&b.pool).(*Worker)
 	log.Fine("Dispach request to ", w)
 	w.requests <- req
