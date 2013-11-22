@@ -8,7 +8,7 @@ import (
 
 type Result struct {
 	Header
-	Data []Dto
+	Data []byte
 }
 
 func (r *Result) String() string {
