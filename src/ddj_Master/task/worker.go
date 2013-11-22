@@ -1,4 +1,4 @@
-package taskManager
+package task
 
 import "ddj_Master/restApi"
 

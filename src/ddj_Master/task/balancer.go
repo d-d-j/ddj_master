@@ -1,4 +1,4 @@
-package taskManager
+package task
 
 import (
 	log "code.google.com/p/log4go"
@@ -13,16 +13,18 @@ import (
  */
 
 type Balancer struct {
-	pool Pool
-	done chan *Worker
+	pool 		Pool
+	done 		chan *Worker
 }
 
 func NewBalancer(workersCount int) *Balancer {
 	b := new(Balancer)
 	done := make(chan *Worker)
+	tasks := make(map[int64]Task)
 	p := NewWorkersPool(workersCount, done)
 	b.pool = p
 	b.done = done
+	b.tasks = tasks
 	return b
 }
 

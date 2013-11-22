@@ -10,14 +10,12 @@ import (
 
 // Defines a Node with a Id and connection object, and
 // some channels for sending and receiving text.
-// Also holds a pointer to the "global" list of all connected Nodes
 type Node struct {
 	Id       int32
 	Incoming chan []byte
 	Outgoing chan dto.Result
 	Conn     net.Conn
 	Quit     chan bool
-	NodeList *list.List
 }
 
 // Defines a read function for a Node, reading from the connection into

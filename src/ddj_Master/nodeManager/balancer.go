@@ -24,11 +24,14 @@ func (lb *LoadBalancer) update(newInfo Info) {
 
 }
 
-// Creates a new Node object for each new connection using the Id sent by the Node,
-// then starts the NodeSender and NodeReader goroutines to handle the IO
 func (lb *LoadBalancer) AddNode(node *Node) {
 
 	lb.Nodes.PushBack(node)
+}
+
+func (lb *LoadBalancer) RemoveNode(node *Node) {
+
+	lb.Nodes.Remove(node)
 }
 
 
