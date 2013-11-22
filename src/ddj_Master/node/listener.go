@@ -5,14 +5,15 @@ import (
 	"ddj_Master/dto"
 	"ddj_Master/node"
 	log "code.google.com/p/log4go"
+	"ddj_Master/common"
 )
 
 type Listener struct {
-	NetListen	net.Listener
+	netListen	net.Listener
+	idGenerator common.Int32Generator
 }
 
 func NewListener(service string) *Listener {
-
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
 		log.Critical("Error: Could not resolve address")
@@ -25,7 +26,8 @@ func NewListener(service string) *Listener {
 	}
 
 	list := new(Listener)
-	list.NetListen = netListen
+	list.netListen = netListen
+	list.idGenerator = common.NodeIdGenerator{}
 	return list
 }
 
@@ -33,13 +35,13 @@ func NewListener(service string) *Listener {
 func (list *Listener) WaitForNodes(in chan dto.Result) {
 	for {
 		log.Info("Waiting for nodes")
-		connection, error := list.NetListen.Accept()
+		connection, error := list.netListen.Accept()
 		if error != nil {
 			log.Error("node error: ", error)
 		} else {
 			log.Info("Accept node: ", connection.RemoteAddr())
-			// TODO: Implement add new node
-			go node.NodeHandler(connection, in, nodes)
+			// TODO: Instead of 0 there should be slice of GPUIds of new Node
+			NodeManager.AddChan <- node.NewNode(list.idGenerator.getId(), 0, connection)
 		}
 	}
 }

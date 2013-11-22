@@ -12,6 +12,22 @@ type Communication struct {
 	connection  net.Conn
 }
 
+func NewCommunication(conn net.Conn) *Communication {
+	in := make(chan []byte)
+	out := make(chan dto.Result)
+	com := new(Communication)
+	com.Incoming = in
+	com.Outgoing = out
+	com.connection = conn
+	return com
+}
+
+func makeCommunication(conn net.Conn) Communication {
+	in := make(chan []byte)
+	out := make(chan dto.Result)
+	return Communication{in, out, conn}
+}
+
 // Defines a read function for a Node, reading from the connection into
 // a buffer passed in. Returns true if read was successful, false otherwise
 func (c *Communication) read(buffer []byte) bool {

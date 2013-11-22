@@ -28,13 +28,11 @@ func (h *Header) Encode() ([]byte, error) {
 }
 
 func (h *Header) Decode(buf []byte) error {
-
 	buffer := bytes.NewBuffer(buf)
 	return binary.Read(buffer, binary.LittleEndian, h)
 
 }
 
 func (h *Header) Size() int {
-
 	return binary.Size(h)
 }
