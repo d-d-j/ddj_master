@@ -1,6 +1,9 @@
 package task
 
-import "ddj_Master/dto"
+import (
+	"ddj_Master/dto"
+	"ddj_Master/restApi"
+)
 
 type Task struct {
 	Id				int64
@@ -10,7 +13,16 @@ type Task struct {
 	ResponseChan	chan<- dto.Dto
 }
 
-func NewTask() *Task {
+func NewTask(id int64, request restApi.Request) *Task {
 	t := new(Task)
+	t.Id = id
+	t.Type = request.Type
+	t.Data = request.Data
+	t.DataSize = request.Data.Size()
+	t.ResponseChan = request.Response
 	return t
+}
+
+func (t *Task) MakeRequest() *dto.Request {
+	return dto.NewRequest(t.Id, t.DataSize, t.DataSize, t.Data)
 }
