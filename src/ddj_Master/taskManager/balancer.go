@@ -27,7 +27,7 @@ func NewBalancer(workersCount int) *Balancer {
 }
 
 func (b *Balancer) balance(work <-chan restApi.Request) {
-	log.Info("Balancer started")
+	log.Info("Task manager balancer started")
 	for {
 		select {
 		case req := <-work:
