@@ -1,21 +1,19 @@
-package nodeManager
+package node
 
 // Imports required packages
 import (
 	log "code.google.com/p/log4go"
-	"container/list"
 	"net"
 	"ddj_Master/dto"
 )
 
-// Defines a Node with a Id and connection object, and
-// some channels for sending and receiving text.
+// Defines a Node with Id, many GpuIds, a connection object, and
+// some channels for sending and receiving data.
 type Node struct {
-	Id       int32
-	Incoming chan []byte
-	Outgoing chan dto.Result
-	Conn     net.Conn
-	Quit     chan bool
+	Id       	int32
+	GpuIds		[]int32
+	Stats		Info
+	Communication
 }
 
 // Defines a read function for a Node, reading from the connection into

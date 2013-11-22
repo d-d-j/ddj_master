@@ -1,12 +1,10 @@
-package nodeManager
+package node
 
 import (
-	"container/list"
 	log "code.google.com/p/log4go"
 )
 
 type LoadBalancer struct {
-	Nodes 				list.List
 	CurrentInsertNode	*Node
 }
 
