@@ -23,7 +23,7 @@ func NewTaskIdGenerator() *TaskIdGenerator {
 }
 
 func (gen TaskIdGenerator) getId() int64 {
-	return atomic.AddInt64(gen.nextId, 1)
+	return atomic.AddInt64(&gen.nextId, 1)
 }
 
 /* * * NODE ID GENERATOR * * */
@@ -39,5 +39,5 @@ func NewNodeIdGenerator() *NodeIdGenerator {
 }
 
 func (gen NodeIdGenerator) getId() int32 {
-	return atomic.AddInt32(gen.nextId, 1)
+	return atomic.AddInt32(&gen.nextId, 1)
 }

@@ -13,7 +13,7 @@ type Header struct {
 }
 
 func (h *Header) String() string {
-	return fmt.Sprintf("#%d Code: %d [%X]", h.Id, h.Code, h.LoadSize)
+	return fmt.Sprintf("#%d Code: %d [%X]", h.TaskId, h.Type, h.DataSize)
 }
 
 func (h *Header) Encode() ([]byte, error) {

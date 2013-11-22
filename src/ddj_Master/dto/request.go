@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"bytes"
 	"encoding/binary"
-	"ddj_Master/dto"
 	log "code.google.com/p/log4go"
 )
 
@@ -13,7 +12,7 @@ type Request struct {
 	Data []byte
 }
 
-func NewRequest(id int64, ttype int32, size int32, data dto.Dto) *Request {
+func NewRequest(id int64, ttype int32, size int32, data Dto) *Request {
 	r := new(Request)
 	r.Header = Header{id, ttype, size}
 	var err error
@@ -25,7 +24,7 @@ func NewRequest(id int64, ttype int32, size int32, data dto.Dto) *Request {
 }
 
 func (r *Request) String() string {
-	return fmt.Sprintf("#%d Code: %d", r.Id, r.Code)
+	return fmt.Sprintf("Request with type %d and task id %d", r.Header.Type, r.Header.TaskId)
 }
 
 func (r *Request) EncodeHeader() ([]byte, error) {
@@ -48,30 +47,22 @@ func (r *Request) DecodeHeader(buf []byte) error {
 func (r *Request) Encode() ([]byte, error) {
 
 	var (
-		buf       []byte
 		headerBuf []byte
 		err       error
 	)
 
-	// Encode header nad data
-	if r.Data != nil {
-		buf, err = r.Data.Encode()
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-	}
+	// Encode header
 	headerBuf, err = r.Header.Encode()
 	if err != nil {
 		log.Error(err)
-		continue
+		return nil, err
 	}
 
 	// Merge header and data to one []byte buffer
 	// TODO: CHANGE 100 to real data size
 	complete := make([]byte, 100)
 	copy(complete, headerBuf)
-	copy(complete[len(headerBuf):], buf)
+	copy(complete[len(headerBuf):], r.Data)
 
 	return complete, err
 }

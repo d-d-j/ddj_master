@@ -3,7 +3,6 @@ package main
 import (
 	log "code.google.com/p/log4go"
 	"fmt"
-	"net"
 	"ddj_Master/restApi"
 	"ddj_Master/common"
 	"ddj_Master/task"

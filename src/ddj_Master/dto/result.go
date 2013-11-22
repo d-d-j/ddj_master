@@ -20,7 +20,7 @@ func NewResult(id int64, ttype int32, size int32, data []byte) *Result {
 }
 
 func (r *Result) String() string {
-	return fmt.Sprintf("#%d Code: %d", r.Id, r.Code)
+	return fmt.Sprintf("Result with type %d and task id %d", r.Header.Type, r.Header.TaskId)
 }
 
 func (r *Result) EncodeHeader() ([]byte, error) {
@@ -43,30 +43,22 @@ func (r *Result) DecodeHeader(buf []byte) error {
 func (r *Result) Encode() ([]byte, error) {
 
 	var (
-		buf       []byte
 		headerBuf []byte
 		err       error
 	)
 
-	// Encode header nad data
-	if r.Data != nil {
-		buf, err = r.Data.Encode()
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-	}
+	// Encode header
 	headerBuf, err = r.Header.Encode()
 	if err != nil {
 		log.Error(err)
-		continue
+		return nil, err
 	}
 
 	// Merge header and data to one []byte buffer
 	// TODO: CHANGE 100 to real data size
 	complete := make([]byte, 100)
 	copy(complete, headerBuf)
-	copy(complete[len(headerBuf):], buf)
+	copy(complete[len(headerBuf):], r.Data)
 
 	return complete, err
 }

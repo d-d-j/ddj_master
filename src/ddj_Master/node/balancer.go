@@ -24,20 +24,20 @@ func (lb *LoadBalancer) balance(info <-chan Info) {
 	for {
 		select {
 		case nodeInfo := <-info:
-			lb.update(nodeInfo)
+			lb.update(&nodeInfo)
 		}
 	}
 }
 
-func (lb *LoadBalancer) update(newInfo Info) {
+func (lb *LoadBalancer) update(newInfo *Info) {
 	if(newInfo == nil) {
 		/* Choose random node for a start */
-		len := len(NodeManager.nodes)
+		len := int32(len(NodeManager.nodes))
 		if len > 0 {
-			number := rand.Intn(len)
+			number := rand.Int31n(len)
 			for k, n := range NodeManager.nodes {
-				if n == number {
-					lb.CurrentInsertNodeId = k.Id
+				if k == number {
+					lb.CurrentInsertNodeId = n.Id
 					// TODO: Choose also GpuId
 				}
 			}

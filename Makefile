@@ -4,8 +4,8 @@ get:
 	go get code.google.com/p/gcfg
 	go get code.google.com/p/log4go
 all:
-	go build DDJ_Master
+	go build ddj_Master
 run: all
-	./DDJ_Master
+	./ddj_Master
 clean:
-	rm DDJ_Master
+	rm ddj_Master

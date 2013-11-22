@@ -2,8 +2,6 @@ package node
 
 import (
 	"net"
-	"ddj_Master/dto"
-	"ddj_Master/node"
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
 )
@@ -32,7 +30,7 @@ func NewListener(service string) *Listener {
 }
 
 
-func (list *Listener) WaitForNodes(in chan dto.Result) {
+func (list *Listener) WaitForNodes() {
 	for {
 		log.Info("Waiting for nodes")
 		connection, error := list.netListen.Accept()
@@ -41,7 +39,7 @@ func (list *Listener) WaitForNodes(in chan dto.Result) {
 		} else {
 			log.Info("Accept node: ", connection.RemoteAddr())
 			// TODO: Instead of 0 there should be slice of GPUIds of new Node
-			NodeManager.AddChan <- node.NewNode(list.idGenerator.getId(), 0, connection)
+			NodeManager.AddChan <- NewNode(list.idGenerator.getId(), 0, connection)
 		}
 	}
 }
