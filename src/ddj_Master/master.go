@@ -7,8 +7,9 @@ import (
 	"net"
 	"ddj_Master/dto"
 	"ddj_Master/restApi"
-	"ddj_Master/taskManager"
 	"ddj_Master/common"
+	"ddj_Master/task"
+	"ddj_Master/node"
 )
 
 // Main: Starts a TCP server and waits infinitely for connections
@@ -42,11 +43,12 @@ func main() {
 	defer netListen.Close()	// fire netListen.Close() when program ends
 
 	// Initialize task manager (balancer)
-	bal := taskManager.NewBalancer(cfg.Constants.WorkersCount)
+	bal := task.NewBalancer(cfg.Constants.WorkersCount)
 	go bal.balance(chanReq)
+	go task.TaskManager.Manage()
 
 	// TODO: Initialize node manager
-	nodeList := list.New()
+	go node.NodeManager.Manage()
 	WaitForNodes(netListen, nodeList, in)
 
 	// TODO: Wait for console instructions (q - quit for example)
