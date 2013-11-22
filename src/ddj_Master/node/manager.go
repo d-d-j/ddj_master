@@ -33,7 +33,11 @@ func (m *Manager) Manage() {
 	for {
 		select {
 		case get := <-m.GetChan:
-			get.BackChan <- m.nodes[get.NodeId]
+			if val, ok := m.nodes["route"]; ok {
+				get.BackChan <- m.nodes[get.NodeId]
+			} else {
+				get.BackChan <- nil
+			}
 		case add := <-m.AddChan:
 			m.nodes[add.Id] = add
 		case del := <-m.DelChan:
