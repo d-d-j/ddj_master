@@ -7,8 +7,8 @@ import (
 )
 
 type Result struct {
-	TaskRequestHeader
-	Load []Dto
+	Header
+	Data []Dto
 }
 
 func (r *Result) String() string {
@@ -18,7 +18,7 @@ func (r *Result) String() string {
 func (r *Result) EncodeHeader() ([]byte, error) {
 	buf := new(bytes.Buffer)
 
-	err := binary.Write(buf, binary.LittleEndian, r.TaskRequestHeader)
+	err := binary.Write(buf, binary.LittleEndian, r.Header)
 	if err != nil {
 		return nil, err
 	}
@@ -28,6 +28,6 @@ func (r *Result) EncodeHeader() ([]byte, error) {
 
 func (r *Result) DecodeHeader(buf []byte) error {
 
-	return r.TaskRequestHeader.Decode(buf)
+	return r.Header.Decode(buf)
 
 }
