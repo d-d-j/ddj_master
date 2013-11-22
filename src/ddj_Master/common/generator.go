@@ -1,4 +1,4 @@
-package ddjId
+package common
 
 import "sync/atomic"
 

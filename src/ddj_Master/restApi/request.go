@@ -1,15 +1,14 @@
-package ddj_RestApi
+package restApi
 
 import (
-	"ddj_Dto"
 	"fmt"
-	"dto"
+	"ddj_Master/dto"
 )
 
 type Request struct {
 	Type     int32
-	Data	 ddj_Dto.Dto
-	Response <-chan ddj_Dto.Dto
+	Data	 dto.Dto
+	Response <-chan dto.Dto
 }
 
 func (r *Request) String() string {

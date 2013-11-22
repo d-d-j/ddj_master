@@ -1,4 +1,4 @@
-package ddj_Dto
+package dto
 
 import (
 	"bytes"

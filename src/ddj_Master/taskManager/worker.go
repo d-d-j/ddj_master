@@ -1,9 +1,9 @@
-package ddj_TaskManager
+package taskManager
 
-import "ddj_RestApi"
+import "ddj_Master/restApi"
 
 type Worker struct {
-	reqChan  <-chan ddj_RestApi.Request
+	reqChan  <-chan restApi.Request
 	pending  int
 	index    int
 }

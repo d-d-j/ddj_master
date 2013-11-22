@@ -1,6 +1,6 @@
-package ddj_TaskManager
+package taskManager
 
-import "ddj_RestApi"
+import "ddj_Master/restApi"
 
 type Pool []*Worker
 
@@ -8,7 +8,7 @@ func NewWorkersPool(size int, done chan *Worker) Pool {
 	pool := make(Pool, size)
 	for index, worker := range pool {
 		worker.index = index
-		worker.reqChan = make(chan ddj_RestApi.Request)
+		worker.reqChan = make(chan restApi.Request)
 		go worker.work(done)
 	}
 	return pool

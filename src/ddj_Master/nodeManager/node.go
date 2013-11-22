@@ -1,11 +1,9 @@
-package ddj_NodeManager
+package nodeManager
 
 // Imports required packages
 import (
 	log "code.google.com/p/log4go"
-	"constants"
 	"container/list"
-	"dto"
 	"net"
 	"sync/atomic"
 )

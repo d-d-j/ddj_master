@@ -1,13 +1,13 @@
-package ddj_TaskManager
+package taskManager
 
-import "ddj_Dto"
+import "ddj_Master/dto"
 
 type Task struct {
 	Id				int64
 	Type			int32
-	Data			ddj_Dto.Dto
+	Data			dto.Dto
 	DataSize		int32
-	ResponseChan	chan<- ddj_Dto.Dto
+	ResponseChan	chan<- dto.Dto
 }
 
 func NewTask() *Task {

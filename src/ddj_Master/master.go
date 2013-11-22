@@ -5,9 +5,10 @@ import (
 	"container/list"
 	"fmt"
 	"net"
-	"ddj"
-	"ddj_RestApi"
-	"ddj_TaskManager"
+	"ddj_Master/dto"
+	"ddj_Master/restApi"
+	"ddj_Master/taskManager"
+	"ddj_Master/common"
 )
 
 // Main: Starts a TCP server and waits infinitely for connections
@@ -17,7 +18,7 @@ func main() {
 
 	// Load master configuration
 	log.Debug("Load configuration")
-	cfg, err := ddj.LoadConfig()
+	cfg, err := common.LoadConfig()
 	if err != nil {
 		log.Critical("Problem with configuration: ", err)
 	}
@@ -26,7 +27,7 @@ func main() {
 
 	// Start rest api server with tcp services for inserts and selects
 	portNum := fmt.Sprintf(":%d", cfg.Ports.RestApi)
-	var server = ddj_RestApi.Server{portNum}
+	var server = restApi.Server{portNum}
 	chanReq := server.StartApi()
 	service := fmt.Sprintf("127.0.0.1:%d", cfg.Ports.NodeCommunication)
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
@@ -41,7 +42,7 @@ func main() {
 	defer netListen.Close()	// fire netListen.Close() when program ends
 
 	// Initialize task manager (balancer)
-	bal := ddj_TaskManager.NewBalancer(cfg.Constants.WorkersCount)
+	bal := taskManager.NewBalancer(cfg.Constants.WorkersCount)
 	go bal.balance(chanReq)
 
 	// TODO: Initialize node manager

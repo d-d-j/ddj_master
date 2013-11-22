@@ -1,10 +1,10 @@
-package ddj_RestApi
+package restApi
 
 import (
-	"ddj"
-	"ddj_Dto"
 	log "code.google.com/p/log4go"
 	"code.google.com/p/gorest"
+	"ddj_Master/common"
+	"ddj_Master/dto"
 )
 
 
@@ -22,12 +22,12 @@ func NewSelectService(c chan<- Request) *SelectService {
 	return ss
 }
 
-func (serv SelectService) SelectAll() []ddj_Dto.Dto {
+func (serv SelectService) SelectAll() []dto.Dto {
 	serv.setHeader()
 	log.Debug("Selecting all data")
 
-	responseChan := make(chan []ddj_Dto.Dto)
-	serv.reqChan <- Request{ddj.TASK_SELECT_ALL, 0, responseChan}
+	responseChan := make(chan []dto.Dto)
+	serv.reqChan <- Request{common.TASK_SELECT_ALL, 0, responseChan}
 	response := <-responseChan
 	serv.set503HeaderWhenArgumentIsNil(response)
 	return response
@@ -41,7 +41,7 @@ func (serv SelectService) setHeader() {
 	rb.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, x-requested-with")
 }
 
-func (serv SelectService) set503HeaderWhenArgumentIsNil(arg []ddj_Dto.Dto) {
+func (serv SelectService) set503HeaderWhenArgumentIsNil(arg []dto.Dto) {
 	if arg == nil {
 		log.Error("Return HTTP 503")
 		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(

@@ -1,9 +1,9 @@
-package ddj_TaskManager
+package taskManager
 
 import (
 	log "code.google.com/p/log4go"
 	"container/heap"
-	"ddj_RestApi"
+	"ddj_Master/restApi"
 )
 
 /* TODO: 	Implement stop function for balancer
@@ -26,7 +26,7 @@ func NewBalancer(workersCount int) *Balancer {
 	return b
 }
 
-func (b *Balancer) balance(work <-chan ddj_RestApi.Request) {
+func (b *Balancer) balance(work <-chan restApi.Request) {
 	log.Info("Balancer started")
 	for {
 		select {
@@ -38,7 +38,7 @@ func (b *Balancer) balance(work <-chan ddj_RestApi.Request) {
 	}
 }
 
-func (b *Balancer) dispatch(req ddj_RestApi.Request) {
+func (b *Balancer) dispatch(req restApi.Request) {
 	w := heap.Pop(&b.pool).(*Worker)
 	log.Fine("Dispach request to ", w)
 	w.requests <- req

@@ -1,4 +1,4 @@
-package ddj
+package common
 
 //Result
 const (

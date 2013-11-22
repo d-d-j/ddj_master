@@ -1,4 +1,4 @@
-package ddj_NodeManager
+package nodeManager
 
 type LoadBalancer struct {
 
