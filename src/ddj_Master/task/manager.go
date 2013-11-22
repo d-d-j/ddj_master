@@ -6,25 +6,25 @@ import log "code.google.com/p/log4go"
 var TaskManager = NewManager()
 
 type GetTaskRequest struct {
-	taskId		int64
-	backChan	chan<- *Task
+	TaskId		int64
+	BackChan	chan<- *Task
 }
 
 type Manager struct {
 	tasks		map[int64]*Task
-	addChan		<-chan *Task
-	getChan		<-chan GetTaskRequest
-	delChan		<-chan int64
-	quitChan	<-chan bool
+	AddChan		<-chan *Task
+	GetChan		<-chan GetTaskRequest
+	DelChan		<-chan int64
+	QuitChan	<-chan bool
 }
 
 func NewManager() *Manager {
 	m := new(Manager)
 	m.tasks = make(map[int64]*Task)
-	m.addChan = make(<-chan *Task)
-	m.getChan = make(<-chan GetTaskRequest)
-	m.delChan = make(<-chan int64)
-	m.quitChan = make(<-chan bool)
+	m.AddChan = make(<-chan *Task)
+	m.GetChan = make(<-chan GetTaskRequest)
+	m.DelChan = make(<-chan int64)
+	m.QuitChan = make(<-chan bool)
 	return m
 }
 
@@ -32,13 +32,13 @@ func (m *Manager) Manage() {
 	log.Info("Task manager started managing")
 	for {
 		select {
-			case get := <-m.getChan:
-				get.backChan <- m.tasks[get.taskId]
-			case add := <-m.addChan:
+			case get := <-m.GetChan:
+				get.BackChan <- m.tasks[get.TaskId]
+			case add := <-m.AddChan:
 				m.tasks[add.Id] = add
-			case del := <-m.delChan:
+			case del := <-m.DelChan:
 				delete(m.tasks, del)
-			case q := <-m.quitChan:
+			case q := <-m.QuitChan:
 				log.Info("Task manager stopped managing")
 				return
 		}

@@ -5,10 +5,18 @@ import (
 )
 
 type LoadBalancer struct {
-	CurrentInsertNode	*Node
+	CurrentInsertNodeId	int32
+	CurrentInsertGpuId	int32
+}
+
+func NewLoadBalancer() *LoadBalancer {
+	lb := new(LoadBalancer)
+	lb.update(nil)
+	return lb
 }
 
 func (lb *LoadBalancer) balance(info <-chan Info) {
+
 	log.Info("Node manager balancer started")
 	for {
 		select {
@@ -19,17 +27,10 @@ func (lb *LoadBalancer) balance(info <-chan Info) {
 }
 
 func (lb *LoadBalancer) update(newInfo Info) {
-
-}
-
-func (lb *LoadBalancer) AddNode(node *Node) {
-
-	lb.Nodes.PushBack(node)
-}
-
-func (lb *LoadBalancer) RemoveNode(node *Node) {
-
-	lb.Nodes.Remove(node)
+	if(newInfo == nil) {
+		// TODO: Reset balance (choose random node ang his GPU if any)
+	}
+	// TODO: Write balance function for nodes
 }
 
 

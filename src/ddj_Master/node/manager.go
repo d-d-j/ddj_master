@@ -6,25 +6,25 @@ import log "code.google.com/p/log4go"
 var NodeManager = NewManager()
 
 type GetNodeRequest struct {
-	nodeId		int32
-	backChan	chan<- *Node
+	NodeId		int32
+	BackChan	chan<- *Node
 }
 
 type Manager struct {
 	nodes		map[int32]Node
-	addChan		<-chan *Node
-	getChan		<-chan GetNodeRequest
-	delChan		<-chan int64
-	quitChan	<-chan bool
+	AddChan		<-chan *Node
+	GetChan		<-chan GetNodeRequest
+	DelChan		<-chan int64
+	QuitChan	<-chan bool
 }
 
 func NewManager() *Manager {
 	m := new(Manager)
 	m.tasks = make(map[int64]*Node)
-	m.addChan = make(<-chan *Node)
-	m.getChan = make(<-chan GetNodeRequest)
-	m.delChan = make(<-chan int64)
-	m.quitChan = make(<-chan bool)
+	m.AddChan = make(<-chan *Node)
+	m.GetChan = make(<-chan GetNodeRequest)
+	m.DelChan = make(<-chan int64)
+	m.QuitChan = make(<-chan bool)
 	return m
 }
 
@@ -32,13 +32,13 @@ func (m *Manager) Manage() {
 	log.Info("Node manager started managing")
 	for {
 		select {
-		case get := <-m.getChan:
-			get.backChan <- m.nodes[get.nodeId]
-		case add := <-m.addChan:
+		case get := <-m.GetChan:
+			get.BackChan <- m.nodes[get.NodeId]
+		case add := <-m.AddChan:
 			m.nodes[add.Id] = add
-		case del := <-m.delChan:
+		case del := <-m.DelChan:
 			delete(m.nodes, del)
-		case q := <-m.quitChan:
+		case q := <-m.QuitChan:
 			log.Info("Node manager stopped managing")
 			return
 		}

@@ -3,12 +3,12 @@ package task
 import "ddj_Master/restApi"
 
 type Worker struct {
-	reqChan  <-chan restApi.Request
-	pending  int
-	index    int
+	ReqChan  <-chan restApi.Request
+	Pending  int
+	Index    int
 }
 
-func (w *Worker) work(done chan *Worker) {
+func (w *Worker) Work(done chan *Worker) {
 	for {
 		req := <-w.requests
 		req.c <- req.fn()

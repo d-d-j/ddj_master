@@ -43,13 +43,13 @@ func (b *Balancer) balance(work <-chan restApi.Request) {
 func (b *Balancer) dispatch(req restApi.Request) {
 	w := heap.Pop(&b.pool).(*Worker)
 	log.Fine("Dispach request to ", w)
-	w.requests <- req
-	w.pending++
+	w.ReqChan <- req
+	w.Pending++
 	heap.Push(&b.pool, w)
 }
 
 func (b *Balancer) completed(w *Worker) {
-	w.pending--
-	heap.Remove(&b.pool, w.index)
+	w.Pending--
+	heap.Remove(&b.pool, w.Index)
 	heap.Push(&b.pool, w)
 }
