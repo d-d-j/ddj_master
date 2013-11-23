@@ -3,11 +3,11 @@ package common
 import "sync/atomic"
 
 type Int64Generator interface {
-	getId() int64
+	GetId() int64
 }
 
 type Int32Generator interface {
-	getId() int32
+	GetId() int32
 }
 
 /* * * TASK ID GENERATOR * * */
@@ -22,7 +22,7 @@ func NewTaskIdGenerator() *TaskIdGenerator {
 	return tig
 }
 
-func (gen TaskIdGenerator) getId() int64 {
+func (gen *TaskIdGenerator) GetId() int64 {
 	return atomic.AddInt64(&gen.nextId, 1)
 }
 
@@ -38,6 +38,6 @@ func NewNodeIdGenerator() *NodeIdGenerator {
 	return nig
 }
 
-func (gen NodeIdGenerator) getId() int32 {
+func (gen *NodeIdGenerator) GetId() int32 {
 	return atomic.AddInt32(&gen.nextId, 1)
 }

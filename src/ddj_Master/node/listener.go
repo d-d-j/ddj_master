@@ -25,7 +25,7 @@ func NewListener(service string) *Listener {
 
 	list := new(Listener)
 	list.netListen = netListen
-	list.idGenerator = common.NodeIdGenerator{}
+	list.idGenerator = common.NewNodeIdGenerator()
 	return list
 }
 
@@ -39,7 +39,11 @@ func (list *Listener) WaitForNodes() {
 		} else {
 			log.Info("Accept node: ", connection.RemoteAddr())
 			// TODO: Instead of 0 there should be slice of GPUIds of new Node
-			NodeManager.AddChan <- NewNode(list.idGenerator.getId(), 0, connection)
+			NodeManager.AddChan <- NewNode(list.idGenerator.GetId(), nil, connection)
 		}
 	}
+}
+
+func (list *Listener) Close() {
+	list.netListen.Close()
 }

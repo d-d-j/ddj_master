@@ -12,19 +12,19 @@ type GetTaskRequest struct {
 
 type Manager struct {
 	tasks		map[int64]*Task
-	AddChan		<-chan *Task
-	GetChan		<-chan GetTaskRequest
-	DelChan		<-chan int64
-	QuitChan	<-chan bool
+	AddChan		chan *Task
+	GetChan		chan GetTaskRequest
+	DelChan		chan int64
+	QuitChan	chan bool
 }
 
 func NewManager() *Manager {
 	m := new(Manager)
 	m.tasks = make(map[int64]*Task)
-	m.AddChan = make(<-chan *Task)
-	m.GetChan = make(<-chan GetTaskRequest)
-	m.DelChan = make(<-chan int64)
-	m.QuitChan = make(<-chan bool)
+	m.AddChan = make(chan *Task)
+	m.GetChan = make(chan GetTaskRequest)
+	m.DelChan = make(chan int64)
+	m.QuitChan = make(chan bool)
 	return m
 }
 
@@ -38,7 +38,7 @@ func (m *Manager) Manage() {
 				m.tasks[add.Id] = add
 			case del := <-m.DelChan:
 				delete(m.tasks, del)
-			case q := <-m.QuitChan:
+			case <-m.QuitChan:
 				log.Info("Task manager stopped managing")
 				return
 		}

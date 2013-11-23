@@ -8,12 +8,12 @@ import (
 )
 
 type Worker struct {
-	reqChan  <-chan restApi.Request
+	reqChan  chan restApi.RestRequest
 	pending  int
 	index    int
 }
 
-func (w *Worker) Work(done chan *Worker, idGen *Int64Generator, balancer *node.LoadBalancer) {
+func (w *Worker) Work(done chan *Worker, idGen common.Int64Generator, balancer *node.LoadBalancer) {
 	for {
 		req := <-w.reqChan
 		switch req.Type {
@@ -27,14 +27,14 @@ func (w *Worker) Work(done chan *Worker, idGen *Int64Generator, balancer *node.L
 				req.Response <- nil
 			}
 															// get node
-			var insertNode *Node
-			nodeChan := make(chan<- *Node)
+			var insertNode *node.Node
+			nodeChan := make(chan *node.Node)
 			nodeReq := node.GetNodeRequest{nodeId, nodeChan}
 			node.NodeManager.GetChan <- nodeReq
 			insertNode = <- nodeChan
 
 															// Process insert task:
-			id := idGen.getId()								// generate id
+			id := idGen.GetId()								// generate id
 			t := NewTask(id, req)							// create new task for the request
 			TaskManager.AddChan <- t    					// add task to dictionary
 			var (
@@ -42,6 +42,9 @@ func (w *Worker) Work(done chan *Worker, idGen *Int64Generator, balancer *node.L
 				err		error
 			)
 			message, err = t.MakeRequest().Encode()			// create a message to send
+			if err != nil {
+				log.Error("Error while encoding request - ", err)
+			}
 			insertNode.Incoming <- message					// send a message
 
 			req.Response <- nil

@@ -13,10 +13,10 @@ type SelectService struct {
 	gorest.RestService `root:"/"`
 	selectAll       gorest.EndPoint `method:"GET" path:"/data/" output:"[]dto.Dto"`
 	getOptions      gorest.EndPoint `method:"OPTIONS" path:"/data/selectOptions"`
-	reqChan			chan<- Request
+	reqChan			chan<- RestRequest
 }
 
-func NewSelectService(c chan<- Request) *SelectService {
+func NewSelectService(c chan<- RestRequest) *SelectService {
 	ss := new(SelectService)
 	ss.reqChan = c
 	return ss
@@ -27,7 +27,7 @@ func (serv SelectService) SelectAll() []dto.Dto {
 	log.Debug("Selecting all data")
 
 	responseChan := make(chan []dto.Dto)
-	serv.reqChan <- Request{common.TASK_SELECT_ALL, 0, responseChan}
+	serv.reqChan <- RestRequest{common.TASK_SELECT_ALL, nil, responseChan}
 	response := <-responseChan
 	serv.set503HeaderWhenArgumentIsNil(response)
 	return response

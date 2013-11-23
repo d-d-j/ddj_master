@@ -24,7 +24,7 @@ func main() {
 	log.LoadConfiguration("log.cfg")
 
 	// Start rest api server with tcp services for inserts and selects
-	portNum := fmt.Sprintf(":%d", cfg.Ports.RestApi)
+	portNum := fmt.Sprintf("%d", cfg.Ports.RestApi)
 	var server = restApi.Server{portNum}
 	chanReq := server.StartApi()
 
@@ -33,17 +33,17 @@ func main() {
 	// Initialize task manager (balancer)
 	go task.TaskManager.Manage()
 	taskBal := task.NewBalancer(cfg.Constants.WorkersCount)
-	go taskBal.balance(chanReq)
+	go taskBal.Balance(chanReq)
 
 	// Initialize node manager
 	go node.NodeManager.Manage()
-	infoChan := make(chan Info)
+	infoChan := make(chan node.Info)
 	nodeBal := node.NewLoadBalancer()
-	go nodeBal.balance(infoChan)
+	go nodeBal.Balance(infoChan)
 
 	// Initialize node listener
 	list := node.NewListener(service)
-	defer list.NetListen.Close()	// fire netListen.Close() when program ends
+	defer list.Close()	// fire netListen.Close() when program ends
 
 	// TODO: Wait for console instructions (q - quit for example)
 }

@@ -14,14 +14,14 @@ type Node struct {
 	Id       	int32
 	GpuIds		[]int32
 	Stats		Info
-	stop		<-chan bool
+	stop		chan bool
 }
 
 func NewNode(id int32, gpuIds []int32, connection net.Conn) *Node {
 	n := new(Node)
 	n.Id = id
-	n.GPuIds = gpuIds
-	n.stop = make(<-chan bool)
+	n.GpuIds = gpuIds
+	n.stop = make(chan bool)
 	n.Communication = makeCommunication(connection)
 	return n
 }
@@ -49,7 +49,7 @@ func (n *Node) EndWork(){
 func (n *Node) readerRoutine() {
 	var r dto.Result
 	buffer := make([]byte, r.Header.Size())
-	for n.Read(buffer) {
+	for n.Communication.read(buffer) {
 		log.Debug("Node reader received data from ", n.Id)
 		err := r.DecodeHeader(buffer)
 		if err != nil {
@@ -62,7 +62,7 @@ func (n *Node) readerRoutine() {
 			continue
 		}
 		r.Data = make([]byte, r.DataSize)
-		n.Read(r.Data)
+		n.Communication.read(r.Data)
 
 		// TODO: MOVE FROM HERE
 		/*
@@ -95,8 +95,8 @@ func (n *Node)senderRoutine() {
 		select {
 		case buffer := <-n.Communication.Incoming:
 			log.Fine("Sending ", buffer, " to ", n.Id)
-			n.Communication.Write(buffer)
-		case <-n.Stop:
+			n.Communication.write(buffer)
+		case <-n.stop:
 			log.Info("Node ", n.Id, " stopped")
 			n.Communication.close()
 			break

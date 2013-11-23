@@ -11,20 +11,20 @@ type GetNodeRequest struct {
 }
 
 type Manager struct {
-	nodes		map[int32]Node
-	AddChan		<-chan *Node
-	GetChan		<-chan GetNodeRequest
-	DelChan		<-chan int64
-	QuitChan	<-chan bool
+	nodes		map[int32]*Node
+	AddChan		chan *Node
+	GetChan		chan GetNodeRequest
+	DelChan		chan int32
+	QuitChan	chan bool
 }
 
 func NewManager() *Manager {
 	m := new(Manager)
-	m.tasks = make(map[int64]*Node)
-	m.AddChan = make(<-chan *Node)
-	m.GetChan = make(<-chan GetNodeRequest)
-	m.DelChan = make(<-chan int64)
-	m.QuitChan = make(<-chan bool)
+	m.nodes = make(map[int32]*Node)
+	m.AddChan = make(chan *Node)
+	m.GetChan = make(chan GetNodeRequest)
+	m.DelChan = make(chan int32)
+	m.QuitChan = make(chan bool)
 	return m
 }
 
@@ -33,7 +33,7 @@ func (m *Manager) Manage() {
 	for {
 		select {
 		case get := <-m.GetChan:
-			if val, ok := m.nodes["route"]; ok {
+			if _, ok := m.nodes[get.NodeId]; ok {
 				get.BackChan <- m.nodes[get.NodeId]
 			} else {
 				get.BackChan <- nil
@@ -42,7 +42,7 @@ func (m *Manager) Manage() {
 			m.nodes[add.Id] = add
 		case del := <-m.DelChan:
 			delete(m.nodes, del)
-		case q := <-m.QuitChan:
+		case <-m.QuitChan:
 			log.Info("Node manager stopped managing")
 			return
 		}

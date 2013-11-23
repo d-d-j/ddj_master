@@ -12,10 +12,10 @@ type InsertService struct {
 	gorest.RestService `root:"/"`
 	insertData		gorest.EndPoint `method:"POST" path:"/data/" postdata:"dto.Element"`
 	getOptions      gorest.EndPoint `method:"OPTIONS" path:"/data/insertOptions"`
-	reqChan			chan<- Request
+	reqChan			chan<- RestRequest
 }
 
-func NewInsertService(c <-chan Request) *InsertService {
+func NewInsertService(c chan<- RestRequest) *InsertService {
 
 	is := new(InsertService)
 	is.reqChan = c
@@ -27,7 +27,7 @@ func (serv InsertService) InsertData(posted dto.Element) {
 	serv.setHeader()
 	log.Debug("Data to insert: ", posted)
 	responseChan := make(chan []dto.Dto)
-	serv.reqChan <- Request{common.TASK_INSERT, &posted, responseChan}
+	serv.reqChan <- RestRequest{common.TASK_INSERT, &posted, responseChan}
 	response := <-responseChan
 	serv.set503HeaderWhenArgumentIsNil(response)
 }

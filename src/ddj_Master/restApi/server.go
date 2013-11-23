@@ -7,28 +7,28 @@ import (
 )
 
 type NetworkApi interface {
-	StartApi() <- chan Request
+	StartApi() <- chan RestRequest
 }
 
 type Server struct {
-	port string
+	Port string
 }
 
-func (sv Server) StartApi() <-chan Request {
+func (sv Server) StartApi() <-chan RestRequest {
 
-	c := make(chan Request)
+	c := make(chan RestRequest)
 	insertService := NewInsertService(c)
 	selectService := NewSelectService(c)
 
-	if(sv.port == nil) {
-		sv.port = 8888
+	if sv.Port == "" {
+		sv.Port = "8888"
 	}
 
-	log.Info("Start REST API on port number " + sv.port)
+	log.Info("Start REST API on port number " + sv.Port)
 	gorest.RegisterService(insertService) //Register insert service
 	gorest.RegisterService(selectService) //Register select service
 	gorest.RegisterMarshaller("application/json", gorest.NewJSONMarshaller())
 	go http.Handle("/", gorest.Handle())
-	go http.ListenAndServe(sv.port, nil)
+	go http.ListenAndServe(sv.Port, nil)
 	return c
 }

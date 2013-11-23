@@ -17,18 +17,16 @@ type Balancer struct {
 	done 		chan *Worker
 }
 
-func NewBalancer(workersCount int) *Balancer {
+func NewBalancer(workersCount int32) *Balancer {
 	b := new(Balancer)
 	done := make(chan *Worker)
-	tasks := make(map[int64]Task)
 	p := NewWorkersPool(workersCount, done)
 	b.pool = p
 	b.done = done
-	b.tasks = tasks
 	return b
 }
 
-func (b *Balancer) balance(work <-chan restApi.Request) {
+func (b *Balancer) Balance(work <-chan restApi.RestRequest) {
 	log.Info("Task manager balancer started")
 	for {
 		select {
@@ -40,16 +38,16 @@ func (b *Balancer) balance(work <-chan restApi.Request) {
 	}
 }
 
-func (b *Balancer) dispatch(req restApi.Request) {
+func (b *Balancer) dispatch(req restApi.RestRequest) {
 	w := heap.Pop(&b.pool).(*Worker)
 	log.Fine("Dispach request to ", w)
-	w.ReqChan <- req
-	w.Pending++
+	w.reqChan <- req
+	w.pending++
 	heap.Push(&b.pool, w)
 }
 
 func (b *Balancer) completed(w *Worker) {
-	w.Pending--
-	heap.Remove(&b.pool, w.Index)
+	w.pending--
+	heap.Remove(&b.pool, w.index)
 	heap.Push(&b.pool, w)
 }

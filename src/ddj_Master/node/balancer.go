@@ -18,7 +18,7 @@ func NewLoadBalancer() *LoadBalancer {
 	return lb
 }
 
-func (lb *LoadBalancer) balance(info <-chan Info) {
+func (lb *LoadBalancer) Balance(info <-chan Info) {
 
 	log.Info("Node manager balancer started")
 	for {

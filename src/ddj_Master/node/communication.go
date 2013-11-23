@@ -31,10 +31,9 @@ func makeCommunication(conn net.Conn) Communication {
 // Defines a read function for a Node, reading from the connection into
 // a buffer passed in. Returns true if read was successful, false otherwise
 func (c *Communication) read(buffer []byte) bool {
-	log.Debug(c.Id, " try to read ", len(buffer), " bytes")
 	bytesRead, error := c.connection.Read(buffer)
 	if error != nil {
-		c.Close()
+		c.connection.Close()
 		log.Error("Problem with connection: ", error)
 		return false
 	}
@@ -44,10 +43,10 @@ func (c *Communication) read(buffer []byte) bool {
 
 // Defines a write function for a Node, write to the connection from
 // a buffer passed in. Returns true if write was successful, false otherwise
-func (c *Communication) send(buffer []byte) bool {
+func (c *Communication) write(buffer []byte) bool {
 	bytesSend, error := c.connection.Write(buffer)
 	if error != nil {
-		c.Close()
+		c.connection.Close()
 		log.Error("Problem with connection: ", error)
 		return false
 	}
