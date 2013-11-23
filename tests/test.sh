@@ -50,6 +50,6 @@ if $get; then
 else
  if $post; then
     echo "Insert"
-    ab -n $requests_count -c $concuret_request_count -p insert.json -T "'application/x-www-form-urlencoded'"  http://localhost:8888/data
+    ab -k -g test.out -n $requests_count -c $concuret_request_count -p insert.json -T "'application/x-www-form-urlencoded'"  http://localhost:8888/data
 fi
 fi
