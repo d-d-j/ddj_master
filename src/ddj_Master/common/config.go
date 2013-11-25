@@ -14,6 +14,7 @@ type Config struct {
 	}
 	Constants struct {
 		WorkersCount		int32
+		JobForWorkerCount	int32
 	}
 }
 

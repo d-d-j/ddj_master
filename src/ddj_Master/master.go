@@ -32,7 +32,7 @@ func main() {
 
 	// Initialize task manager (balancer)
 	go task.TaskManager.Manage()
-	taskBal := task.NewBalancer(cfg.Constants.WorkersCount)
+	taskBal := task.NewBalancer(cfg.Constants.WorkersCount, cfg.Constants.JobForWorkerCount)
 	go taskBal.Balance(chanReq)
 
 	// Initialize node manager

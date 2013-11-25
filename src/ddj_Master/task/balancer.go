@@ -17,10 +17,10 @@ type Balancer struct {
 	done 		chan *Worker
 }
 
-func NewBalancer(workersCount int32) *Balancer {
+func NewBalancer(workersCount int32, jobForWorkerCount int32) *Balancer {
 	b := new(Balancer)
 	done := make(chan *Worker)
-	p := NewWorkersPool(workersCount, done)
+	p := NewWorkersPool(workersCount, jobForWorkerCount, done)
 	b.pool = p
 	b.done = done
 	return b

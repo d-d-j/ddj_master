@@ -25,8 +25,8 @@ func (sv Server) StartApi() <-chan RestRequest {
 	}
 
 	log.Info("Start REST API on port number " + sv.Port)
-	gorest.RegisterService(insertService) //Register insert service
-	gorest.RegisterService(selectService) //Register select service
+	gorest.RegisterService(insertService)
+	gorest.RegisterService(selectService)
 	gorest.RegisterMarshaller("application/json", gorest.NewJSONMarshaller())
 	go http.Handle("/", gorest.Handle())
 	go http.ListenAndServe(sv.Port, nil)

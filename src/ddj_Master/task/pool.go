@@ -8,13 +8,13 @@ import (
 
 type Pool []*Worker
 
-func NewWorkersPool(size int32, done chan *Worker) Pool {
+func NewWorkersPool(size int32, jobsPerWorker int32, done chan *Worker) Pool {
 	pool := make(Pool, size)
 	idGen := common.NewTaskIdGenerator()
 	loadBal := node.NewLoadBalancer()
 	for index, worker := range pool {
 		worker.index = index
-		worker.reqChan = make(chan restApi.RestRequest)
+		worker.reqChan = make(chan restApi.RestRequest, jobsPerWorker)
 		go worker.Work(done, idGen, loadBal)
 	}
 	return pool
