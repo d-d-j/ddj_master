@@ -10,30 +10,9 @@ import (
 
 //Service Definition
 type InsertService struct {
-	gorest.RestService `root:"/"`
-	insertData		gorest.EndPoint `method:"POST" path:"/data/" postdata:"dto.Element"`
-	getOptions      gorest.EndPoint `method:"OPTIONS" path:"/data/insertOptions"`
+	gorest.RestService `root:"/ddj/" consumes:"application/json" produces:"application/json"`
+	insertData		gorest.EndPoint `method:"POST" path:"/data/" postdata:"ddj_Master.dto.Element"`
 	reqChan			chan<- RestRequest
-}
-
-func NewInsertService(c chan<- RestRequest) *InsertService {
-	is := new(InsertService)
-	is.reqChan = c
-	return is
-}
-
-func (serv InsertService) InsertData(posted dto.Element) {
-	log.Finest("Inserting data - data to insert: ", posted)
-	serv.setHeader()
-	responseChan := make(chan *RestResponse)
-	serv.reqChan <- RestRequest{common.TASK_INSERT, &posted, responseChan}
-	response := <-responseChan
-	serv.setInsertResponse(response)
-}
-
-func (serv InsertService) GetOptions() {
-	serv.setHeader()
-	log.Debug("Return available options")
 }
 
 func (serv InsertService) setHeader() {
@@ -54,5 +33,15 @@ func (serv InsertService) setInsertResponse(response *RestResponse) {
 	} else {
 		serv.ResponseBuilder().SetResponseCode(202).WriteAndOveride([]byte(fmt.Sprintf("/data/task/%d/status", response.TaskId)))
 	}
+}
+
+func (serv InsertService) InsertData(PostData dto.Element) {
+
+	serv.setHeader()
+	log.Finest("Inserting data - data to insert: ", PostData)
+	responseChan := make(chan *RestResponse)
+	serv.reqChan <- RestRequest{common.TASK_INSERT, &PostData, responseChan}
+	response := <-responseChan
+	serv.setInsertResponse(response)
 }
 
