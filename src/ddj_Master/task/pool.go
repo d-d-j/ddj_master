@@ -1,9 +1,9 @@
 package task
 
 import (
-	"ddj_Master/restApi"
 	"ddj_Master/common"
 	"ddj_Master/node"
+	"ddj_Master/restApi"
 )
 
 type Pool []*Worker
@@ -13,6 +13,7 @@ func NewWorkersPool(size int32, jobsPerWorker int32, done chan *Worker) Pool {
 	idGen := common.NewTaskIdGenerator()
 	loadBal := node.NewLoadBalancer()
 	for index, worker := range pool {
+		worker = &Worker{}
 		worker.index = index
 		worker.reqChan = make(chan restApi.RestRequest, jobsPerWorker)
 		go worker.Work(done, idGen, loadBal)
