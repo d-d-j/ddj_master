@@ -10,7 +10,7 @@ type Task struct {
 	Type			int32
 	Data			dto.Dto
 	DataSize		int32
-	ResponseChan	chan []dto.Dto
+	ResponseChan	chan *restApi.RestResponse
 }
 
 func NewTask(id int64, request restApi.RestRequest) *Task {

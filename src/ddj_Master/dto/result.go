@@ -1,10 +1,7 @@
 package dto
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
-	log "code.google.com/p/log4go"
 )
 
 type Result struct {
@@ -23,48 +20,6 @@ func (r *Result) String() string {
 	return fmt.Sprintf("Result with type %d and task id %d", r.Header.Type, r.Header.TaskId)
 }
 
-func (r *Result) EncodeHeader() ([]byte, error) {
-	buf := new(bytes.Buffer)
-
-	err := binary.Write(buf, binary.LittleEndian, r.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
-}
-
-func (r *Result) DecodeHeader(buf []byte) error {
-
-	return r.Header.Decode(buf)
-
-}
-
-func (r *Result) Encode() ([]byte, error) {
-
-	var (
-		headerBuf []byte
-		err       error
-	)
-
-	// Encode header
-	headerBuf, err = r.Header.Encode()
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	// Merge header and data to one []byte buffer
-	// TODO: CHANGE 100 to real data size
-	complete := make([]byte, 100)
-	copy(complete, headerBuf)
-	copy(complete[len(headerBuf):], r.Data)
-
-	return complete, err
-}
-
 func (r *Result) Decode(buf []byte) error {
-
 	return r.Header.Decode(buf)
-
 }

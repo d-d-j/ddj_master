@@ -2,11 +2,10 @@ package dto
 
 import (
 	"fmt"
-	"bytes"
-	"encoding/binary"
 	log "code.google.com/p/log4go"
 )
 
+// Implements Encoder and Dto interface and is used to delegate a task to node
 type Request struct {
 	Header
 	Data []byte
@@ -25,23 +24,6 @@ func NewRequest(id int64, ttype int32, size int32, data Dto) *Request {
 
 func (r *Request) String() string {
 	return fmt.Sprintf("Request with type %d and task id %d", r.Header.Type, r.Header.TaskId)
-}
-
-func (r *Request) EncodeHeader() ([]byte, error) {
-	buf := new(bytes.Buffer)
-
-	err := binary.Write(buf, binary.LittleEndian, r.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
-}
-
-func (r *Request) DecodeHeader(buf []byte) error {
-
-	return r.Header.Decode(buf)
-
 }
 
 func (r *Request) Encode() ([]byte, error) {
