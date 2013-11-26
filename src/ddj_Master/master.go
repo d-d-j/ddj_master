@@ -7,6 +7,7 @@ import (
 	"ddj_Master/common"
 	"ddj_Master/task"
 	"ddj_Master/node"
+	"runtime"
 )
 
 func loadMasterConfiguration() *common.Config {
@@ -26,8 +27,10 @@ func main() {
 
 	cfg := loadMasterConfiguration()
 
+	log.Info("Setting go cpu number to ", cfg.Constants.CpuNumber, " success: ", runtime.GOMAXPROCS(cfg.Constants.CpuNumber))
+
 	// Start rest api server with tcp services for inserts and selects
-	portNum := fmt.Sprintf("%d", cfg.Ports.RestApi)
+	portNum := fmt.Sprintf(":%d", cfg.Ports.RestApi)
 	var server = restApi.Server{portNum}
 	chanReq := server.StartApi()
 

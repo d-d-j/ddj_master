@@ -23,6 +23,7 @@ func NewBalancer(workersCount int32, jobForWorkerCount int32) *Balancer {
 	p := NewWorkersPool(workersCount, jobForWorkerCount, done)
 	b.pool = p
 	b.done = done
+	heap.Init(&p)
 	return b
 }
 
@@ -39,15 +40,15 @@ func (b *Balancer) Balance(work <-chan restApi.RestRequest) {
 }
 
 func (b *Balancer) dispatch(req restApi.RestRequest) {
-	w := heap.Pop(&b.pool).(*Worker)
+	w := heap.Pop(&(b.pool)).(*Worker)
 	log.Fine("Dispach request to ", w)
 	w.reqChan <- req
 	w.pending++
-	heap.Push(&b.pool, w)
+	heap.Push(&(b.pool), w)
 }
 
 func (b *Balancer) completed(w *Worker) {
 	w.pending--
-	heap.Remove(&b.pool, w.index)
-	heap.Push(&b.pool, w)
+	heap.Remove(&(b.pool), w.index)
+	heap.Push(&(b.pool), w)
 }

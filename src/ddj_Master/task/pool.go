@@ -1,9 +1,9 @@
 package task
 
 import (
+	"fmt"
 	"ddj_Master/common"
 	"ddj_Master/node"
-	"ddj_Master/restApi"
 )
 
 type Pool []*Worker
@@ -12,25 +12,31 @@ func NewWorkersPool(size int32, jobsPerWorker int32, done chan *Worker) Pool {
 	pool := make(Pool, size)
 	idGen := common.NewTaskIdGenerator()
 	loadBal := node.NewLoadBalancer()
-	for index, worker := range pool {
-		worker = &Worker{}
-		worker.index = index
-		worker.reqChan = make(chan restApi.RestRequest, jobsPerWorker)
+	s := int(size)
+	for i:=0; i<s; i++ {
+		worker := NewWorker(i, jobsPerWorker)
 		go worker.Work(done, idGen, loadBal)
+		pool[i] = worker
 	}
 	return pool
 }
 
 func (p Pool) Less(i, j int) bool {
-	return p[i].pending < p[j].pending
+	if p[i] == nil {
+		fmt.Println("ERROR ", i)
+	}
+	if p[j] == nil {
+		fmt.Println("ERROR ", j)
+	}
+	return p[i].pending > p[j].pending
 }
 
 func (p Pool) Len() int { return len(p) }
 
 func (p Pool) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
-	p[i].index = i
-	p[j].index = j
+	p[i].index = j
+	p[j].index = i
 }
 
 func (p *Pool) Pop() interface{} {

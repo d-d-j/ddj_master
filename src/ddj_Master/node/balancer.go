@@ -11,10 +11,12 @@ type LoadBalancer struct {
 }
 
 func NewLoadBalancer() *LoadBalancer {
+	log.Debug("Load balancer constructor [START]")
 	lb := new(LoadBalancer)
 	lb.CurrentInsertNodeId = -1
 	lb.CurrentInsertGpuId = -1
 	lb.update(nil)
+	log.Debug("Load balancer constructor [END]")
 	return lb
 }
 

@@ -13,9 +13,17 @@ type Worker struct {
 	index    int
 }
 
+func NewWorker(idx int, jobsPerWorker int32) *Worker {
+	w := new(Worker)
+	w.index = idx
+	w.pending = 0
+	w.reqChan = make(chan restApi.RestRequest, jobsPerWorker)
+	return w
+}
+
 func getNodeForInsert(req restApi.RestRequest, balancer *node.LoadBalancer) *node.Node {
 	nodeId := balancer.CurrentInsertNodeId
-	if nodeId == 0 {
+	if nodeId == -1 {
 		log.Warn("No node connected")
 		req.Response <- restApi.NewRestResponse("No node connected", 0, nil)
 		return nil
@@ -44,21 +52,23 @@ func createMessage(req restApi.RestRequest, t *Task) []byte {
 }
 
 func (w *Worker) Work(done chan *Worker, idGen common.Int64Generator, balancer *node.LoadBalancer) {
+Loop:
 	for {
-		req := <-w.reqChan
+		req := <- w.reqChan
+		log.Debug("Worker is working")
 		switch req.Type {
 		case common.TASK_INSERT:
 			log.Finest("Worker is processing [insert] task")
 			insertNode := getNodeForInsert(req, balancer)			// get nodeId from load balancer
 			if insertNode == nil {
-				break
+				continue Loop
 			}
 			id := idGen.GetId()										// generate id
 			t := NewTask(id, req)									// create new task for the request
 			TaskManager.AddChan <- t    							// add task to dictionary
 			message := createMessage(req, t)						// create a message to send
 			if message == nil {
-				break
+				continue Loop
 			}
 			insertNode.Incoming <- message							// send a message to node
 			req.Response <- restApi.NewRestResponse("", id, nil)	// send response to client
