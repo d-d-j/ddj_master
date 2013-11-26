@@ -1,0 +1,14 @@
+MASTER TODO:
+
+1. Stworzyć generatory dla workerów żeby każdy miał swój z pulą id które może wykorzystywać (przemyśleć)
+2. Poprawić komunikację master - node (TRUDNE*)
+
+DONE 3. Zrobić interfejsy Encoder i Decoder i porządek z tymi metodami w dto oraz analogicznie (Decode/Encode)Header
+4. Wyjąć poszczególne czynności do funkcji w master.go
+5. Stworzyć UNINITIALIZED = -1 i używać gdzie można
+DONE 6. Zwracać odpowiednie odpowiedzi na Requesty od Klientów
+DONE 7. Stworzyć RestResponse z error, taskId i data
+DONE 8. Pozamykać części kodu z worker.go w osobne funkcje
+
+9. Ogarnąć błędy w go
+10. Odtworzyć działanie mastera ze store żeby można było korzystać z nowej wersji
