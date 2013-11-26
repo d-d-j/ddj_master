@@ -17,16 +17,18 @@ type Server struct {
 func (sv Server) StartApi() <-chan RestRequest {
 
 	c := make(chan RestRequest)
-	insertService := NewInsertService(c)
-	selectService := NewSelectService(c)
+	insertService := InsertService{}
+	insertService.reqChan = c
+	//selectService := SelectService{}
+	//selectService.reqChan = c
 
 	if sv.Port == "" {
 		sv.Port = "8888"
 	}
 
 	log.Info("Start REST API on port number " + sv.Port)
-	gorest.RegisterService(insertService)
-	gorest.RegisterService(selectService)
+	gorest.RegisterService(&insertService)
+	//gorest.RegisterService(&selectService)
 	gorest.RegisterMarshaller("application/json", gorest.NewJSONMarshaller())
 	go http.Handle("/", gorest.Handle())
 	go http.ListenAndServe(sv.Port, nil)

@@ -9,16 +9,9 @@ import (
 
 //Service Definition
 type SelectService struct {
-	gorest.RestService `root:"/"`
+	gorest.RestService `root:"/ddj/" consumes:"application/json" produces:"application/json"`
 	selectAll       gorest.EndPoint `method:"GET" path:"/data/" output:"RestResponse"`
-	getOptions      gorest.EndPoint `method:"OPTIONS" path:"/data/selectOptions"`
 	reqChan			chan<- RestRequest
-}
-
-func NewSelectService(c chan<- RestRequest) *SelectService {
-	ss := new(SelectService)
-	ss.reqChan = c
-	return ss
 }
 
 func (serv SelectService) SelectAll() RestResponse {
