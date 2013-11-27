@@ -1,16 +1,15 @@
 package restApi
 
 import (
-	log "code.google.com/p/log4go"
 	"code.google.com/p/gorest"
+	log "code.google.com/p/log4go"
 	"ddj_Master/common"
 )
-
 
 //Service Definition
 type SelectService struct {
 	gorest.RestService `root:"/" consumes:"application/json" produces:"application/json"`
-	selectAll       gorest.EndPoint `method:"GET" path:"/data/" output:"RestResponse"`
+	selectAll          gorest.EndPoint `method:"GET" path:"/data/" output:"RestResponse"`
 }
 
 func (serv SelectService) SelectAll() RestResponse {
@@ -35,6 +34,6 @@ func (serv SelectService) setSelectHeaderErrors(response *RestResponse) {
 	if response == nil {
 		log.Error("Return HTTP 503")
 		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
-		[]byte("The server is currently unable to handle the request"))
+			[]byte("The server is currently unable to handle the request"))
 	} // TODO: Set more errors if response.Error != "" or TaskId == 0
 }

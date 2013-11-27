@@ -2,11 +2,11 @@ package main
 
 import (
 	log "code.google.com/p/log4go"
-	"fmt"
-	"ddj_Master/restApi"
 	"ddj_Master/common"
-	"ddj_Master/task"
 	"ddj_Master/node"
+	"ddj_Master/restApi"
+	"ddj_Master/task"
+	"fmt"
 	"runtime"
 )
 
@@ -51,7 +51,8 @@ func main() {
 	log.Info("Initialize node listener")
 	service := fmt.Sprintf("127.0.0.1:%d", cfg.Ports.NodeCommunication)
 	list := node.NewListener(service)
-	defer list.Close()	// fire netListen.Close() when program ends
+	go list.WaitForNodes()
+	defer list.Close() // fire netListen.Close() when program ends
 
 	// TODO: Wait for console instructions (q - quit for example)
 	// Wait for some input end exit (only for now)

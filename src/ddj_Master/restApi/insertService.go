@@ -3,15 +3,21 @@ package restApi
 import (
 	"code.google.com/p/gorest"
 	log "code.google.com/p/log4go"
-	"ddj_Master/dto"
 	"ddj_Master/common"
+	"ddj_Master/dto"
 	"fmt"
 )
 
 //Service Definition
 type InsertService struct {
 	gorest.RestService `root:"/" consumes:"application/json" produces:"application/json"`
-	insertData		gorest.EndPoint `method:"POST" path:"/data/" postdata:"ddj_Master.dto.Element"`
+	insertData         gorest.EndPoint `method:"POST" path:"/data/" postdata:"ddj_Master.dto.Element"`
+	getOptions         gorest.EndPoint `method:"OPTIONS" path:"/data"`
+}
+
+func (serv InsertService) GetOptions() {
+	serv.setHeader()
+	log.Debug("Return available options")
 }
 
 func (serv InsertService) setHeader() {
@@ -26,7 +32,7 @@ func (serv InsertService) setInsertResponse(response *RestResponse) {
 	if response == nil {
 		log.Error("Return HTTP 503")
 		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
-		[]byte("The server is currently unable to handle the request"))
+			[]byte("The server is currently unable to handle the request"))
 	} else if response.TaskId == 0 {
 		serv.ResponseBuilder().SetResponseCode(500).WriteAndOveride([]byte("Server error - sorry:("))
 	} else {
@@ -43,4 +49,3 @@ func (serv InsertService) InsertData(PostData dto.Element) {
 	response := <-responseChan
 	serv.setInsertResponse(response)
 }
-
