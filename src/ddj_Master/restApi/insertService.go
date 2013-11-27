@@ -10,9 +10,8 @@ import (
 
 //Service Definition
 type InsertService struct {
-	gorest.RestService `root:"/ddj/" consumes:"application/json" produces:"application/json"`
+	gorest.RestService `root:"/" consumes:"application/json" produces:"application/json"`
 	insertData		gorest.EndPoint `method:"POST" path:"/data/" postdata:"ddj_Master.dto.Element"`
-	reqChan			chan<- RestRequest
 }
 
 func (serv InsertService) setHeader() {
@@ -40,7 +39,7 @@ func (serv InsertService) InsertData(PostData dto.Element) {
 	serv.setHeader()
 	log.Finest("Inserting data - data to insert: ", PostData)
 	responseChan := make(chan *RestResponse)
-	serv.reqChan <- RestRequest{common.TASK_INSERT, &PostData, responseChan}
+	restRequestChannel <- RestRequest{common.TASK_INSERT, &PostData, responseChan}
 	response := <-responseChan
 	serv.setInsertResponse(response)
 }

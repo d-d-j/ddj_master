@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+var restRequestChannel chan RestRequest = make(chan RestRequest)
+
 type NetworkApi interface {
 	StartApi() <- chan RestRequest
 }
@@ -16,11 +18,8 @@ type Server struct {
 
 func (sv Server) StartApi() <-chan RestRequest {
 
-	c := make(chan RestRequest)
 	insertService := InsertService{}
-	insertService.reqChan = c
-	//selectService := SelectService{}
-	//selectService.reqChan = c
+	selectService := SelectService{}
 
 	if sv.Port == "" {
 		sv.Port = "8888"
@@ -28,9 +27,9 @@ func (sv Server) StartApi() <-chan RestRequest {
 
 	log.Info("Start REST API on port number " + sv.Port)
 	gorest.RegisterService(&insertService)
-	//gorest.RegisterService(&selectService)
+	gorest.RegisterService(&selectService)
 	gorest.RegisterMarshaller("application/json", gorest.NewJSONMarshaller())
 	go http.Handle("/", gorest.Handle())
 	go http.ListenAndServe(sv.Port, nil)
-	return c
+	return restRequestChannel
 }

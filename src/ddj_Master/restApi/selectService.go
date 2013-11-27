@@ -9,16 +9,15 @@ import (
 
 //Service Definition
 type SelectService struct {
-	gorest.RestService `root:"/ddj/" consumes:"application/json" produces:"application/json"`
+	gorest.RestService `root:"/" consumes:"application/json" produces:"application/json"`
 	selectAll       gorest.EndPoint `method:"GET" path:"/data/" output:"RestResponse"`
-	reqChan			chan<- RestRequest
 }
 
 func (serv SelectService) SelectAll() RestResponse {
 	log.Finest("Selecting all data")
 	serv.setHeader()
 	responseChan := make(chan *RestResponse)
-	serv.reqChan <- RestRequest{common.TASK_SELECT_ALL, nil, responseChan}
+	restRequestChannel <- RestRequest{common.TASK_SELECT_ALL, nil, responseChan}
 	response := <-responseChan
 	serv.setSelectHeaderErrors(response)
 	return *response

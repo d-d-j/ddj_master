@@ -7,6 +7,7 @@ import (
 	"ddj_Master/common"
 	"ddj_Master/task"
 	"ddj_Master/node"
+	"runtime"
 )
 
 func loadMasterConfiguration() *common.Config {
@@ -26,26 +27,34 @@ func main() {
 
 	cfg := loadMasterConfiguration()
 
+	log.Info("Setting go cpu number to ", cfg.Constants.CpuNumber, " success: ", runtime.GOMAXPROCS(cfg.Constants.CpuNumber))
+
 	// Start rest api server with tcp services for inserts and selects
-	portNum := fmt.Sprintf("%d", cfg.Ports.RestApi)
+	portNum := fmt.Sprintf(":%d", cfg.Ports.RestApi)
 	var server = restApi.Server{portNum}
 	chanReq := server.StartApi()
 
 	// Initialize task manager (balancer)
+	log.Info("Initialize task manager")
 	go task.TaskManager.Manage()
 	taskBal := task.NewBalancer(cfg.Constants.WorkersCount, cfg.Constants.JobForWorkerCount)
 	go taskBal.Balance(chanReq)
 
 	// Initialize node manager
+	log.Info("Initialize node manager")
 	go node.NodeManager.Manage()
 	infoChan := make(chan node.Info)
 	nodeBal := node.NewLoadBalancer()
 	go nodeBal.Balance(infoChan)
 
 	// Initialize node listener
+	log.Info("Initialize node listener")
 	service := fmt.Sprintf("127.0.0.1:%d", cfg.Ports.NodeCommunication)
 	list := node.NewListener(service)
 	defer list.Close()	// fire netListen.Close() when program ends
 
 	// TODO: Wait for console instructions (q - quit for example)
+	// Wait for some input end exit (only for now)
+	var i int
+	fmt.Scanf("%d", &i)
 }
