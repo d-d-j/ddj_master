@@ -38,10 +38,9 @@ func (list *Listener) WaitForNodes() {
 			log.Error("node error: ", error)
 		} else {
 			log.Info("Accept node: ", connection.RemoteAddr())
-			// TODO: Instead of nil there should be slice of GPUIds of new Node
-			newNode := NewNode(list.idGenerator.GetId(), nil, connection)
+			newNode := NewNode(list.idGenerator.GetId(), connection)
 			NodeManager.AddChan <- newNode
-			newNode.StartWork()
+			go newNode.StartWork()
 		}
 	}
 }
