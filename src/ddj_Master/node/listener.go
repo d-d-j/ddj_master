@@ -7,11 +7,12 @@ import (
 )
 
 type Listener struct {
-	netListen	net.Listener
-	idGenerator common.Int32Generator
+	netListen		net.Listener
+	idGenerator 	common.Int32Generator
+	balancerChan	chan<- Info
 }
 
-func NewListener(service string) *Listener {
+func NewListener(service string, nodeInfoChannel chan<- Info) *Listener {
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
 		log.Critical("Error: Could not resolve address")
@@ -23,28 +24,29 @@ func NewListener(service string) *Listener {
 		log.Error(error)
 	}
 
-	list := new(Listener)
-	list.netListen = netListen
-	list.idGenerator = common.NewNodeIdGenerator()
-	return list
+	l := new(Listener)
+	l.netListen = netListen
+	l.idGenerator = common.NewNodeIdGenerator()
+	l.balancerChan = nodeInfoChannel
+	return l
 }
 
 
-func (list *Listener) WaitForNodes() {
+func (l *Listener) WaitForNodes() {
 	for {
 		log.Info("Waiting for nodes")
-		connection, error := list.netListen.Accept()
+		connection, error := l.netListen.Accept()
 		if error != nil {
 			log.Error("node error: ", error)
 		} else {
 			log.Info("Accept node: ", connection.RemoteAddr())
-			newNode := NewNode(list.idGenerator.GetId(), connection)
+			newNode := NewNode(l.idGenerator.GetId(), connection)
 			NodeManager.AddChan <- newNode
-			go newNode.StartWork()
+			go newNode.StartWork(l.balancerChan)
 		}
 	}
 }
 
-func (list *Listener) Close() {
-	list.netListen.Close()
+func (l *Listener) Close() {
+	l.netListen.Close()
 }

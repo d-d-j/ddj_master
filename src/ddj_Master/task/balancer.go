@@ -4,6 +4,7 @@ import (
 	log "code.google.com/p/log4go"
 	"container/heap"
 	"ddj_Master/restApi"
+	"ddj_Master/node"
 )
 
 /* TODO: 	Implement stop function for balancer
@@ -17,10 +18,10 @@ type Balancer struct {
 	done 		chan *Worker
 }
 
-func NewBalancer(workersCount int32, jobForWorkerCount int32) *Balancer {
+func NewBalancer(workersCount int32, jobForWorkerCount int32, loadBal *node.LoadBalancer) *Balancer {
 	b := new(Balancer)
 	done := make(chan *Worker)
-	p := NewWorkersPool(workersCount, jobForWorkerCount, done)
+	p := NewWorkersPool(workersCount, jobForWorkerCount, done, loadBal)
 	b.pool = p
 	b.done = done
 	heap.Init(&p)

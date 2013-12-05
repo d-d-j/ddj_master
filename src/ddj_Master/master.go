@@ -34,12 +34,6 @@ func main() {
 	var server = restApi.Server{portNum}
 	chanReq := server.StartApi()
 
-	// Initialize task manager (balancer)
-	log.Info("Initialize task manager")
-	go task.TaskManager.Manage()
-	taskBal := task.NewBalancer(cfg.Constants.WorkersCount, cfg.Constants.JobForWorkerCount)
-	go taskBal.Balance(chanReq)
-
 	// Initialize node manager
 	log.Info("Initialize node manager")
 	go node.NodeManager.Manage()
@@ -47,10 +41,16 @@ func main() {
 	nodeBal := node.NewLoadBalancer()
 	go nodeBal.Balance(infoChan)
 
+	// Initialize task manager (balancer)
+	log.Info("Initialize task manager")
+	go task.TaskManager.Manage()
+	taskBal := task.NewBalancer(cfg.Constants.WorkersCount, cfg.Constants.JobForWorkerCount, nodeBal)
+	go taskBal.Balance(chanReq)
+
 	// Initialize node listener
 	log.Info("Initialize node listener")
 	service := fmt.Sprintf("127.0.0.1:%d", cfg.Ports.NodeCommunication)
-	list := node.NewListener(service)
+	list := node.NewListener(service, infoChan)
 	go list.WaitForNodes()
 	defer list.Close() // fire netListen.Close() when program ends
 

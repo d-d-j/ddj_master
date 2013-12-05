@@ -24,5 +24,5 @@ func NewTask(id int64, request restApi.RestRequest) *Task {
 }
 
 func (t *Task) MakeRequest() *dto.Request {
-	return dto.NewRequest(t.Id, t.DataSize, t.DataSize, t.Data)
+	return dto.NewRequest(t.Id, t.Type, t.DataSize, t.Data)
 }

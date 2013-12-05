@@ -20,3 +20,8 @@ const (
 	NODE_CONNECTED		int32 = 1
 	NODE_READY			int32 = 2
 )
+
+//Constants
+const (
+	CONST_UNINITIALIZED = -1
+)

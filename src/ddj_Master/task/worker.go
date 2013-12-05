@@ -23,7 +23,7 @@ func NewWorker(idx int, jobsPerWorker int32) *Worker {
 
 func getNodeForInsert(req restApi.RestRequest, balancer *node.LoadBalancer) *node.Node {
 	nodeId := balancer.CurrentInsertNodeId
-	if nodeId == -1 {
+	if nodeId == common.CONST_UNINITIALIZED {
 		log.Warn("No node connected")
 		req.Response <- restApi.NewRestResponse("No node connected", 0, nil)
 		return nil
@@ -65,6 +65,7 @@ Loop:
 			}
 			id := idGen.GetId()										// generate id
 			t := NewTask(id, req)									// create new task for the request
+			log.Debug("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
 			TaskManager.AddChan <- t    							// add task to dictionary
 			message := createMessage(req, t)						// create a message to send
 			if message == nil {
