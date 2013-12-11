@@ -8,10 +8,9 @@ import (
 
 type Pool []*Worker
 
-func NewWorkersPool(size int32, jobsPerWorker int32, done chan *Worker) Pool {
+func NewWorkersPool(size int32, jobsPerWorker int32, done chan *Worker, loadBal *node.LoadBalancer) Pool {
 	pool := make(Pool, size)
 	idGen := common.NewTaskIdGenerator()
-	loadBal := node.NewLoadBalancer()
 	s := int(size)
 	for i:=0; i<s; i++ {
 		worker := NewWorker(i, jobsPerWorker)

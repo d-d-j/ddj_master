@@ -41,8 +41,7 @@ func (r *Request) Encode() ([]byte, error) {
 	}
 
 	// Merge header and data to one []byte buffer
-	// TODO: CHANGE 100 to real data size
-	complete := make([]byte, 100)
+	complete := make([]byte, int32(r.Header.Size())+r.Header.DataSize)
 	copy(complete, headerBuf)
 	copy(complete[len(headerBuf):], r.Data)
 
