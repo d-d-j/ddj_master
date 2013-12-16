@@ -1,10 +1,6 @@
 all:
-	go build ddj_Master
-get:
 	export GOPATH=`pwd`
-	go get code.google.com/p/gorest
-	go get code.google.com/p/gcfg
-	go get code.google.com/p/log4go
+	go build ddj_Master
 debug:
 	go build -ldflags "-s" ddj_Master
 
