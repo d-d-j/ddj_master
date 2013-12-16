@@ -49,7 +49,7 @@ func main() {
 
 	// Initialize node listener
 	log.Info("Initialize node listener")
-	service := fmt.Sprintf("127.0.0.1:%d", cfg.Ports.NodeCommunication)
+	service := fmt.Sprintf(":%d", cfg.Ports.NodeCommunication)
 	list := node.NewListener(service, infoChan)
 	go list.WaitForNodes()
 	defer list.Close() // fire netListen.Close() when program ends
