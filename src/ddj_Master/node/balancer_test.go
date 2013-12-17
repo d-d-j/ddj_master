@@ -25,11 +25,74 @@ func Test_NewLoadBalancer(t *testing.T) {
 	AreEqual(expected, actual, t)
 }
 
-func Test_Update_With_Nil_Entry(t *testing.T) {
+func Test_Update_With_Nil_Entry_Cause_Balancer_Reset(t *testing.T) {
 	actual := NewLoadBalancer(0, nil)
 	expected := NewLoadBalancer(0, nil)
 	actual.CurrentInsertNodeId = 1
 	actual.CurrentInsertGpuId = 2
 	actual.update(nil)
 	AreEqual(expected, actual, t)
+}
+
+func Test_Update_With_No_Nodes_Cause_Balancer_Reset(t *testing.T) {
+	nodes := make(map[int32]*Node)
+	info := &Info{1}
+	actual := NewLoadBalancer(0, nodes)
+	expected := NewLoadBalancer(0, nil)
+	actual.update(info)
+	AreEqual(expected, actual, t)
+}
+
+func Test_Update_Unitialized_Balancer_Set_It_To_First_Node_And_GPU(t *testing.T) {
+	nodes := make(map[int32]*Node)
+	nodes[1] = NewNode(1, nil)
+	nodes[1].GpuIds = []int32{0, 1, 2}
+	nodes[2] = NewNode(2, nil)
+	nodes[2].GpuIds = []int32{0, 1, 2}
+
+	lb := NewLoadBalancer(0, nodes)
+	info := &Info{1}
+	lb.update(info)
+	if lb.CurrentInsertNodeId != 1 || lb.CurrentInsertGpuId != 0 {
+		t.Errorf("Wrong card selected. Expected #%d:%d but get #%d:%d", 1, 0, lb.CurrentInsertNodeId, lb.CurrentInsertGpuId)
+	}
+}
+
+func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU(t *testing.T) {
+	nodes := make(map[int32]*Node)
+	nodes[1] = NewNode(1, nil)
+	nodes[1].GpuIds = []int32{0, 1, 2}
+
+	lb := NewLoadBalancer(0, nodes)
+	lb.CurrentInsertNodeId = 1
+	lb.CurrentInsertGpuId = 0
+	info := &Info{1}
+
+	for i := 0; i < 3; i++ {
+		lb.update(info)
+		if lb.CurrentInsertGpuId == int32(i) {
+			t.Errorf("Wrong card selected. Expected #%d but get #%d", i, lb.CurrentInsertGpuId)
+		}
+	}
+}
+
+func Test_Update_With_Two_Nodes_Cause_Changing_Node(t *testing.T) {
+	nodes := make(map[int32]*Node)
+	nodes[1] = NewNode(1, nil)
+	nodes[1].GpuIds = []int32{0, 1, 2}
+	nodes[2] = NewNode(2, nil)
+	nodes[2].GpuIds = []int32{0, 1, 2}
+
+	lb := NewLoadBalancer(0, nodes)
+	lb.CurrentInsertNodeId = 1
+	lb.CurrentInsertGpuId = 0
+	info := &Info{1}
+
+	for i := 0; i < 4; i++ {
+		nodeId := i%2 + 1
+		lb.update(info)
+		if lb.CurrentInsertNodeId == int32(nodeId) {
+			t.Errorf("Wrong card selected. Expected #%d but get #%d", nodeId, lb.CurrentInsertNodeId)
+		}
+	}
 }

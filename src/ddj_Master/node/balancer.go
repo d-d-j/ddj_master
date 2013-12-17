@@ -9,17 +9,15 @@ type LoadBalancer struct {
 	CurrentInsertNodeId int32
 	CurrentInsertGpuId  int32
 	timeout             int32
-	nodeManagerChan     chan GetNodeRequest
+	nodes               map[int32]*Node
 }
 
-func NewLoadBalancer(timeout int32, nodeManagerChan chan GetNodeRequest) *LoadBalancer {
-	log.Debug("Load balancer constructor [START]")
+func NewLoadBalancer(timeout int32, nodes map[int32]*Node) *LoadBalancer {
 	lb := new(LoadBalancer)
 	lb.reset()
 	lb.timeout = timeout
-	lb.nodeManagerChan = nodeManagerChan
+	lb.nodes = nodes
 	lb.update(nil)
-	log.Debug("Load balancer constructor [END]")
 	return lb
 }
 
@@ -45,12 +43,51 @@ func (this *LoadBalancer) update(newInfo *Info) {
 		return
 	}
 
-	// DIRECTS ALL INCOMING DATA TO NEW NODE's FIRST GPU
-	ch := make(chan *Node)
-	this.nodeManagerChan <- GetNodeRequest{newInfo.nodeId, ch}
-	var n *Node = <-ch
-	this.CurrentInsertNodeId = n.Id
-	this.CurrentInsertGpuId = n.GpuIds[0]
-	log.Debug("Node with id ", n.Id, " and GPU ", n.GpuIds[0], " set to current")
-	// TODO: Write balance function for nodes
+	if this.IsUnitialized() {
+		for _, node := range this.nodes {
+			this.CurrentInsertNodeId = node.Id
+			this.CurrentInsertGpuId = node.GpuIds[0]
+			break
+		}
+		return
+	}
+
+	const (
+		CurrentNodePenalty = 10
+	)
+
+	bestNodeId := common.CONST_UNINITIALIZED
+	bestGpuId := common.CONST_UNINITIALIZED
+	bestRank := -(int(^uint(0) >> 1))
+	//TODO: Calculate full rank when data will be available
+	//Now we have no info about card load, ram, proc etc
+	for id, node := range this.nodes {
+		rank := 0
+		if this.CurrentInsertNodeId == node.Id {
+			rank -= CurrentNodePenalty
+			for gpuId := range node.GpuIds {
+				if this.CurrentInsertGpuId != int32(gpuId) {
+					bestGpuId = gpuId
+					break
+				}
+			}
+		}
+
+		if rank > bestRank {
+			bestNodeId = int(id)
+			bestRank = rank
+			log.Debug(bestRank, id)
+		}
+	}
+
+	this.CurrentInsertNodeId = int32(bestNodeId)
+	if bestGpuId == common.CONST_UNINITIALIZED {
+		this.CurrentInsertGpuId = this.nodes[int32(bestNodeId)].GpuIds[0]
+	} else {
+		this.CurrentInsertGpuId = int32(bestGpuId)
+	}
+}
+
+func (this *LoadBalancer) IsUnitialized() bool {
+	return this.CurrentInsertGpuId == common.CONST_UNINITIALIZED || this.CurrentInsertNodeId == common.CONST_UNINITIALIZED
 }
