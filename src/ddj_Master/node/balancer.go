@@ -42,8 +42,8 @@ func (this *LoadBalancer) update(newInfo *Info) {
 		this.reset()
 		return
 	}
-	log.Debug("#", this.CurrentInsertNodeId)
-	if this.CurrentInsertGpuId == common.CONST_UNINITIALIZED || this.CurrentInsertNodeId == common.CONST_UNINITIALIZED {
+
+	if this.IsUnitialized() {
 		for _, node := range this.nodes {
 			this.CurrentInsertNodeId = node.Id
 			this.CurrentInsertGpuId = node.GpuIds[0]
@@ -55,9 +55,12 @@ func (this *LoadBalancer) update(newInfo *Info) {
 	const (
 		CurrentNodePenalty = 10
 	)
+
 	bestNodeId := common.CONST_UNINITIALIZED
 	bestGpuId := common.CONST_UNINITIALIZED
 	bestRank := -(int(^uint(0) >> 1))
+	//TODO: Calculate full rank when data will be available
+	//Now we have no info about card load, ram, proc etc
 	for id, node := range this.nodes {
 		rank := 0
 		if this.CurrentInsertNodeId == node.Id {
@@ -77,11 +80,14 @@ func (this *LoadBalancer) update(newInfo *Info) {
 		}
 	}
 
-	log.Debug(bestNodeId)
-	this.CurrentInsertGpuId = int32(bestNodeId)
+	this.CurrentInsertNodeId = int32(bestNodeId)
 	if bestGpuId == common.CONST_UNINITIALIZED {
 		this.CurrentInsertGpuId = this.nodes[int32(bestNodeId)].GpuIds[0]
 	} else {
 		this.CurrentInsertGpuId = int32(bestGpuId)
 	}
+}
+
+func (this *LoadBalancer) IsUnitialized() bool {
+	return this.CurrentInsertGpuId == common.CONST_UNINITIALIZED || this.CurrentInsertNodeId == common.CONST_UNINITIALIZED
 }

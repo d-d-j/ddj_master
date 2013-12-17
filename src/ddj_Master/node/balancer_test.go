@@ -75,3 +75,24 @@ func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU(t *testing.T) {
 		}
 	}
 }
+
+func Test_Update_With_Two_Nodes_Cause_Changing_Node(t *testing.T) {
+	nodes := make(map[int32]*Node)
+	nodes[1] = NewNode(1, nil)
+	nodes[1].GpuIds = []int32{0, 1, 2}
+	nodes[2] = NewNode(2, nil)
+	nodes[2].GpuIds = []int32{0, 1, 2}
+
+	lb := NewLoadBalancer(0, nodes)
+	lb.CurrentInsertNodeId = 1
+	lb.CurrentInsertGpuId = 0
+	info := &Info{1}
+
+	for i := 0; i < 4; i++ {
+		nodeId := i%2 + 1
+		lb.update(info)
+		if lb.CurrentInsertNodeId == int32(nodeId) {
+			t.Errorf("Wrong card selected. Expected #%d but get #%d", nodeId, lb.CurrentInsertNodeId)
+		}
+	}
+}
