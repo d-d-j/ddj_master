@@ -8,6 +8,19 @@ import (
 	"os"
 )
 
+const (
+	RED    string = "\033[31m"
+	GREEN  string = "\033[32m"
+	YELLOW string = "\033[33m"
+	BLUE   string = "\033[34m"
+	GRAY   string = "\033[90m"
+	RESET  string = "\033[0m"
+)
+
+var (
+	levelColor = [...]string{GRAY, GRAY, RESET, RESET, BLUE, YELLOW, RED, RED}
+)
+
 var stdout io.Writer = os.Stdout
 
 // This is the standard writer that prints to standard output.
@@ -28,7 +41,7 @@ func (w ConsoleLogWriter) run(out io.Writer) {
 		if at := rec.Created.UnixNano() / 1e9; at != timestrAt {
 			timestr, timestrAt = rec.Created.Format("15:04:05"), at
 		}
-		fmt.Fprint(out, "[", timestr, "] [", levelStrings[rec.Level], "] (", rec.Source, ") ", rec.Message, "\n")
+		fmt.Fprint(out, "[", GRAY, timestr, RESET, "] [", levelColor[rec.Level], levelStrings[rec.Level], RESET, "] (", GREEN, rec.Source, RESET, ") ", rec.Message, "\n")
 	}
 }
 

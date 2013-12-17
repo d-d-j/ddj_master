@@ -3,7 +3,7 @@ all:
 debug:
 	go build -ldflags "-s" ddj_Master
 
-run:
+run: all
 	./ddj_Master
 
 test: all

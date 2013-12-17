@@ -15,14 +15,15 @@ func loadMasterConfiguration() *common.Config {
 	cfg, err := common.LoadConfig()
 	if err != nil {
 		log.Critical("Problem with configuration: ", err)
+		panic("Wrong configuration")
 	}
 	log.Info(cfg)
-	log.LoadConfiguration("log.cfg")
 	return cfg
 }
 
 // Main: Starts a TCP server and waits infinitely for connections
 func main() {
+	log.LoadConfiguration("log.cfg")
 	log.Info("Start Master")
 
 	cfg := loadMasterConfiguration()
@@ -38,7 +39,7 @@ func main() {
 	log.Info("Initialize node manager")
 	go node.NodeManager.Manage()
 	infoChan := make(chan node.Info)
-	nodeBal := node.NewLoadBalancer()
+	nodeBal := node.NewLoadBalancer(cfg.Balancer.Timeout)
 	go nodeBal.Balance(infoChan)
 
 	// Initialize task manager (balancer)
@@ -50,6 +51,7 @@ func main() {
 	// Initialize node listener
 	log.Info("Initialize node listener")
 	service := fmt.Sprintf(":%d", cfg.Ports.NodeCommunication)
+	log.Debug(service)
 	list := node.NewListener(service, infoChan)
 	go list.WaitForNodes()
 	defer list.Close() // fire netListen.Close() when program ends

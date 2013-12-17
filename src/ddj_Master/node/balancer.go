@@ -6,15 +6,17 @@ import (
 )
 
 type LoadBalancer struct {
-	CurrentInsertNodeId	int32
-	CurrentInsertGpuId	int32
+	CurrentInsertNodeId int32
+	CurrentInsertGpuId  int32
+	timeout             int32
 }
 
-func NewLoadBalancer() *LoadBalancer {
+func NewLoadBalancer(timeout int32) *LoadBalancer {
 	log.Debug("Load balancer constructor [START]")
 	lb := new(LoadBalancer)
 	lb.CurrentInsertNodeId = common.CONST_UNINITIALIZED
 	lb.CurrentInsertGpuId = common.CONST_UNINITIALIZED
+	lb.timeout = timeout
 	lb.update(nil)
 	log.Debug("Load balancer constructor [END]")
 	return lb
@@ -32,7 +34,7 @@ func (lb *LoadBalancer) Balance(info <-chan Info) {
 }
 
 func (lb *LoadBalancer) update(newInfo *Info) {
-	if(newInfo == nil) {
+	if newInfo == nil {
 		// RESET CURRENT NODE
 		lb.CurrentInsertNodeId = common.CONST_UNINITIALIZED
 		lb.CurrentInsertGpuId = common.CONST_UNINITIALIZED
@@ -42,12 +44,9 @@ func (lb *LoadBalancer) update(newInfo *Info) {
 	// DIRECTS ALL INCOMING DATA TO NEW NODE's FIRST GPU
 	ch := make(chan *Node)
 	NodeManager.GetChan <- GetNodeRequest{newInfo.nodeId, ch}
-	var n *Node = <- ch
+	var n *Node = <-ch
 	lb.CurrentInsertNodeId = n.Id
 	lb.CurrentInsertGpuId = n.GpuIds[0]
 	log.Debug("Node with id ", n.Id, " and GPU ", n.GpuIds[0], " set to current")
 	// TODO: Write balance function for nodes
 }
-
-
-

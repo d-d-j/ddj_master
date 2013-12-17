@@ -1,25 +1,25 @@
 package node
 
 import (
-	"net"
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
+	"net"
 )
 
 type Listener struct {
-	netListen		net.Listener
-	idGenerator 	common.Int32Generator
-	balancerChan	chan<- Info
+	netListen    net.Listener
+	idGenerator  common.Int32Generator
+	balancerChan chan<- Info
 }
 
 func NewListener(service string, nodeInfoChannel chan<- Info) *Listener {
-	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
+	_, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
 		log.Critical("Error: Could not resolve address")
 	}
 
-	log.Info("Listening on: ", tcpAddr.String())
-	netListen, error := net.Listen(tcpAddr.Network(), tcpAddr.String())
+	log.Info("Listening on: ", service)
+	netListen, error := net.Listen("tcp", service)
 	if error != nil {
 		log.Error(error)
 	}
@@ -30,7 +30,6 @@ func NewListener(service string, nodeInfoChannel chan<- Info) *Listener {
 	l.balancerChan = nodeInfoChannel
 	return l
 }
-
 
 func (l *Listener) WaitForNodes() {
 	for {

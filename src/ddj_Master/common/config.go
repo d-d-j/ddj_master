@@ -6,16 +6,19 @@ import (
 
 type Config struct {
 	Ports struct {
-		RestApi             int32
-		NodeCommunication 	int32
+		RestApi           int32
+		NodeCommunication int32
 	}
 	Logging struct {
-		File 				string
+		File string
 	}
 	Constants struct {
-		WorkersCount		int32
-		JobForWorkerCount	int32
-		CpuNumber			int
+		WorkersCount      int32
+		JobForWorkerCount int32
+		CpuNumber         int
+	}
+	Balancer struct {
+		Timeout int32
 	}
 }
 
