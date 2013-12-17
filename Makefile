@@ -1,5 +1,4 @@
 all:
-	export GOPATH=`pwd`
 	go build ddj_Master
 debug:
 	go build -ldflags "-s" ddj_Master
