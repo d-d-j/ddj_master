@@ -44,7 +44,23 @@ func Test_Update_With_No_Nodes_Cause_Balancer_Reset(t *testing.T) {
 }
 
 func Test_Update_With_Two_Nodes_Each_With_One_GPU_Cause_Changing_Current_Node_After_Timeout(t *testing.T) {
-	t.Error("Not implemented")
+	nodes := make(map[int32]*Node)
+	nodes[1] = NewNode(1, nil)
+	nodes[1].GpuIds = []int32{0}
+	nodes[2] = NewNode(2, nil)
+	nodes[2].GpuIds = []int32{0}
+
+	loadBalancer := NewLoadBalancer(0, nodes)
+
+	info := &Info{1}
+	loadBalancer.update(info)
+	if loadBalancer.CurrentInsertGpuId != 1 || loadBalancer.CurrentInsertGpuId != 0 {
+		t.Error("Wrong card selected")
+	}
+	loadBalancer.update(info)
+	if loadBalancer.CurrentInsertGpuId != 2 || loadBalancer.CurrentInsertGpuId != 0 {
+		t.Error("Wrong card selected")
+	}
 }
 
 func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU_After_Timeout(t *testing.T) {
