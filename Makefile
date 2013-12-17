@@ -7,5 +7,8 @@ debug:
 run:
 	./ddj_Master
 
+test: all
+	go test ./...
+
 clean:
 	rm ddj_Master
