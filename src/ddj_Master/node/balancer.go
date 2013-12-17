@@ -13,13 +13,11 @@ type LoadBalancer struct {
 }
 
 func NewLoadBalancer(timeout int32, nodes map[int32]*Node) *LoadBalancer {
-	log.Debug("Load balancer constructor [START]")
 	lb := new(LoadBalancer)
 	lb.reset()
 	lb.timeout = timeout
 	lb.nodes = nodes
 	lb.update(nil)
-	log.Debug("Load balancer constructor [END]")
 	return lb
 }
 
@@ -45,4 +43,11 @@ func (this *LoadBalancer) update(newInfo *Info) {
 		return
 	}
 
+	if this.CurrentInsertGpuId == common.CONST_UNINITIALIZED || this.CurrentInsertNodeId == common.CONST_UNINITIALIZED {
+		for _, node := range this.nodes {
+			this.CurrentInsertNodeId = node.Id
+			this.CurrentInsertGpuId = node.GpuIds[0]
+			break
+		}
+	}
 }

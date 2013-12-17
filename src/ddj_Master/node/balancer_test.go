@@ -43,24 +43,21 @@ func Test_Update_With_No_Nodes_Cause_Balancer_Reset(t *testing.T) {
 	AreEqual(expected, actual, t)
 }
 
-func Test_Update_With_Two_Nodes_Each_With_One_GPU_Cause_Changing_Current_Node_After_Timeout(t *testing.T) {
+func Test_Update_Unitialized_Balancer_Set_It_To_First_Node_And_GPU(t *testing.T) {
 	nodes := make(map[int32]*Node)
 	nodes[1] = NewNode(1, nil)
 	nodes[1].GpuIds = []int32{0}
 	nodes[2] = NewNode(2, nil)
 	nodes[2].GpuIds = []int32{0}
 
-	loadBalancer := NewLoadBalancer(0, nodes)
-
+	lb := NewLoadBalancer(0, nodes)
+	t.Log(nodes[1].GpuIds)
 	info := &Info{1}
-	loadBalancer.update(info)
-	if loadBalancer.CurrentInsertGpuId != 1 || loadBalancer.CurrentInsertGpuId != 0 {
-		t.Error("Wrong card selected")
+	lb.update(info)
+	if lb.CurrentInsertNodeId != 1 || lb.CurrentInsertGpuId != 0 {
+		t.Errorf("Wrong card selected. Expected #%d:%d but get #%d:%d", 1, 0, lb.CurrentInsertNodeId, lb.CurrentInsertGpuId)
 	}
-	loadBalancer.update(info)
-	if loadBalancer.CurrentInsertGpuId != 2 || loadBalancer.CurrentInsertGpuId != 0 {
-		t.Error("Wrong card selected")
-	}
+	t.Log(nodes[1].GpuIds)
 }
 
 func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU_After_Timeout(t *testing.T) {
