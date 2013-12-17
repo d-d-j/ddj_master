@@ -46,20 +46,32 @@ func Test_Update_With_No_Nodes_Cause_Balancer_Reset(t *testing.T) {
 func Test_Update_Unitialized_Balancer_Set_It_To_First_Node_And_GPU(t *testing.T) {
 	nodes := make(map[int32]*Node)
 	nodes[1] = NewNode(1, nil)
-	nodes[1].GpuIds = []int32{0}
+	nodes[1].GpuIds = []int32{0, 1, 2}
 	nodes[2] = NewNode(2, nil)
-	nodes[2].GpuIds = []int32{0}
+	nodes[2].GpuIds = []int32{0, 1, 2}
 
 	lb := NewLoadBalancer(0, nodes)
-	t.Log(nodes[1].GpuIds)
 	info := &Info{1}
 	lb.update(info)
 	if lb.CurrentInsertNodeId != 1 || lb.CurrentInsertGpuId != 0 {
 		t.Errorf("Wrong card selected. Expected #%d:%d but get #%d:%d", 1, 0, lb.CurrentInsertNodeId, lb.CurrentInsertGpuId)
 	}
-	t.Log(nodes[1].GpuIds)
 }
 
-func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU_After_Timeout(t *testing.T) {
-	t.Error("Not implemented")
+func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU(t *testing.T) {
+	nodes := make(map[int32]*Node)
+	nodes[1] = NewNode(1, nil)
+	nodes[1].GpuIds = []int32{0, 1, 2}
+
+	lb := NewLoadBalancer(0, nodes)
+	lb.CurrentInsertNodeId = 1
+	lb.CurrentInsertGpuId = 0
+	info := &Info{1}
+
+	for i := 0; i < 3; i++ {
+		lb.update(info)
+		if lb.CurrentInsertGpuId == int32(i) {
+			t.Errorf("Wrong card selected. Expected #%d but get #%d", i, lb.CurrentInsertGpuId)
+		}
+	}
 }
