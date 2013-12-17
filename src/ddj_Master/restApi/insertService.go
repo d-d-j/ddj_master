@@ -34,18 +34,20 @@ func (serv InsertService) setInsertResponse(response *RestResponse) {
 		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
 			[]byte("The server is currently unable to handle the request"))
 	} else if response.TaskId == 0 {
+		log.Error("Return HTTP 500")
 		serv.ResponseBuilder().SetResponseCode(500).WriteAndOveride([]byte("Server error - sorry:("))
 	} else {
+		log.Finest("Return URI to the result")
 		serv.ResponseBuilder().SetResponseCode(202).WriteAndOveride([]byte(fmt.Sprintf("/data/task/%d/status", response.TaskId)))
 	}
 }
 
 func (serv InsertService) InsertData(PostData dto.Element) {
-
 	serv.setHeader()
 	log.Finest("Inserting data - data to insert: ", PostData)
 	responseChan := make(chan *RestResponse)
 	restRequestChannel <- RestRequest{common.TASK_INSERT, &PostData, responseChan}
 	response := <-responseChan
+	log.Finest("Result: ", response)
 	serv.setInsertResponse(response)
 }
