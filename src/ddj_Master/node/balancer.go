@@ -10,14 +10,16 @@ type LoadBalancer struct {
 	CurrentInsertGpuId  int32
 	timeout             int32
 	nodeManagerChan     chan GetNodeRequest
+	nodes               map[int32]*Node
 }
 
-func NewLoadBalancer(timeout int32, nodeManagerChan chan GetNodeRequest) *LoadBalancer {
+func NewLoadBalancer(timeout int32, nodeManagerChan chan GetNodeRequest, nodes map[int32]*Node) *LoadBalancer {
 	log.Debug("Load balancer constructor [START]")
 	lb := new(LoadBalancer)
 	lb.reset()
 	lb.timeout = timeout
 	lb.nodeManagerChan = nodeManagerChan
+	lb.nodes = nodes
 	lb.update(nil)
 	log.Debug("Load balancer constructor [END]")
 	return lb

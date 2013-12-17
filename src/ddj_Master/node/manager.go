@@ -6,16 +6,16 @@ import log "code.google.com/p/log4go"
 var NodeManager = NewManager()
 
 type GetNodeRequest struct {
-	NodeId		int32
-	BackChan	chan<- *Node
+	NodeId   int32
+	BackChan chan<- *Node
 }
 
 type Manager struct {
-	nodes		map[int32]*Node
-	AddChan		chan *Node
-	GetChan		chan GetNodeRequest
-	DelChan		chan int32
-	QuitChan	chan bool
+	nodes    map[int32]*Node
+	AddChan  chan *Node
+	GetChan  chan GetNodeRequest
+	DelChan  chan int32
+	QuitChan chan bool
 }
 
 func NewManager() *Manager {
@@ -26,6 +26,10 @@ func NewManager() *Manager {
 	m.DelChan = make(chan int32)
 	m.QuitChan = make(chan bool)
 	return m
+}
+
+func (this *Manager) GetNodes() map[int32]*Node {
+	return this.nodes
 }
 
 func (m *Manager) Manage() {
@@ -48,4 +52,3 @@ func (m *Manager) Manage() {
 		}
 	}
 }
-
