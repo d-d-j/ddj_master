@@ -3,9 +3,13 @@ DDJ_Master
 
 ## Set up
 1. Install go
-	- version 1.1.2 required
-	- http://golang.org/doc/install
-	- Install GoRest `go get code.google.com/p/gorest`
+	- version 1.1.2 or above required
+
+    wget http://go.googlecode.com/files/go1.2.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go1.2.linux-amd64.tar.gz
+
+append `export PATH=$PATH:/usr/local/go/bin` to `/etc/profile`
+
 2. Build `make`
 3. Run `./DDJ_Master [-port=<port>]`
 
