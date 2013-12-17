@@ -21,13 +21,13 @@ func Test_NewLoadBalancer(t *testing.T) {
 	expected := new(LoadBalancer)
 	expected.CurrentInsertNodeId = common.CONST_UNINITIALIZED
 	expected.CurrentInsertGpuId = common.CONST_UNINITIALIZED
-	actual := NewLoadBalancer(0)
+	actual := NewLoadBalancer(0, nil)
 	AreEqual(expected, actual, t)
 }
 
 func Test_Update_With_Nil_Entry(t *testing.T) {
-	actual := NewLoadBalancer(0)
-	expected := NewLoadBalancer(0)
+	actual := NewLoadBalancer(0, nil)
+	expected := NewLoadBalancer(0, nil)
 	actual.CurrentInsertNodeId = 1
 	actual.CurrentInsertGpuId = 2
 	actual.update(nil)
