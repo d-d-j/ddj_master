@@ -36,7 +36,7 @@ func Test_Update_With_Nil_Entry_Cause_Balancer_Reset(t *testing.T) {
 
 func Test_Update_With_No_Nodes_Cause_Balancer_Reset(t *testing.T) {
 	nodes := make(map[int32]*Node)
-	info := &Info{1}
+	info := &Info{1, MemoryInfo{1, 1, 1, 1}}
 	actual := NewLoadBalancer(0, nodes)
 	expected := NewLoadBalancer(0, nil)
 	actual.update(info)
@@ -45,13 +45,13 @@ func Test_Update_With_No_Nodes_Cause_Balancer_Reset(t *testing.T) {
 
 func Test_Update_Unitialized_Balancer_Set_It_To_First_Node_And_GPU(t *testing.T) {
 	nodes := make(map[int32]*Node)
-	nodes[1] = NewNode(1, nil)
+	nodes[1] = NewNode(1, nil, nil)
 	nodes[1].GpuIds = []int32{0, 1, 2}
-	nodes[2] = NewNode(2, nil)
+	nodes[2] = NewNode(2, nil, nil)
 	nodes[2].GpuIds = []int32{0, 1, 2}
 
 	lb := NewLoadBalancer(0, nodes)
-	info := &Info{1}
+	info := &Info{1, MemoryInfo{1, 1, 1, 1}}
 	lb.update(info)
 	if lb.CurrentInsertNodeId != 1 || lb.CurrentInsertGpuId != 0 {
 		t.Errorf("Wrong card selected. Expected #%d:%d but get #%d:%d", 1, 0, lb.CurrentInsertNodeId, lb.CurrentInsertGpuId)
@@ -60,13 +60,13 @@ func Test_Update_Unitialized_Balancer_Set_It_To_First_Node_And_GPU(t *testing.T)
 
 func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU(t *testing.T) {
 	nodes := make(map[int32]*Node)
-	nodes[1] = NewNode(1, nil)
+	nodes[1] = NewNode(1, nil, nil)
 	nodes[1].GpuIds = []int32{0, 1, 2}
 
 	lb := NewLoadBalancer(0, nodes)
 	lb.CurrentInsertNodeId = 1
 	lb.CurrentInsertGpuId = 0
-	info := &Info{1}
+	info := &Info{1, MemoryInfo{1, 1, 1, 1}}
 
 	for i := 0; i < 3; i++ {
 		lb.update(info)
@@ -78,15 +78,15 @@ func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU(t *testing.T) {
 
 func Test_Update_With_Two_Nodes_Cause_Changing_Node(t *testing.T) {
 	nodes := make(map[int32]*Node)
-	nodes[1] = NewNode(1, nil)
+	nodes[1] = NewNode(1, nil, nil)
 	nodes[1].GpuIds = []int32{0, 1, 2}
-	nodes[2] = NewNode(2, nil)
+	nodes[2] = NewNode(2, nil, nil)
 	nodes[2].GpuIds = []int32{0, 1, 2}
 
 	lb := NewLoadBalancer(0, nodes)
 	lb.CurrentInsertNodeId = 1
 	lb.CurrentInsertGpuId = 0
-	info := &Info{1}
+	info := &Info{1, MemoryInfo{1, 1, 1, 1}}
 
 	for i := 0; i < 4; i++ {
 		nodeId := i%2 + 1
