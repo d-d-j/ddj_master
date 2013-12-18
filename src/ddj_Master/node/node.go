@@ -40,13 +40,13 @@ func (n *Node) StartWork(balancerChannel chan<- Info) {
 	log.Debug("Node %d READY", n.Id)
 }
 
-func (n *Node) EndWork(){
+func (n *Node) EndWork() {
 	n.stop <- true
 }
 
-func (n *Node) waitForLogin() error  {
+func (n *Node) waitForLogin() error {
 	buffer := make([]byte, 4)
-	n.Communication.read(buffer)
+	n.read(buffer)
 	buf := bytes.NewBuffer(buffer)
 	var cudaGpuCount int32
 	err := binary.Read(buf, binary.LittleEndian, &cudaGpuCount)
@@ -58,10 +58,10 @@ func (n *Node) waitForLogin() error  {
 	log.Debug("Node received login data (CUDA GPU COUNT = ", cudaGpuCount, ") from node ", n.Id)
 
 	buffer = make([]byte, 4*cudaGpuCount)
-	n.Communication.read(buffer)
+	n.read(buffer)
 	buf = bytes.NewBuffer(buffer)
 	n.GpuIds = make([]int32, cudaGpuCount)
-	for i:=int32(0); i<cudaGpuCount; i++ {
+	for i := int32(0); i < cudaGpuCount; i++ {
 		err = binary.Read(buf, binary.LittleEndian, &(n.GpuIds[i]))
 		if err != nil {
 			log.Error("Node login error for node ", n.Id)
@@ -78,7 +78,7 @@ func (n *Node) readerRoutine() {
 	var r dto.Result
 	buffer := make([]byte, r.Header.Size())
 
-	for n.Communication.read(buffer) {
+	for n.read(buffer) {
 		log.Debug("Node reader received data from ", n.Id)
 
 		err := r.Decode(buffer)
@@ -91,7 +91,7 @@ func (n *Node) readerRoutine() {
 			r.Data = make([]byte, 0)
 		} else {
 			r.Data = make([]byte, r.DataSize)
-			n.Communication.read(r.Data)
+			n.read(r.Data)
 		}
 		n.Outgoing <- r
 	}
@@ -101,15 +101,15 @@ func (n *Node) readerRoutine() {
 
 // Sending goroutine for Node - waits for data to be sent over Node.Incoming,
 // then sends it over the socket
-func (n *Node)senderRoutine() {
+func (n *Node) senderRoutine() {
 	for {
 		select {
-		case buffer := <-n.Communication.Incoming:
+		case buffer := <-n.Incoming:
 			log.Fine("Sending ", buffer, " to ", n.Id)
-			n.Communication.write(buffer)
+			n.write(buffer)
 		case <-n.stop:
 			log.Info("Node ", n.Id, " stopped")
-			n.Communication.close()
+			n.close()
 			break
 		}
 	}
