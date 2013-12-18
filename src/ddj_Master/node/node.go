@@ -2,31 +2,34 @@ package node
 
 // Imports required packages
 import (
-	log "code.google.com/p/log4go"
-	"ddj_Master/dto"
-	"net"
-	"ddj_Master/common"
-	"encoding/binary"
 	"bytes"
+	log "code.google.com/p/log4go"
+	"ddj_Master/common"
+	"ddj_Master/dto"
+	"ddj_Master/restApi"
+	"encoding/binary"
+	"net"
 )
 
 // Defines a Node with Id, many GpuIds, a connection object, and
 // some channels for sending and receiving data.
 type Node struct {
 	Communication
-	Id       	int32
-	Status		int32
-	GpuIds		[]int32
-	Stats		Info
-	stop		chan bool
+	Id          int32
+	Status      int32
+	GpuIds      []int32
+	Stats       Info
+	stop        chan bool
+	TaskChannel chan restApi.GetTaskRequest
 }
 
-func NewNode(id int32, connection net.Conn) *Node {
+func NewNode(id int32, connection net.Conn, taskChannel chan restApi.GetTaskRequest) *Node {
 	n := new(Node)
 	n.Status = common.NODE_CONNECTED
 	n.Id = id
 	n.stop = make(chan bool)
 	n.Communication = makeCommunication(connection)
+	n.TaskChannel = taskChannel
 	return n
 }
 
@@ -36,7 +39,7 @@ func (n *Node) StartWork(balancerChannel chan<- Info) {
 		go n.readerRoutine()
 		go n.senderRoutine()
 	}
-	balancerChannel <- Info{n.Id}
+	balancerChannel <- Info{n.Id, MemoryInfo{1, 1, 1, 1}}
 	log.Debug("Node %d READY", n.Id)
 }
 
@@ -79,24 +82,40 @@ func (n *Node) readerRoutine() {
 	buffer := make([]byte, r.Header.Size())
 
 	for n.read(buffer) {
-		log.Debug("Node reader received data from ", n.Id)
+		log.Debug("Node reader received data from #%d", n.Id)
 
 		err := r.Decode(buffer)
 		if err != nil {
 			log.Error(err)
 		}
 
-		log.Fine("Response header: ", r.Header)
+		log.Fine("Response header: %s", r.Header.String())
 		if r.DataSize == 0 {
 			r.Data = make([]byte, 0)
 		} else {
+			log.Finest("Reading response data %d bytes", r.DataSize)
 			r.Data = make([]byte, r.DataSize)
 			n.read(r.Data)
 		}
-		n.Outgoing <- r
+		go n.processResult(r)
 	}
 
 	log.Info("Node reader stopped for Node ", n.Id)
+}
+
+//FIXME
+func (n *Node) processResult(result dto.Result) {
+	taskChan := make(chan chan *restApi.RestResponse)
+	n.TaskChannel <- restApi.GetTaskRequest{result.TaskId, taskChan}
+	r := <-taskChan
+	var nodeInfo Info
+	err := nodeInfo.MemoryInfo.Decode(result.Data)
+	if err != nil {
+		log.Error("Cannot parse node info ", err)
+	}
+	nodeInfo.nodeId = n.Id
+
+	r <- restApi.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
 }
 
 // Sending goroutine for Node - waits for data to be sent over Node.Incoming,

@@ -6,14 +6,14 @@ import (
 )
 
 type Task struct {
-	Id				int64
-	Type			int32
-	Data			dto.Dto
-	DataSize		int32
-	ResponseChan	chan *restApi.RestResponse
+	Id           int64
+	Type         int32
+	Data         dto.Dto
+	DataSize     int32
+	ResponseChan chan *restApi.RestResponse
 }
 
-func NewTask(id int64, request restApi.RestRequest) *Task {
+func NewTask(id int64, request restApi.RestRequest, respone chan *restApi.RestResponse) *Task {
 	t := new(Task)
 	t.Id = id
 	t.Type = request.Type

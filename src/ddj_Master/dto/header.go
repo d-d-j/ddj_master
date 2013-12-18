@@ -1,19 +1,19 @@
 package dto
 
 import (
-	"fmt"
 	"bytes"
 	"encoding/binary"
+	"fmt"
 )
 
 type Header struct {
-	TaskId		int64
-	Type		int32
-	DataSize	int32
+	TaskId   int64
+	Type     int32
+	DataSize int32
 }
 
 func (h *Header) String() string {
-	return fmt.Sprintf("#%d Code: %d [%X]", h.TaskId, h.Type, h.DataSize)
+	return fmt.Sprintf("#%d Code: %d [%d]", h.TaskId, h.Type, h.DataSize)
 }
 
 func (h *Header) Encode() ([]byte, error) {

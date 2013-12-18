@@ -63,8 +63,8 @@ Loop:
 			if insertNode == nil {
 				continue Loop
 			}
-			id := idGen.GetId()   // generate id
-			t := NewTask(id, req) // create new task for the request
+			id := idGen.GetId()
+			t := NewTask(id, req, nil)
 			log.Debug("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
 			TaskManager.AddChan <- t         // add task to dictionary
 			message := createMessage(req, t) // create a message to send
@@ -78,6 +78,37 @@ Loop:
 		case common.TASK_SELECT_ALL:
 			log.Finest("Worker is processing [select all] task")
 			// TODO: Process select task
+		case common.TASK_INFO:
+			log.Debug("Worker is processing [info] task for all nodes")
+			nodes := node.NodeManager.GetNodes()
+			avaliableNodes := len(nodes)
+			responseChan := make(chan *restApi.RestResponse, avaliableNodes)
+			for _, n := range nodes {
+				log.Finest("Sending [info] task to #%d", n.Id)
+				id := idGen.GetId()
+				t := NewTask(id, req, responseChan)
+				log.Fine("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
+				TaskManager.AddChan <- t         // add task to dictionary
+				message := createMessage(req, t) // create a message to send
+				message, err := t.MakeRequest().Encode()
+				if err != nil {
+					log.Error("Cannot parse request: %s", err)
+					continue
+				}
+				log.Finest("Sending message [%d] to node #%d", id, n.Id)
+				nodeChan := make(chan *node.Node)
+				nodeReq := node.GetNodeRequest{n.Id, nodeChan}
+				node.NodeManager.GetChan <- nodeReq
+				currentNode := <-nodeChan
+				currentNode.Incoming <- message
+				log.Finest("Worker send task [%d]", id)
+			}
+			log.Debug("Waiting for status infos")
+			for i := 0; i < avaliableNodes; i++ {
+				result := <-responseChan
+				log.Finest("Get info", result)
+			}
+
 		default:
 			log.Error("Worker can't handle task type ", req.Type)
 		}

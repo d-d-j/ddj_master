@@ -3,19 +3,19 @@ package task
 import (
 	log "code.google.com/p/log4go"
 	"container/heap"
-	"ddj_Master/restApi"
 	"ddj_Master/node"
+	"ddj_Master/restApi"
 )
 
 /* TODO: 	Implement stop function for balancer
-			it should wait for all workers to finish their jobs
-			but it shouldn't delegate more tasks to workers
-			after that balance function should return
- */
+it should wait for all workers to finish their jobs
+but it shouldn't delegate more tasks to workers
+after that balance function should return
+*/
 
 type Balancer struct {
-	pool 		Pool
-	done 		chan *Worker
+	pool Pool
+	done chan *Worker
 }
 
 func NewBalancer(workersCount int32, jobForWorkerCount int32, loadBal *node.LoadBalancer) *Balancer {
@@ -36,13 +36,16 @@ func (b *Balancer) Balance(work <-chan restApi.RestRequest) {
 			b.dispatch(req)
 		case w := <-b.done:
 			b.completed(w)
+			//Only for test. This feature is not working yet
+			//case <-time.After(5 * time.Second):
+			//	b.dispatch(restApi.RestRequest{common.TASK_INFO, new(dto.EmptyElement), nil})
 		}
 	}
 }
 
 func (b *Balancer) dispatch(req restApi.RestRequest) {
 	w := heap.Pop(&(b.pool)).(*Worker)
-	log.Fine("Dispach request to ", w)
+	log.Fine("Dispatch request to ", w)
 	w.reqChan <- req
 	w.pending++
 	heap.Push(&(b.pool), w)

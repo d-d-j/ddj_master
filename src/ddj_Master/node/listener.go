@@ -3,6 +3,7 @@ package node
 import (
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
+	"ddj_Master/restApi"
 	"net"
 )
 
@@ -31,7 +32,7 @@ func NewListener(service string, nodeInfoChannel chan<- Info) *Listener {
 	return l
 }
 
-func (l *Listener) WaitForNodes() {
+func (l *Listener) WaitForNodes(taskChannel chan restApi.GetTaskRequest) {
 	for {
 		log.Info("Waiting for nodes")
 		connection, error := l.netListen.Accept()
@@ -39,7 +40,7 @@ func (l *Listener) WaitForNodes() {
 			log.Error("node error: ", error)
 		} else {
 			log.Info("Accept node: ", connection.RemoteAddr())
-			newNode := NewNode(l.idGenerator.GetId(), connection)
+			newNode := NewNode(l.idGenerator.GetId(), connection, taskChannel)
 			NodeManager.AddChan <- newNode
 			go newNode.StartWork(l.balancerChan)
 		}

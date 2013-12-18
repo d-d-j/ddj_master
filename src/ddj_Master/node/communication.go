@@ -1,23 +1,21 @@
 package node
 
 import (
-	"net"
-	"ddj_Master/dto"
 	log "code.google.com/p/log4go"
+	"ddj_Master/dto"
+	"net"
 )
 
 type Communication struct {
-	Incoming 	chan []byte
-	Outgoing 	chan dto.Result
-	connection  net.Conn
+	Incoming   chan []byte
+	Outgoing   chan dto.Result
+	connection net.Conn
 }
 
 func NewCommunication(conn net.Conn) *Communication {
-	in := make(chan []byte)
-	out := make(chan dto.Result)
 	com := new(Communication)
-	com.Incoming = in
-	com.Outgoing = out
+	com.Incoming = make(chan []byte)
+	com.Outgoing = make(chan dto.Result)
 	com.connection = conn
 	return com
 }
@@ -34,10 +32,10 @@ func (c *Communication) read(buffer []byte) bool {
 	bytesRead, error := c.connection.Read(buffer)
 	if error != nil {
 		c.connection.Close()
-		log.Error("Problem with connection: ", error)
+		log.Error("Problem with connection: %s", error)
 		return false
 	}
-	log.Debug("Read ", bytesRead, " bytes")
+	log.Debug("Read %d bytes", bytesRead)
 	return true
 }
 
@@ -47,10 +45,10 @@ func (c *Communication) write(buffer []byte) bool {
 	bytesSend, error := c.connection.Write(buffer)
 	if error != nil {
 		c.connection.Close()
-		log.Error("Problem with connection: ", error)
+		log.Error("Problem with connection: %s", error)
 		return false
 	}
-	log.Debug("Written ", bytesSend, " bytes")
+	log.Debug("Written %d bytes", bytesSend)
 	return true
 }
 

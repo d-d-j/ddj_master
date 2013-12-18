@@ -53,7 +53,7 @@ func main() {
 	service := fmt.Sprintf(":%d", cfg.Ports.NodeCommunication)
 	log.Debug(service)
 	list := node.NewListener(service, infoChan)
-	go list.WaitForNodes()
+	go list.WaitForNodes(task.TaskManager.GetChan)
 	defer list.Close() // fire netListen.Close() when program ends
 
 	// TODO: Wait for console instructions (q - quit for example)
