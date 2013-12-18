@@ -8,17 +8,18 @@ const (
 
 //TaskType
 const (
-	TASK_ERROR		int32 = 0
+	TASK_ERROR      int32 = 0
 	TASK_INSERT     int32 = 1
 	TASK_SELECT_ALL int32 = 2
-	TASK_FLUSH		int32 = 3
+	TASK_FLUSH      int32 = 3
+	TASK_INFO       int32 = 4
 )
 
 //NodeStatus
 const (
-	NODE_ERROR			int32 = 0
-	NODE_CONNECTED		int32 = 1
-	NODE_READY			int32 = 2
+	NODE_ERROR     int32 = 0
+	NODE_CONNECTED int32 = 1
+	NODE_READY     int32 = 2
 )
 
 //Constants
