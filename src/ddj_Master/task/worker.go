@@ -5,6 +5,7 @@ import (
 	"ddj_Master/common"
 	"ddj_Master/node"
 	"ddj_Master/restApi"
+	"fmt"
 )
 
 type Worker struct {
@@ -51,6 +52,10 @@ func createMessage(req restApi.RestRequest, t *Task) []byte {
 	return message
 }
 
+func (w *Worker) String() string {
+	return fmt.Sprintf("Worker #%d pending:%d", w.index, w.pending)
+}
+
 func (w *Worker) Work(done chan *Worker, idGen common.Int64Generator, balancer *node.LoadBalancer) {
 Loop:
 	for {
@@ -79,9 +84,9 @@ Loop:
 			log.Finest("Worker is processing [select all] task")
 			// TODO: Process select task
 		case common.TASK_INFO:
-			log.Debug("Worker is processing [info] task for all nodes")
 			nodes := node.NodeManager.GetNodes()
 			avaliableNodes := len(nodes)
+			log.Debug("Worker is processing [info] task for all %d nodes", avaliableNodes)
 			responseChan := make(chan *restApi.RestResponse, avaliableNodes)
 			for _, n := range nodes {
 				log.Finest("Sending [info] task to #%d", n.Id)
@@ -108,7 +113,6 @@ Loop:
 				result := <-responseChan
 				log.Finest("Get info", result)
 			}
-
 		default:
 			log.Error("Worker can't handle task type ", req.Type)
 		}

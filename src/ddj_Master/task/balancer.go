@@ -3,8 +3,11 @@ package task
 import (
 	log "code.google.com/p/log4go"
 	"container/heap"
+	"ddj_Master/common"
+	"ddj_Master/dto"
 	"ddj_Master/node"
 	"ddj_Master/restApi"
+	"time"
 )
 
 /* TODO: 	Implement stop function for balancer
@@ -37,15 +40,15 @@ func (b *Balancer) Balance(work <-chan restApi.RestRequest) {
 		case w := <-b.done:
 			b.completed(w)
 			//Only for test. This feature is not working yet
-			//case <-time.After(5 * time.Second):
-			//	b.dispatch(restApi.RestRequest{common.TASK_INFO, new(dto.EmptyElement), nil})
+		case <-time.After(5 * time.Second):
+			b.dispatch(restApi.RestRequest{common.TASK_INFO, new(dto.EmptyElement), nil})
 		}
 	}
 }
 
 func (b *Balancer) dispatch(req restApi.RestRequest) {
 	w := heap.Pop(&(b.pool)).(*Worker)
-	log.Fine("Dispatch request to ", w)
+	log.Fine("Dispatch request to %s", w)
 	w.reqChan <- req
 	w.pending++
 	heap.Push(&(b.pool), w)
