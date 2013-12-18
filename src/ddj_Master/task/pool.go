@@ -1,9 +1,9 @@
 package task
 
 import (
-	"fmt"
 	"ddj_Master/common"
 	"ddj_Master/node"
+	"fmt"
 )
 
 type Pool []*Worker
@@ -12,7 +12,7 @@ func NewWorkersPool(size int32, jobsPerWorker int32, done chan *Worker, loadBal 
 	pool := make(Pool, size)
 	idGen := common.NewTaskIdGenerator()
 	s := int(size)
-	for i:=0; i<s; i++ {
+	for i := 0; i < s; i++ {
 		worker := NewWorker(i, jobsPerWorker)
 		go worker.Work(done, idGen, loadBal)
 		pool[i] = worker
@@ -27,7 +27,7 @@ func (p Pool) Less(i, j int) bool {
 	if p[j] == nil {
 		fmt.Println("ERROR ", j)
 	}
-	return p[i].pending > p[j].pending
+	return p[i].pending < p[j].pending
 }
 
 func (p Pool) Len() int { return len(p) }
