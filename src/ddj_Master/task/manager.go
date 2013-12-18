@@ -34,6 +34,7 @@ func (m *Manager) Manage() {
 		case get := <-m.GetChan:
 			get.BackChan <- m.tasks[get.TaskId].ResponseChan
 		case add := <-m.AddChan:
+			log.Finest("Add new task: %s", add)
 			m.tasks[add.Id] = add
 		case del := <-m.DelChan:
 			delete(m.tasks, del)

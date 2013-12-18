@@ -93,6 +93,7 @@ Loop:
 				id := idGen.GetId()
 				t := NewTask(id, req, responseChan)
 				log.Fine("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
+				log.Finest(t)
 				TaskManager.AddChan <- t         // add task to dictionary
 				message := createMessage(req, t) // create a message to send
 				message, err := t.MakeRequest().Encode()

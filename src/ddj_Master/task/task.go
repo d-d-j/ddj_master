@@ -13,13 +13,16 @@ type Task struct {
 	ResponseChan chan *restApi.RestResponse
 }
 
-func NewTask(id int64, request restApi.RestRequest, respone chan *restApi.RestResponse) *Task {
+func NewTask(id int64, request restApi.RestRequest, response chan *restApi.RestResponse) *Task {
 	t := new(Task)
 	t.Id = id
 	t.Type = request.Type
 	t.Data = request.Data
 	t.DataSize = int32(request.Data.Size())
 	t.ResponseChan = request.Response
+	if response != nil {
+		t.ResponseChan = response
+	}
 	return t
 }
 

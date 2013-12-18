@@ -114,7 +114,8 @@ func (n *Node) processResult(result dto.Result) {
 		log.Error("Cannot parse node info ", err)
 	}
 	nodeInfo.nodeId = n.Id
-
+	log.Debug("Node info %s", nodeInfo.String())
+	log.Finest(r)
 	r <- restApi.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
 }
 

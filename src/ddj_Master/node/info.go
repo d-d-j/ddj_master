@@ -18,8 +18,12 @@ type MemoryInfo struct {
 	GpuMemoryTotal int32
 }
 
+func (this *MemoryInfo) String() string {
+	return fmt.Sprintf("RAM: %d/%d\tGPU: %d/%d", this.MemoryFree, this.MemoryTotal, this.GpuMemoryFree, this.GpuMemoryTotal)
+}
+
 func (this *Info) String() string {
-	return fmt.Sprintf("#%d", this.nodeId)
+	return fmt.Sprintf("Node #%d\t", this.nodeId, this.MemoryInfo.String())
 }
 
 func (this *Info) Size() int {
