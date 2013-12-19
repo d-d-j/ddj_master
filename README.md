@@ -19,6 +19,6 @@ append `export PATH=$PATH:/usr/local/go/bin` to `/etc/profile`
 
 		curl -X POST -d "{\"series\":7,\"tag\":2,\"time\":`date -u +%s`,\"value\":0.5}" http://localhost:8888/data --header "Content-Type:application/json"
 
-2. Select All
+2. Select
 
-		curl http://localhost:8888/data
+		curl -G 'http://localhost:8888/data/metric/0,1,2/tag/3,4,5/time/10-20,30-60/aggregation/none'

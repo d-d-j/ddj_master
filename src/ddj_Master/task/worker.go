@@ -3,7 +3,6 @@ package task
 import (
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
-	"ddj_Master/dto"
 	"ddj_Master/node"
 	"ddj_Master/restApi"
 	"fmt"
@@ -86,10 +85,6 @@ Loop:
 			avaliableNodes := len(nodes)
 			log.Debug("Worker is processing [select all] task for all %d nodes", avaliableNodes)
 			responseChan := make(chan *restApi.RestResponse, avaliableNodes)
-
-			var query dto.Query
-			query = dto.Query{1, []int32{1}, 2, []int32{0, 1}, 4, []int64{0, 7, 11, 21}, 0}
-			req.Data = &query
 
 			for _, n := range nodes {
 				log.Finest("Sending [select all] task to #%d", n.Id)

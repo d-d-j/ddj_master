@@ -26,7 +26,7 @@ func (q *Query) String() string {
 	}
 	output += fmt.Sprintf("\tTags [%d]: ", q.TagsCount)
 	for i = 0; i < q.TagsCount; i++ {
-		output += fmt.Sprintf("%d", q.Tags[i])
+		output += fmt.Sprintf("%d, ", q.Tags[i])
 	}
 	output += fmt.Sprintf("\tTimes [%d]: ", q.TimeSpansCount)
 	for i = 0; i < q.TimeSpansCount*2; i += 2 {
