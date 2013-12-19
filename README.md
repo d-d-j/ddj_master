@@ -21,4 +21,8 @@ append `export PATH=$PATH:/usr/local/go/bin` to `/etc/profile`
 
 2. Select
 
-		curl -G 'http://localhost:8888/data/metric/0,1,2/tag/3,4,5/time/10-20,30-60/aggregation/none'
+		curl -G 'http://localhost:8888/data/metric/1,2,3/tag/3,4,5/time/10-20,30-60/aggregation/none'
+
+3. SelectAll
+
+        curl -G 'http://localhost:8888/data/'

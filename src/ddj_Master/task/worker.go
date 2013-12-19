@@ -66,6 +66,7 @@ Loop:
 			log.Finest("Worker is processing [insert] task")
 			insertNode := getNodeForInsert(req, balancer) // get nodeId from load balancer
 			if insertNode == nil {
+				done <- w
 				continue Loop
 			}
 			id := idGen.GetId()
@@ -74,6 +75,7 @@ Loop:
 			TaskManager.AddChan <- t         // add task to dictionary
 			message := createMessage(req, t) // create a message to send
 			if message == nil {
+				done <- w
 				continue Loop
 			}
 			log.Finest("Sending message [%d] to node #%d", id, insertNode.Id)
@@ -138,7 +140,9 @@ Loop:
 				currentNode.Incoming <- message
 				log.Finest("Worker send task [%d]", id)
 			}
-			log.Debug("Waiting for status infos")
+			if avaliableNodes != 0 {
+				log.Debug("Waiting for status infos")
+			}
 			for i := 0; i < avaliableNodes; i++ {
 				result := <-responseChan
 				log.Finest("Get info", result)
@@ -146,6 +150,7 @@ Loop:
 		default:
 			log.Error("Worker can't handle task type ", req.Type)
 		}
+		log.Debug("Worker is done")
 		done <- w
 	}
 }
