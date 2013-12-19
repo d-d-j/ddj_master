@@ -39,9 +39,34 @@ func (q *Query) String() string {
 }
 
 func (q *Query) Encode() ([]byte, error) {
+
 	buf := new(bytes.Buffer)
 
 	err := binary.Write(buf, binary.LittleEndian, q.MetricsCount)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buf, binary.LittleEndian, q.Metrics)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buf, binary.LittleEndian, q.TagsCount)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buf, binary.LittleEndian, q.Tags)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buf, binary.LittleEndian, q.TimeSpansCount)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buf, binary.LittleEndian, q.TimeSpans)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buf, binary.LittleEndian, q.AggregationType)
 	if err != nil {
 		return nil, err
 	}
@@ -51,11 +76,14 @@ func (q *Query) Encode() ([]byte, error) {
 
 func (q *Query) Decode(buf []byte) error {
 
-	buffer := bytes.NewBuffer(buf)
-	return binary.Read(buffer, binary.LittleEndian, q)
+	return fmt.Errorf("Not Implemented Yet")
 }
 
 func (q *Query) Size() int {
 
-	return binary.Size(q)
+	buf, err := q.Encode()
+	if err != nil {
+		return 0
+	}
+	return len(buf)
 }

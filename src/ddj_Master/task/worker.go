@@ -3,6 +3,7 @@ package task
 import (
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
+	"ddj_Master/dto"
 	"ddj_Master/node"
 	"ddj_Master/restApi"
 	"fmt"
@@ -81,8 +82,41 @@ Loop:
 			req.Response <- restApi.NewRestResponse("", id, nil)
 			log.Finest("Worker finish task [%d]", id)
 		case common.TASK_SELECT_ALL:
-			log.Finest("Worker is processing [select all] task")
-			// TODO: Process select task
+			nodes := node.NodeManager.GetNodes()
+			avaliableNodes := len(nodes)
+			log.Debug("Worker is processing [select all] task for all %d nodes", avaliableNodes)
+			responseChan := make(chan *restApi.RestResponse, avaliableNodes)
+
+			var query dto.Query
+			query = dto.Query{1, []int32{1}, 2, []int32{0, 1}, 4, []int64{0, 7, 11, 21}, 0}
+			req.Data = &query
+
+			for _, n := range nodes {
+				log.Finest("Sending [select all] task to #%d", n.Id)
+				id := idGen.GetId()
+				t := NewTask(id, req, responseChan)
+				log.Fine("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
+				log.Finest(t)
+				TaskManager.AddChan <- t         // add task to dictionary
+				message := createMessage(req, t) // create a message to send
+				message, err := t.MakeRequest().Encode()
+				if err != nil {
+					log.Error("Cannot parse request: %s", err)
+					continue
+				}
+				log.Finest("Sending message [%d] to node #%d", id, n.Id)
+				nodeChan := make(chan *node.Node)
+				nodeReq := node.GetNodeRequest{n.Id, nodeChan}
+				node.NodeManager.GetChan <- nodeReq
+				currentNode := <-nodeChan
+				currentNode.Incoming <- message
+				log.Finest("Worker send task [%d]", id)
+			}
+			log.Debug("Waiting for data")
+			for i := 0; i < avaliableNodes; i++ {
+				result := <-responseChan
+				log.Finest("Select: ", result)
+			}
 		case common.TASK_INFO:
 			nodes := node.NodeManager.GetNodes()
 			avaliableNodes := len(nodes)
