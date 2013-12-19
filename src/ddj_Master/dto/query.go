@@ -29,7 +29,7 @@ func (q *Query) String() string {
 		output += fmt.Sprintf("%d", q.Tags[i])
 	}
 	output += fmt.Sprintf("\tTimes [%d]: ", q.TimeSpansCount)
-	for i = 0; i < q.TagsCount*2; i += 2 {
+	for i = 0; i < q.TimeSpansCount*2; i += 2 {
 		from := time.Unix(q.TimeSpans[i], 0)
 		to := time.Unix(q.TimeSpans[i+1], 0)
 		output += fmt.Sprintf("%s-%s ", from, to)
