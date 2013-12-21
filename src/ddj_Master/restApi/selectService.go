@@ -5,6 +5,7 @@ import (
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
 	"ddj_Master/dto"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -35,69 +36,76 @@ func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) RestRes
 
 func prepareQuery(metrics, tags, times, aggr string) (dto.Query, error) {
 
-	const ALL string = "all"
+	metricsArr, err := prepareTagsOrMetrics(metrics)
+	if err != nil {
+		return dto.Query{}, err
+	}
+	tagsArr, err := prepareTagsOrMetrics(tags)
+	if err != nil {
+		return dto.Query{}, err
+	}
+	timesArr, err := prepareTimeSpans(times)
+	if err != nil {
+		return dto.Query{}, err
+	}
 
+	aggregation, err := prepareAggregationType(aggr)
+	if err != nil {
+		return dto.Query{}, err
+	}
+
+	return dto.Query{int32(len(metricsArr)), metricsArr, int32(len(tagsArr)), tagsArr, int32(len(timesArr) / 2), timesArr, aggregation}, nil
+}
+
+func prepareAggregationType(aggregation string) (int32, error) {
+	switch aggregation {
+	case "none":
+		return common.AGGREGATION_NONE, nil
+	case "sum":
+		return common.AGGREGATION_ADD, nil
+	case "average":
+		return common.AGGREGATION_AVERAGE, nil
+	default:
+		return common.TASK_ERROR, fmt.Errorf("Unknown aggregation type")
+	}
+}
+
+func prepareTimeSpans(times string) ([]int64, error) {
 	timesSplited := strings.Split(times, ",")
-
 	timesArr := make([]int64, len(timesSplited)*2)
-
-	var (
-		metricsArr []int32
-		tagsArr    []int32
-	)
-	if metrics == ALL {
-		metricsArr = make([]int32, 0)
-	} else {
-		metricsSplited := strings.Split(metrics, ",")
-		metricsArr = make([]int32, len(metricsSplited))
-		for i, element := range metricsSplited {
-			value, err := strconv.Atoi(element)
-			if err != nil {
-				return dto.Query{}, err
-			}
-			metricsArr[i] = int32(value)
-		}
-	}
-
-	if tags == ALL {
-		tagsArr = make([]int32, 0)
-	} else {
-		tagsSplited := strings.Split(tags, ",")
-		tagsArr = make([]int32, len(tagsSplited))
-		for i, element := range tagsSplited {
-			value, err := strconv.Atoi(element)
-			if err != nil {
-				return dto.Query{}, err
-			}
-			tagsArr[i] = int32(value)
-		}
-	}
-
 	for i := 0; i < len(timesSplited); i++ {
 		time := strings.Split(timesSplited[i], "-")
 		value, err := strconv.ParseInt(time[0], 10, 64)
 		if err != nil {
-			return dto.Query{}, err
+			return nil, err
 		}
 		timesArr[2*i] = int64(value)
 		value, err = strconv.ParseInt(time[1], 10, 64)
 		if err != nil {
-			return dto.Query{}, err
+			return nil, err
 		}
 		timesArr[2*i+1] = int64(value)
 	}
+	return timesArr, nil
+}
 
-	var aggregation int32
-	switch aggr {
-	case "none":
-		aggregation = common.AGGREGATION_NONE
-	case "sum":
-		aggregation = common.AGGREGATION_ADD
-	case "average":
-		aggregation = common.AGGREGATION_AVERAGE
+func prepareTagsOrMetrics(input string) ([]int32, error) {
+	const ALL string = "all"
+	if input == ALL {
+		return make([]int32, 0), nil
 	}
 
-	return dto.Query{int32(len(metricsArr)), metricsArr, int32(len(tagsArr)), tagsArr, int32(len(timesSplited)), timesArr, aggregation}, nil
+	inputSplited := strings.Split(input, ",")
+	inputArr := make([]int32, len(inputSplited))
+	for i, element := range inputSplited {
+		value, err := strconv.Atoi(element)
+		if err != nil {
+			return nil, err
+		}
+		inputArr[i] = int32(value)
+	}
+
+	return inputArr, nil
 }
 
 func (serv SelectService) setHeader() {
