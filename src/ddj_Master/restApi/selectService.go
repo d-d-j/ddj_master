@@ -34,27 +34,43 @@ func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) RestRes
 }
 
 func prepareQuery(metrics, tags, times, aggr string) (dto.Query, error) {
-	metricsSplited := strings.Split(metrics, ",")
-	tagsSplited := strings.Split(tags, ",")
+
+	const ALL string = "all"
+
 	timesSplited := strings.Split(times, ",")
-	metricsArr := make([]int32, len(metricsSplited))
-	tagsArr := make([]int32, len(tagsSplited))
+
 	timesArr := make([]int64, len(timesSplited)*2)
 
-	for i, element := range metricsSplited {
-		value, err := strconv.Atoi(element)
-		if err != nil {
-			return dto.Query{}, err
+	var (
+		metricsArr []int32
+		tagsArr    []int32
+	)
+	if metrics == ALL {
+		metricsArr = make([]int32, 0)
+	} else {
+		metricsSplited := strings.Split(metrics, ",")
+		metricsArr = make([]int32, len(metricsSplited))
+		for i, element := range metricsSplited {
+			value, err := strconv.Atoi(element)
+			if err != nil {
+				return dto.Query{}, err
+			}
+			metricsArr[i] = int32(value)
 		}
-		metricsArr[i] = int32(value)
 	}
 
-	for i, element := range tagsSplited {
-		value, err := strconv.Atoi(element)
-		if err != nil {
-			return dto.Query{}, err
+	if tags == ALL {
+		tagsArr = make([]int32, 0)
+	} else {
+		tagsSplited := strings.Split(tags, ",")
+		tagsArr = make([]int32, len(tagsSplited))
+		for i, element := range tagsSplited {
+			value, err := strconv.Atoi(element)
+			if err != nil {
+				return dto.Query{}, err
+			}
+			tagsArr[i] = int32(value)
 		}
-		tagsArr[i] = int32(value)
 	}
 
 	for i := 0; i < len(timesSplited); i++ {
