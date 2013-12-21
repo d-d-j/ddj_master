@@ -96,3 +96,25 @@ func Test_Update_With_Two_Nodes_Cause_Changing_Node(t *testing.T) {
 		}
 	}
 }
+
+func Test_Update_Called_3_Times_Will_Fire_All_3_Nodes_And_GPUs(t *testing.T) {
+	t.Skip("Now we don't support this feature. We need to think how node balancer should work")
+	nodes := make(map[int32]*Node)
+	for i := int32(0); i < 3; i++ {
+		nodes[i] = NewNode(i, nil, nil)
+		nodes[i].GpuIds = []int32{0, 1, 2}
+	}
+
+	lb := NewLoadBalancer(0, nodes)
+	info := &Info{1, MemoryInfo{1, 1, 1, 1}}
+
+	actual := [9]int32{}
+	expected := [9]int32{0, 1, 2, 10, 11, 12, 20, 21, 22}
+	for i := 0; i < 9; i++ {
+		lb.update(info)
+		actual[i] = lb.CurrentInsertNodeId*10 + lb.CurrentInsertGpuId
+	}
+	if expected != actual {
+		t.Errorf("Expected: ", expected, "but got: ", actual)
+	}
+}
