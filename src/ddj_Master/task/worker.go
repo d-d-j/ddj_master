@@ -8,14 +8,23 @@ import (
 	"fmt"
 )
 
-type Worker struct {
+type TaskWorker struct {
 	reqChan chan restApi.RestRequest
 	pending int
 	index   int
 }
 
-func NewWorker(idx int, jobsPerWorker int32) *Worker {
-	w := new(Worker)
+type Worker interface {
+	Work(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer)
+	RequestChan() chan restApi.RestRequest
+	IncrementPending()
+	DecrementPending()
+	Id() int
+	String() string
+}
+
+func NewTaskWorker(idx int, jobsPerWorker int32) Worker {
+	w := new(TaskWorker)
 	w.index = idx
 	w.pending = 0
 	w.reqChan = make(chan restApi.RestRequest, jobsPerWorker)
@@ -52,11 +61,27 @@ func createMessage(req restApi.RestRequest, t *Task) []byte {
 	return message
 }
 
-func (w *Worker) String() string {
+func (w *TaskWorker) String() string {
 	return fmt.Sprintf("Worker #%d pending:%d", w.index, w.pending)
 }
 
-func (w *Worker) Work(done chan *Worker, idGen common.Int64Generator, balancer *node.LoadBalancer) {
+func (w *TaskWorker) Id() int {
+	return w.index
+}
+
+func (w *TaskWorker) IncrementPending() {
+	w.pending++
+}
+
+func (w *TaskWorker) DecrementPending() {
+	w.pending--
+}
+
+func (w *TaskWorker) RequestChan() chan restApi.RestRequest {
+	return w.reqChan
+}
+
+func (w *TaskWorker) Work(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer) {
 Loop:
 	for {
 		req := <-w.reqChan
