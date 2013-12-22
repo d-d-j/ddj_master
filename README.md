@@ -26,3 +26,9 @@ append `export PATH=$PATH:/usr/local/go/bin` to `/etc/profile`
 3. SelectAll
 
         curl -G 'http://localhost:8888/data/metric/all/tag/all/time/10-20,30-60/aggregation/none'
+
+
+## Integration tests
+1. run master
+2. run node
+3. 'make integrationTest'
