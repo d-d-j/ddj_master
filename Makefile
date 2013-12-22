@@ -10,7 +10,7 @@ test: all
 	go test ./...
 
 integrationTest: all
-    go test ./src/ddj_Master/integrationTests/ -bench="."
+	go test ./src/ddj_Master/integrationTests/ -bench="."
 
 clean:
 	rm ddj_Master
