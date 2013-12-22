@@ -6,18 +6,31 @@ import (
 	"strings"
 )
 
-func Test_Insert_One_Value(t *testing.T) {
+func Benchmark_Insert_One_Value(b *testing.B) {
 
 	json_data := "{\"tag\":1,	\"metric\":2,	\"time\":1383501407,	\"value\":0.5}"
 
-	b := strings.NewReader(json_data)
+	json_data_reader  := strings.NewReader(json_data)
 
 
-	response, err := http.Post("http://localhost:8888/data", "application/json", b)
+	response, err := http.Post("http://localhost:8888/data", "application/json", json_data_reader)
 
-	t.Log("Status Code:",response.StatusCode,  err)
+	b.Log("Status Code:",response.StatusCode,  err)
 
-	if response.Status != 202 {
-		t.Fail()
+	if response.StatusCode != 202 {
+		b.Fail()
 	}
+}
+
+func Benchmark_Insert_One_Value_And_Select(b *testing.B) {
+
+	data := "{\"tag\":2,	\"metric\":3,	\"time\":1383501407,	\"value\":0.5}"
+
+	json_data := strings.NewReader(data)
+
+	http.Post("http://localhost:8888/data", "application/json", json_data)
+
+//	response, err := http.Get("http://localhost:8888/data/metric/2/tag/3/time/10-20,30-60/aggregation/none")
+
+//	b.Log("Status Code:",response.StatusCode,  err)
 }
