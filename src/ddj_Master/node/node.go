@@ -49,7 +49,9 @@ func (n *Node) EndWork() {
 
 func (n *Node) waitForLogin() error {
 	buffer := make([]byte, 4)
-	n.read(buffer)
+	if !n.read(buffer) {
+		n.stop <- true
+	}
 	buf := bytes.NewBuffer(buffer)
 	var cudaGpuCount int32
 	err := binary.Read(buf, binary.LittleEndian, &cudaGpuCount)
@@ -61,7 +63,9 @@ func (n *Node) waitForLogin() error {
 	log.Debug("Node received login data (CUDA GPU COUNT = ", cudaGpuCount, ") from node ", n.Id)
 
 	buffer = make([]byte, 4*cudaGpuCount)
-	n.read(buffer)
+	if !n.read(buffer) {
+		n.stop <- true
+	}
 	buf = bytes.NewBuffer(buffer)
 	n.GpuIds = make([]int32, cudaGpuCount)
 	for i := int32(0); i < cudaGpuCount; i++ {
@@ -101,6 +105,7 @@ func (n *Node) readerRoutine() {
 	}
 
 	log.Info("Node reader stopped for Node ", n.Id)
+	n.stop <- true
 }
 
 //FIXME
@@ -128,8 +133,9 @@ func (n *Node) senderRoutine() {
 			log.Fine("Sending ", buffer, " to ", n.Id)
 			n.write(buffer)
 		case <-n.stop:
-			log.Info("Node ", n.Id, " stopped")
+			log.Info("Node #%d stopped", n.Id)
 			n.close()
+			NodeManager.DelChan <- n.Id
 			break
 		}
 	}

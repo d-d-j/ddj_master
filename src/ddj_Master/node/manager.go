@@ -46,6 +46,7 @@ func (m *Manager) Manage() {
 			m.nodes[add.Id] = add
 		case del := <-m.DelChan:
 			delete(m.nodes, del)
+			log.Info("Node manager deleted Node #%d from nodes", del)
 		case <-m.QuitChan:
 			log.Info("Node manager stopped managing")
 			return
