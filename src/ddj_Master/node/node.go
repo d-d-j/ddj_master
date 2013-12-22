@@ -107,18 +107,20 @@ func (n *Node) readerRoutine() {
 	n.stop <- true
 }
 
-//FIXME
 func (n *Node) processResult(result dto.Result) {
+
 	//Create return channel on which we will get channel to send response
 	taskChan := make(chan *dto.Task)
+
 	//Send GetTaskReuest to get channel on which we will return result
 	n.GetTaskChannel <- dto.GetTaskRequest{result.TaskId, taskChan}
-	//Wait for channel
+
+	//Wait for task
 	t := <-taskChan
 
-	var nodeInfo Info
 	//Create node info element from result.Data
 	//TODO: Add switch to generate proper dto based on TaskType
+	var nodeInfo Info
 	err := nodeInfo.MemoryInfo.Decode(result.Data)
 	if err != nil {
 		log.Error("Cannot parse node info ", err)
@@ -127,8 +129,9 @@ func (n *Node) processResult(result dto.Result) {
 	//Set nodeId because it's not coming with NodeInfo
 	nodeInfo.nodeId = n.Id
 	log.Debug("Node info %s", nodeInfo.String())
+
 	//Return result to worker on previously obtained channel
-	t.ResponseChan <- dto.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
+	t.ResultChan <- dto.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
 }
 
 // Sending goroutine for Node - waits for data to be sent over Node.Incoming,

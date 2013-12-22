@@ -12,9 +12,17 @@ func Test_processResult_For_Info(t *testing.T) {
 		NODE_ID int32 = 0
 		TASK_ID int64 = 0
 	)
-	taskChan := make(chan dto.GetTaskRequest, 1)
-	responseChan := make(chan *dto.RestResponse, 1)
-	node := NewNode(NODE_ID, nil, taskChan)
+	// CREATE CHANNEL FOR GETTING TASKS USED BY NODE
+	getTaskChan := make(chan dto.GetTaskRequest)
+	// CREATE CHANNEL FOR SENDING RESULT (TO WORKER)
+	resultChan := make(chan *dto.RestResponse)
+	// CREATE CHANNEL FOR SENDING RESPONSE TO CLIENT (REST API)
+	responseChan := make(chan *dto.RestResponse)
+
+	task := dto.NewTask(TASK_ID, dto.RestRequest{common.TASK_INFO, &dto.EmptyElement{}, responseChan}, resultChan)
+	node := NewNode(NODE_ID, nil, getTaskChan)
+
+	// PREPARE DATA FOR TEST
 	expected := &Info{NODE_ID, MemoryInfo{1, 1, 1, 1}}
 	data, err := expected.Encode()
 	if err != nil {
@@ -22,18 +30,18 @@ func Test_processResult_For_Info(t *testing.T) {
 	}
 	result := *dto.NewResult(0, common.TASK_INFO, int32(expected.Size()), data)
 
-	//Run tested method
+	// RUN TESTED METHOD
 	go node.processResult(result)
 
-	//Simulate normal work
-	taskRequest := <-taskChan
-	if taskRequest.TaskId != TASK_ID {
-		t.Error("Wrong task request. Expected: ", TASK_ID, " but got: ", taskRequest.TaskId)
+	// SIMULATE WORK
+	getTaskRequest := <-getTaskChan
+	if getTaskRequest.TaskId != TASK_ID {
+		t.Error("Wrong task request. Expected: ", TASK_ID, " but got: ", getTaskRequest.TaskId)
 	}
 
-	taskRequest.BackChan <- responseChan
+	getTaskRequest.BackChan <- task
 
-	response := <-responseChan
+	response := <-resultChan
 	if response.TaskId != TASK_ID {
 		t.Error("Wrong task Id in response. Expected: ", TASK_ID, " but got: ", response.TaskId)
 	}

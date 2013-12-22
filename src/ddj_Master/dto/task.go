@@ -7,7 +7,8 @@ type Task struct {
 	Type         int32
 	Data         Dto
 	DataSize     int32
-	ResponseChan chan *RestResponse
+	ResponseChan chan *RestResponse   // channel for sending response to (REST API) client
+	ResultChan	 chan *RestResponse   // channel for sending result to worker
 }
 
 type GetTaskRequest struct {
@@ -15,16 +16,14 @@ type GetTaskRequest struct {
 	BackChan chan *Task
 }
 
-func NewTask(id int64, request RestRequest, response chan *RestResponse) *Task {
+func NewTask(id int64, request RestRequest, resultChan chan *RestResponse) *Task {
 	t := new(Task)
 	t.Id = id
 	t.Type = request.Type
 	t.Data = request.Data
 	t.DataSize = int32(request.Data.Size())
 	t.ResponseChan = request.Response
-	if response != nil {
-		t.ResponseChan = response
-	}
+	t.ResultChan = resultChan
 	return t
 }
 
