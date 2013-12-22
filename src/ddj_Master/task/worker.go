@@ -154,7 +154,7 @@ Loop:
 
 
 			// PASS REDUCED RESPONSES TO CLIENT
-			req.Response <- restApi.NewRestResponse("", id, nil)
+			req.Response <- dto.NewRestResponse("", id, nil)
 
 		case common.TASK_INFO:
 			nodes := node.NodeManager.GetNodes()
