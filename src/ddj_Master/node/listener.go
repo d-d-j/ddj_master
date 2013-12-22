@@ -32,7 +32,7 @@ func NewListener(service string, nodeInfoChannel chan<- Info) *Listener {
 	return l
 }
 
-func (l *Listener) WaitForNodes(taskChannel chan dto.GetTaskRequest) {
+func (l *Listener) WaitForNodes(getTaskChannel chan dto.GetTaskRequest) {
 	for {
 		log.Info("Waiting for nodes")
 		connection, error := l.netListen.Accept()
@@ -40,7 +40,7 @@ func (l *Listener) WaitForNodes(taskChannel chan dto.GetTaskRequest) {
 			log.Error("node error: ", error)
 		} else {
 			log.Info("Accept node: ", connection.RemoteAddr())
-			newNode := NewNode(l.idGenerator.GetId(), connection, taskChannel)
+			newNode := NewNode(l.idGenerator.GetId(), connection, getTaskChannel)
 			NodeManager.AddChan <- newNode
 			go newNode.StartWork(l.balancerChan)
 		}

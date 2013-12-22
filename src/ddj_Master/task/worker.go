@@ -47,7 +47,7 @@ func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer) *node.No
 	return insertNode
 }
 
-func createMessage(req dto.RestRequest, t *Task) []byte {
+func createMessage(req dto.RestRequest, t *dto.Task) []byte {
 	var (
 		message []byte
 		err     error
@@ -97,7 +97,7 @@ Loop:
 			}
 
 			id := idGen.GetId()
-			t := NewTask(id, req, nil)
+			t := dto.NewTask(id, req, nil)
 			log.Debug("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
 			TaskManager.AddChan <- t // add task to dictionary
 
@@ -122,9 +122,8 @@ Loop:
 
 			// CREATE TASK
 			id := idGen.GetId()
-			t := NewTask(id, req, responseChan)
+			t := dto.NewTask(id, req, responseChan)
 			log.Fine("Created new %s", t)
-			log.Finest(t)
 			TaskManager.AddChan <- t // add task to dictionary
 
 			// CREATE MESSAGE
@@ -160,7 +159,7 @@ Loop:
 			for _, n := range nodes {
 				log.Finest("Sending [info] task to #%d", n.Id)
 				id := idGen.GetId()
-				t := NewTask(id, req, responseChan)
+				t := dto.NewTask(id, req, responseChan)
 				log.Fine("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
 				log.Finest(t)
 				TaskManager.AddChan <- t         // add task to dictionary

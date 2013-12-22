@@ -1,19 +1,21 @@
-package task
+package dto
 
-import (
-	"ddj_Master/dto"
-	"fmt"
-)
+import "fmt"
 
 type Task struct {
 	Id           int64
 	Type         int32
-	Data         dto.Dto
+	Data         Dto
 	DataSize     int32
-	ResponseChan chan *dto.RestResponse
+	ResponseChan chan *RestResponse
 }
 
-func NewTask(id int64, request dto.RestRequest, response chan *dto.RestResponse) *Task {
+type GetTaskRequest struct {
+	TaskId   int64
+	BackChan chan *Task
+}
+
+func NewTask(id int64, request RestRequest, response chan *RestResponse) *Task {
 	t := new(Task)
 	t.Id = id
 	t.Type = request.Type
@@ -26,8 +28,8 @@ func NewTask(id int64, request dto.RestRequest, response chan *dto.RestResponse)
 	return t
 }
 
-func (t *Task) MakeRequest() *dto.Request {
-	return dto.NewRequest(t.Id, t.Type, t.DataSize, t.Data)
+func (t *Task) MakeRequest() *Request {
+	return NewRequest(t.Id, t.Type, t.DataSize, t.Data)
 }
 
 func (t *Task) String() string {

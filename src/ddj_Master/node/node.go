@@ -19,7 +19,7 @@ type Node struct {
 	GpuIds      []int32
 	Stats       Info
 	stop        chan bool
-	TaskChannel chan dto.GetTaskRequest
+	GetTaskChannel chan dto.GetTaskRequest
 }
 
 func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest) *Node {
@@ -28,7 +28,7 @@ func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest)
 	n.Id = id
 	n.stop = make(chan bool)
 	n.Communication = makeCommunication(connection)
-	n.TaskChannel = taskChannel
+	n.GetTaskChannel = taskChannel
 	return n
 }
 
@@ -110,11 +110,12 @@ func (n *Node) readerRoutine() {
 //FIXME
 func (n *Node) processResult(result dto.Result) {
 	//Create return channel on which we will get channel to send response
-	taskChan := make(chan chan *dto.RestResponse)
+	taskChan := make(chan *dto.Task)
 	//Send GetTaskReuest to get channel on which we will return result
-	n.TaskChannel <- dto.GetTaskRequest{result.TaskId, taskChan}
+	n.GetTaskChannel <- dto.GetTaskRequest{result.TaskId, taskChan}
 	//Wait for channel
-	responseChan := <-taskChan
+	t := <-taskChan
+
 	var nodeInfo Info
 	//Create node info element from result.Data
 	//TODO: Add switch to generate proper dto based on TaskType
@@ -122,11 +123,12 @@ func (n *Node) processResult(result dto.Result) {
 	if err != nil {
 		log.Error("Cannot parse node info ", err)
 	}
+
 	//Set nodeId because it's not coming with NodeInfo
 	nodeInfo.nodeId = n.Id
 	log.Debug("Node info %s", nodeInfo.String())
 	//Return result to worker on previously obtained channel
-	responseChan <- dto.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
+	t.ResponseChan <- dto.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
 }
 
 // Sending goroutine for Node - waits for data to be sent over Node.Incoming,
