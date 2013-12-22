@@ -2,8 +2,8 @@
 
 package gcfg
 
-//import (
-//	"encoding"
-//)
+import (
+	"encoding"
+)
 
-//type textUnmarshaler encoding.TextUnmarshaler
+type textUnmarshaler encoding.TextUnmarshaler
