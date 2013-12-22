@@ -2,7 +2,6 @@ package task
 
 import (
 	"ddj_Master/dto"
-	"ddj_Master/restApi"
 )
 
 type Task struct {
@@ -10,10 +9,10 @@ type Task struct {
 	Type         int32
 	Data         dto.Dto
 	DataSize     int32
-	ResponseChan chan *restApi.RestResponse
+	ResponseChan chan *dto.RestResponse
 }
 
-func NewTask(id int64, request restApi.RestRequest, response chan *restApi.RestResponse) *Task {
+func NewTask(id int64, request dto.RestRequest, response chan *dto.RestResponse) *Task {
 	t := new(Task)
 	t.Id = id
 	t.Type = request.Type

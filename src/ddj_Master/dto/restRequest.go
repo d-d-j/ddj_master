@@ -1,13 +1,12 @@
-package restApi
+package dto
 
 import (
 	"fmt"
-	"ddj_Master/dto"
 )
 
 type RestRequest struct {
 	Type     int32
-	Data	 dto.Dto
+	Data     Dto
 	Response chan *RestResponse
 }
 

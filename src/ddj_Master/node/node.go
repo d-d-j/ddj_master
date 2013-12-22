@@ -6,7 +6,6 @@ import (
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
 	"ddj_Master/dto"
-	"ddj_Master/restApi"
 	"encoding/binary"
 	"net"
 )
@@ -20,10 +19,10 @@ type Node struct {
 	GpuIds      []int32
 	Stats       Info
 	stop        chan bool
-	TaskChannel chan restApi.GetTaskRequest
+	TaskChannel chan dto.GetTaskRequest
 }
 
-func NewNode(id int32, connection net.Conn, taskChannel chan restApi.GetTaskRequest) *Node {
+func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest) *Node {
 	n := new(Node)
 	n.Status = common.NODE_CONNECTED
 	n.Id = id
@@ -110,8 +109,8 @@ func (n *Node) readerRoutine() {
 
 //FIXME
 func (n *Node) processResult(result dto.Result) {
-	taskChan := make(chan chan *restApi.RestResponse)
-	n.TaskChannel <- restApi.GetTaskRequest{result.TaskId, taskChan}
+	taskChan := make(chan chan *dto.RestResponse)
+	n.TaskChannel <- dto.GetTaskRequest{result.TaskId, taskChan}
 	r := <-taskChan
 	var nodeInfo Info
 	err := nodeInfo.MemoryInfo.Decode(result.Data)
@@ -121,7 +120,7 @@ func (n *Node) processResult(result dto.Result) {
 	nodeInfo.nodeId = n.Id
 	log.Debug("Node info %s", nodeInfo.String())
 	log.Finest(r)
-	r <- restApi.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
+	r <- dto.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
 }
 
 // Sending goroutine for Node - waits for data to be sent over Node.Incoming,

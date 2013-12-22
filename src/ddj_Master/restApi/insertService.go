@@ -28,7 +28,7 @@ func (serv InsertService) setHeader() {
 	rb.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, x-requested-with")
 }
 
-func (serv InsertService) setInsertResponse(response *RestResponse) {
+func (serv InsertService) setInsertResponse(response *dto.RestResponse) {
 	if response == nil {
 		log.Error("Return HTTP 503")
 		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
@@ -45,8 +45,8 @@ func (serv InsertService) setInsertResponse(response *RestResponse) {
 func (serv InsertService) InsertData(PostData dto.Element) {
 	serv.setHeader()
 	log.Finest("Inserting data - data to insert: ", PostData)
-	responseChan := make(chan *RestResponse)
-	restRequestChannel <- RestRequest{common.TASK_INSERT, &PostData, responseChan}
+	responseChan := make(chan *dto.RestResponse)
+	restRequestChannel <- dto.RestRequest{common.TASK_INSERT, &PostData, responseChan}
 	response := <-responseChan
 	log.Finest("Result: ", response)
 	serv.setInsertResponse(response)

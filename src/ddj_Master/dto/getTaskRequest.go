@@ -1,4 +1,4 @@
-package restApi
+package dto
 
 type GetTaskRequest struct {
 	TaskId   int64

@@ -3,20 +3,20 @@ package task
 import (
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
+	"ddj_Master/dto"
 	"ddj_Master/node"
-	"ddj_Master/restApi"
 	"fmt"
 )
 
 type TaskWorker struct {
-	reqChan chan restApi.RestRequest
+	reqChan chan dto.RestRequest
 	pending int
 	index   int
 }
 
 type Worker interface {
 	Work(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer)
-	RequestChan() chan restApi.RestRequest
+	RequestChan() chan dto.RestRequest
 	IncrementPending()
 	DecrementPending()
 	Id() int
@@ -27,15 +27,15 @@ func NewTaskWorker(idx int, jobsPerWorker int32) Worker {
 	w := new(TaskWorker)
 	w.index = idx
 	w.pending = 0
-	w.reqChan = make(chan restApi.RestRequest, jobsPerWorker)
+	w.reqChan = make(chan dto.RestRequest, jobsPerWorker)
 	return w
 }
 
-func getNodeForInsert(req restApi.RestRequest, balancer *node.LoadBalancer) *node.Node {
+func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer) *node.Node {
 	nodeId := balancer.CurrentInsertNodeId
 	if nodeId == common.CONST_UNINITIALIZED {
 		log.Warn("No node connected")
-		req.Response <- restApi.NewRestResponse("No node connected", 0, nil)
+		req.Response <- dto.NewRestResponse("No node connected", 0, nil)
 		return nil
 	}
 	// get node
@@ -47,7 +47,7 @@ func getNodeForInsert(req restApi.RestRequest, balancer *node.LoadBalancer) *nod
 	return insertNode
 }
 
-func createMessage(req restApi.RestRequest, t *Task) []byte {
+func createMessage(req dto.RestRequest, t *Task) []byte {
 	var (
 		message []byte
 		err     error
@@ -55,7 +55,7 @@ func createMessage(req restApi.RestRequest, t *Task) []byte {
 	message, err = t.MakeRequest().Encode()
 	if err != nil {
 		log.Error("Error while encoding request - ", err)
-		req.Response <- restApi.NewRestResponse("Internal server error", 0, nil)
+		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
 		return nil
 	}
 	return message
@@ -77,7 +77,7 @@ func (w *TaskWorker) DecrementPending() {
 	w.pending--
 }
 
-func (w *TaskWorker) RequestChan() chan restApi.RestRequest {
+func (w *TaskWorker) RequestChan() chan dto.RestRequest {
 	return w.reqChan
 }
 
@@ -105,13 +105,13 @@ Loop:
 			}
 			log.Finest("Sending message [%d] to node #%d", id, insertNode.Id)
 			insertNode.Incoming <- message
-			req.Response <- restApi.NewRestResponse("", id, nil)
+			req.Response <- dto.NewRestResponse("", id, nil)
 			log.Finest("Worker finish task [%d]", id)
 		case common.TASK_SELECT_ALL:
 			nodes := node.NodeManager.GetNodes()
 			avaliableNodes := len(nodes)
 			log.Debug("Worker is processing [select all] task for all %d nodes", avaliableNodes)
-			responseChan := make(chan *restApi.RestResponse, avaliableNodes)
+			responseChan := make(chan *dto.RestResponse, avaliableNodes)
 
 			for _, n := range nodes {
 				log.Finest("Sending [select all] task to #%d", n.Id)
@@ -143,7 +143,7 @@ Loop:
 			nodes := node.NodeManager.GetNodes()
 			avaliableNodes := len(nodes)
 			log.Debug("Worker is processing [info] task for all %d nodes", avaliableNodes)
-			responseChan := make(chan *restApi.RestResponse, avaliableNodes)
+			responseChan := make(chan *dto.RestResponse, avaliableNodes)
 			for _, n := range nodes {
 				log.Finest("Sending [info] task to #%d", n.Id)
 				id := idGen.GetId()

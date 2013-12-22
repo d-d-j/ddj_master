@@ -1,22 +1,23 @@
 package restApi
 
 import (
-	log "code.google.com/p/log4go"
 	"code.google.com/p/gorest"
+	log "code.google.com/p/log4go"
+	"ddj_Master/dto"
 	"net/http"
 )
 
-var restRequestChannel chan RestRequest = make(chan RestRequest)
+var restRequestChannel chan dto.RestRequest = make(chan dto.RestRequest)
 
 type NetworkApi interface {
-	StartApi() <- chan RestRequest
+	StartApi() <-chan dto.RestRequest
 }
 
 type Server struct {
 	Port string
 }
 
-func (sv Server) StartApi() <-chan RestRequest {
+func (sv Server) StartApi() <-chan dto.RestRequest {
 
 	insertService := InsertService{}
 	selectService := SelectService{}

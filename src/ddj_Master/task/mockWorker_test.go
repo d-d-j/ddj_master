@@ -2,8 +2,8 @@ package task
 
 import (
 	"ddj_Master/common"
+	"ddj_Master/dto"
 	"ddj_Master/node"
-	"ddj_Master/restApi"
 	"fmt"
 )
 
@@ -21,7 +21,7 @@ func (w *MockWorker) DecrementPending() {
 	w.pending--
 }
 
-func (w *MockWorker) RequestChan() chan restApi.RestRequest {
+func (w *MockWorker) RequestChan() chan dto.RestRequest {
 	return w.reqChan
 }
 
@@ -52,6 +52,6 @@ func NewMockWorker(idx int, jobsPerWorker int32) Worker {
 	w := new(MockWorker)
 	w.index = idx
 	w.pending = 0
-	w.reqChan = make(chan restApi.RestRequest, jobsPerWorker)
+	w.reqChan = make(chan dto.RestRequest, jobsPerWorker)
 	return w
 }

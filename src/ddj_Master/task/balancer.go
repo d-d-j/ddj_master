@@ -5,7 +5,6 @@ import (
 	"ddj_Master/common"
 	"ddj_Master/dto"
 	"ddj_Master/node"
-	"ddj_Master/restApi"
 	"time"
 )
 
@@ -29,7 +28,7 @@ func NewBalancer(workersCount int32, jobForWorkerCount int32, loadBal *node.Load
 	return b
 }
 
-func (b *Balancer) Balance(work <-chan restApi.RestRequest) {
+func (b *Balancer) Balance(work <-chan dto.RestRequest) {
 	log.Info("Task manager balancer started")
 	index := 0
 	for {
@@ -40,12 +39,12 @@ func (b *Balancer) Balance(work <-chan restApi.RestRequest) {
 		case w := <-b.done:
 			b.completed(w)
 		case <-time.After(5 * time.Second):
-			b.dispatch(restApi.RestRequest{common.TASK_INFO, new(dto.EmptyElement), nil}, 0)
+			b.dispatch(dto.RestRequest{common.TASK_INFO, new(dto.EmptyElement), nil}, 0)
 		}
 	}
 }
 
-func (b *Balancer) dispatch(req restApi.RestRequest, index int) {
+func (b *Balancer) dispatch(req dto.RestRequest, index int) {
 	w := b.pool[index]
 	log.Fine("Dispatch request to %s", w)
 	w.RequestChan() <- req

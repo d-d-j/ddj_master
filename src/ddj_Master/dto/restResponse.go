@@ -1,17 +1,16 @@
-package restApi
+package dto
 
 import (
-	"ddj_Master/dto"
 	"fmt"
 )
 
 type RestResponse struct {
-	Error		string
-	TaskId		int64
-	Data		[]dto.Dto
+	Error  string
+	TaskId int64
+	Data   []Dto
 }
 
-func NewRestResponse(err string, taskId int64, data []dto.Dto) *RestResponse {
+func NewRestResponse(err string, taskId int64, data []Dto) *RestResponse {
 	rr := new(RestResponse)
 	rr.Error = err
 	rr.TaskId = taskId

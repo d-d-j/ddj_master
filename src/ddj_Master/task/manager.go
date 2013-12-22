@@ -1,9 +1,8 @@
 package task
 
 import (
-	"ddj_Master/restApi"
-
 	log "code.google.com/p/log4go"
+	"ddj_Master/dto"
 )
 
 // TODO: get rid of this global variable
@@ -12,7 +11,7 @@ var TaskManager = NewManager()
 type Manager struct {
 	tasks    map[int64]*Task
 	AddChan  chan *Task
-	GetChan  chan restApi.GetTaskRequest
+	GetChan  chan dto.GetTaskRequest
 	DelChan  chan int64
 	QuitChan chan bool
 }
@@ -21,7 +20,7 @@ func NewManager() *Manager {
 	m := new(Manager)
 	m.tasks = make(map[int64]*Task)
 	m.AddChan = make(chan *Task)
-	m.GetChan = make(chan restApi.GetTaskRequest)
+	m.GetChan = make(chan dto.GetTaskRequest)
 	m.DelChan = make(chan int64)
 	m.QuitChan = make(chan bool)
 	return m

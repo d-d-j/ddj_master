@@ -16,19 +16,19 @@ type SelectService struct {
 	selectQuery        gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/{times:string}/aggregation/{aggr:string}" output:"RestResponse"`
 }
 
-func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) RestResponse {
+func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) dto.RestResponse {
 	log.Finest("Selecting data")
 	serv.setHeader()
-	responseChan := make(chan *RestResponse)
+	responseChan := make(chan *dto.RestResponse)
 	data, err := prepareQuery(metrics, tags, times, aggr)
 	if err != nil {
 		log.Error("Return HTTP 400")
 		serv.ResponseBuilder().SetResponseCode(400).WriteAndOveride(
 			[]byte("The request could not be understood by the server due to malformed syntax. You SHOULD NOT repeat the request without modifications."))
-		return RestResponse{}
+		return dto.RestResponse{}
 	}
 	log.Fine("Query: ", &data)
-	restRequestChannel <- RestRequest{common.TASK_SELECT_ALL, &data, responseChan}
+	restRequestChannel <- dto.RestRequest{common.TASK_SELECT_ALL, &data, responseChan}
 	response := <-responseChan
 	serv.setSelectHeaderErrors(response)
 	return *response
@@ -116,7 +116,7 @@ func (serv SelectService) setHeader() {
 	rb.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, x-requested-with")
 }
 
-func (serv SelectService) setSelectHeaderErrors(response *RestResponse) {
+func (serv SelectService) setSelectHeaderErrors(response *dto.RestResponse) {
 	if response == nil {
 		log.Error("Return HTTP 503")
 		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
