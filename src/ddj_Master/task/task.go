@@ -2,6 +2,7 @@ package task
 
 import (
 	"ddj_Master/dto"
+	"fmt"
 )
 
 type Task struct {
@@ -27,4 +28,8 @@ func NewTask(id int64, request dto.RestRequest, response chan *dto.RestResponse)
 
 func (t *Task) MakeRequest() *dto.Request {
 	return dto.NewRequest(t.Id, t.Type, t.DataSize, t.Data)
+}
+
+func (t *Task) String() string {
+	return fmt.Sprintf("Task #%d, type: %d, size: %d", t.Id, t.Type, t.DataSize)
 }

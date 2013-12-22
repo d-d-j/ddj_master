@@ -99,7 +99,7 @@ Loop:
 			id := idGen.GetId()
 			t := NewTask(id, req, nil)
 			log.Debug("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
-			TaskManager.AddChan <- t         // add task to dictionary
+			TaskManager.AddChan <- t // add task to dictionary
 
 			message := createMessage(req, t) // create a message to send
 			if message == nil {
@@ -112,7 +112,6 @@ Loop:
 			req.Response <- dto.NewRestResponse("", id, nil)
 			log.Finest("Worker finish task [%d]", id)
 
-
 		case common.TASK_SELECT:
 			log.Debug("Worker is processing [select] task")
 
@@ -124,9 +123,9 @@ Loop:
 			// CREATE TASK
 			id := idGen.GetId()
 			t := NewTask(id, req, responseChan)
-			log.Fine("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
+			log.Fine("Created new %s", t)
 			log.Finest(t)
-			TaskManager.AddChan <- t         // add task to dictionary
+			TaskManager.AddChan <- t // add task to dictionary
 
 			// CREATE MESSAGE
 			message := createMessage(req, t) // create a message to send
@@ -142,16 +141,13 @@ Loop:
 				n.Incoming <- message
 			}
 
-			//result := []dto.Element(nil)
 			// WAIT FOR ALL RESPONSES
 			for i := 0; i < avaliableNodes; i++ {
 				response := <-responseChan
-				//result = append(result, ([]dto.Element)(response.Data))
 				log.Finest("Got Select (partial) result %d/%d - %s", i, avaliableNodes, response)
 			}
 
 			// TODO: REDUCE RESPONSES
-
 
 			// PASS REDUCED RESPONSES TO CLIENT
 			req.Response <- dto.NewRestResponse("", id, nil)
@@ -189,7 +185,6 @@ Loop:
 				result := <-responseChan
 				log.Finest("Get info", result)
 			}
-
 
 		default:
 			log.Error("Worker can't handle task type ", req.Type)
