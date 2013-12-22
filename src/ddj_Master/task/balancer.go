@@ -53,5 +53,6 @@ func (b *Balancer) dispatch(req restApi.RestRequest, index int) {
 }
 
 func (b *Balancer) completed(w Worker) {
+	log.Fine("%s finish his job", w)
 	w.DecrementPending()
 }

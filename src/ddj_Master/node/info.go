@@ -14,8 +14,8 @@ type Info struct {
 type MemoryInfo struct {
 	MemoryTotal    int32
 	MemoryFree     int32
-	GpuMemoryFree  int32
 	GpuMemoryTotal int32
+	GpuMemoryFree  int32
 }
 
 func (this *MemoryInfo) String() string {
