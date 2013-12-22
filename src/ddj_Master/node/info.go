@@ -37,5 +37,22 @@ func (this *MemoryInfo) Decode(buf []byte) error {
 }
 
 func (this *MemoryInfo) Encode() ([]byte, error) {
-	return nil, fmt.Errorf("Not implemented yet!")
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, this.MemoryTotal)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buf, binary.LittleEndian, this.MemoryFree)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buf, binary.LittleEndian, this.GpuMemoryTotal)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buf, binary.LittleEndian, this.GpuMemoryFree)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
