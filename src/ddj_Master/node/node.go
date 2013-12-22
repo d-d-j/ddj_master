@@ -107,6 +107,8 @@ func (n *Node) readerRoutine() {
 	n.stop <- true
 }
 
+
+
 func (n *Node) processResult(result dto.Result) {
 
 	//Create return channel on which we will get channel to send response
@@ -119,19 +121,21 @@ func (n *Node) processResult(result dto.Result) {
 	t := <-taskChan
 
 	//Create node info element from result.Data
-	//TODO: Add switch to generate proper dto based on TaskType
-	var nodeInfo Info
-	err := nodeInfo.MemoryInfo.Decode(result.Data)
-	if err != nil {
-		log.Error("Cannot parse node info ", err)
+	switch result.Type {
+	case common.TASK_INFO:
+		var nodeInfo Info
+		err := nodeInfo.MemoryInfo.Decode(result.Data)
+		if err != nil {
+			log.Error("Cannot parse task result data", err)
+		}
+
+		//Set nodeId because it's not coming with NodeInfo
+		nodeInfo.nodeId = n.Id
+		log.Debug("Node info %s", nodeInfo.String())
+
+		//Return result to worker on previously obtained channel
+		t.ResultChan <- dto.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
 	}
-
-	//Set nodeId because it's not coming with NodeInfo
-	nodeInfo.nodeId = n.Id
-	log.Debug("Node info %s", nodeInfo.String())
-
-	//Return result to worker on previously obtained channel
-	t.ResultChan <- dto.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
 }
 
 // Sending goroutine for Node - waits for data to be sent over Node.Incoming,
