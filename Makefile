@@ -13,4 +13,4 @@ integrationTest: all
 	go test ./src/ddj_Master/integrationTests/ -bench="."
 
 clean:
-	rm ddj_Master
+	rm -f ddj_Master
