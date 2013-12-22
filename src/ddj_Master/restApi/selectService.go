@@ -28,7 +28,7 @@ func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) dto.Res
 		return dto.RestResponse{}
 	}
 	log.Fine("Query: ", &data)
-	restRequestChannel <- dto.RestRequest{common.TASK_SELECT_ALL, &data, responseChan}
+	restRequestChannel <- dto.RestRequest{common.TASK_SELECT, &data, responseChan}
 	response := <-responseChan
 	serv.setSelectHeaderErrors(response)
 	return *response

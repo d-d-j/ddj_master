@@ -10,7 +10,7 @@ const (
 const (
 	TASK_ERROR      int32 = 0
 	TASK_INSERT     int32 = 1
-	TASK_SELECT_ALL int32 = 2
+	TASK_SELECT		int32 = 2
 	TASK_FLUSH      int32 = 3
 	TASK_INFO       int32 = 4
 )
