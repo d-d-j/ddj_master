@@ -120,22 +120,22 @@ func (n *Node) processResult(result dto.Result) {
 	//Wait for task
 	t := <-taskChan
 
-	//Create node info element from result.Data
+	//Create rest response from dto.Result
+	var responseData []dto.Dto
+	var err error
 	switch result.Type {
-	case common.TASK_INFO:
-		var nodeInfo Info
-		err := nodeInfo.MemoryInfo.Decode(result.Data)
-		if err != nil {
-			log.Error("Cannot parse task result data", err)
-		}
-
-		//Set nodeId because it's not coming with NodeInfo
-		nodeInfo.nodeId = n.Id
-		log.Debug("Node info %s", nodeInfo.String())
-
-		//Return result to worker on previously obtained channel
-		t.ResultChan <- dto.NewRestResponse("", result.TaskId, []dto.Dto{&nodeInfo})
+		case common.TASK_INFO:
+			var nodeInfo Info
+			err = nodeInfo.MemoryInfo.Decode(result.Data)
+			nodeInfo.nodeId = n.Id
+			log.Debug("Node info %s", nodeInfo.String())
+			responseData = []dto.Dto{&nodeInfo}
 	}
+	if err != nil {
+		log.Error("Cannot parse task result data", err)
+		t.ResultChan <- dto.NewRestResponse("", result.TaskId, nil)
+	}
+	t.ResultChan <- dto.NewRestResponse("", result.TaskId, responseData)
 }
 
 // Sending goroutine for Node - waits for data to be sent over Node.Incoming,
