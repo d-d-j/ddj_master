@@ -59,6 +59,51 @@ func Test_processResult_For_Info(t *testing.T) {
 
 }
 
+func Test_processResult_For_Select_Without_Aggregation_Empty_Response(t *testing.T) {
+
+	//Prepare
+	const (
+		NODE_ID int32 = 0
+		TASK_ID int64 = 0
+	)
+	// CREATE CHANNEL FOR GETTING TASKS USED BY NODE
+	getTaskChan := make(chan dto.GetTaskRequest)
+	// CREATE CHANNEL FOR SENDING RESULT (TO WORKER)
+	resultChan := make(chan *dto.RestResponse)
+	// CREATE CHANNEL FOR SENDING RESPONSE TO CLIENT (REST API)
+	responseChan := make(chan *dto.RestResponse)
+
+	task := dto.NewTask(TASK_ID, dto.RestRequest{common.TASK_SELECT, &dto.EmptyElement{}, responseChan}, resultChan)
+	node := NewNode(NODE_ID, nil, getTaskChan)
+
+	// PREPARE DATA FOR TEST
+	data := []byte{}
+	result := *dto.NewResult(0, common.TASK_SELECT, 0, data)
+
+	// RUN TESTED METHOD
+	go node.processResult(result)
+
+	// SIMULATE WORK
+	getTaskRequest := <-getTaskChan
+	if getTaskRequest.TaskId != TASK_ID {
+		t.Error("Wrong task request. Expected: ", TASK_ID, " but got: ", getTaskRequest.TaskId)
+	}
+
+	getTaskRequest.BackChan <- task
+
+	// ASSERTIONS
+	response := <-resultChan
+	if response.TaskId != TASK_ID {
+		t.Error("Wrong task Id in response. Expected: ", TASK_ID, " but got: ", response.TaskId)
+	}
+	if response.Error != "" {
+		t.Error("Error occurred", response.Error)
+	}
+	if len(response.Data) != 0 {
+		t.Error("Wrong data returned. Expected no value")
+	}
+}
+
 func Test_processResult_For_Select_Without_Aggregation_One_Element_In_Response(t *testing.T) {
 
 	//Prepare
