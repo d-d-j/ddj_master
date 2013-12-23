@@ -129,10 +129,19 @@ func (n *Node) processResult(result dto.Result) {
 		log.Debug("Node info %s", nodeInfo.String())
 		responseData = []dto.Dto{&nodeInfo}
 	case common.TASK_SELECT:
-		var element dto.Element
-		err = element.Decode(result.Data)
-		log.Debug("Element %s", element.String())
-		responseData = []dto.Dto{&element}
+		elementSize := (&dto.Element{}).Size()
+		length := len(result.Data) / elementSize
+		elements := make([]dto.Dto, length)
+		for i := 0; i < length; i++ {
+			var e dto.Element
+			err = e.Decode(result.Data[i*elementSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			elements[i] = &e
+		}
+		responseData = elements
 	}
 	if err != nil {
 		log.Error("Cannot parse task result data", err)
