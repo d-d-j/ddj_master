@@ -14,11 +14,11 @@ import (
 // some channels for sending and receiving data.
 type Node struct {
 	Communication
-	Id          int32
-	Status      int32
-	GpuIds      []int32
-	Stats       Info
-	stop        chan bool
+	Id             int32
+	Status         int32
+	GpuIds         []int32
+	Stats          Info
+	stop           chan bool
 	GetTaskChannel chan dto.GetTaskRequest
 }
 
@@ -107,8 +107,6 @@ func (n *Node) readerRoutine() {
 	n.stop <- true
 }
 
-
-
 func (n *Node) processResult(result dto.Result) {
 
 	//Create return channel on which we will get channel to send response
@@ -124,12 +122,17 @@ func (n *Node) processResult(result dto.Result) {
 	var responseData []dto.Dto
 	var err error
 	switch result.Type {
-		case common.TASK_INFO:
-			var nodeInfo Info
-			err = nodeInfo.MemoryInfo.Decode(result.Data)
-			nodeInfo.nodeId = n.Id
-			log.Debug("Node info %s", nodeInfo.String())
-			responseData = []dto.Dto{&nodeInfo}
+	case common.TASK_INFO:
+		var nodeInfo Info
+		err = nodeInfo.MemoryInfo.Decode(result.Data)
+		nodeInfo.nodeId = n.Id
+		log.Debug("Node info %s", nodeInfo.String())
+		responseData = []dto.Dto{&nodeInfo}
+	case common.TASK_SELECT:
+		var element dto.Element
+		err = element.Decode(result.Data)
+		log.Debug("Element %s", element.String())
+		responseData = []dto.Dto{&element}
 	}
 	if err != nil {
 		log.Error("Cannot parse task result data", err)

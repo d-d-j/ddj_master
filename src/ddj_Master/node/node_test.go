@@ -60,7 +60,7 @@ func Test_processResult_For_Info(t *testing.T) {
 }
 
 func Test_processResult_For_Select_Without_Aggregation_One_Element_In_Response(t *testing.T) {
-	t.Skip("Not implemented yet")
+
 	//Prepare
 	const (
 		NODE_ID int32 = 0
@@ -77,7 +77,7 @@ func Test_processResult_For_Select_Without_Aggregation_One_Element_In_Response(t
 	node := NewNode(NODE_ID, nil, getTaskChan)
 
 	// PREPARE DATA FOR TEST
-	expected := dto.Query{1, []int32{1}, 2, []int32{0, 1}, 4, []int64{5, 7, 11, 21}, common.AGGREGATION_NONE}
+	expected := dto.NewElement(1, 2, 3, 0.33)
 	data, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
