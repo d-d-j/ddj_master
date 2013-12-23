@@ -6,6 +6,7 @@ import (
 	"ddj_Master/dto"
 	"ddj_Master/node"
 	"fmt"
+	"sort"
 )
 
 type TaskWorker struct {
@@ -105,7 +106,7 @@ func handleRequestForAllNodes(done chan Worker, idGen common.Int64Generator, bal
 func (w *TaskWorker) Work(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer) {
 Loop:
 	for {
-		req := <-w.reqChan	// GET REQUEST
+		req := <-w.reqChan // GET REQUEST
 
 		switch req.Type {
 		case common.TASK_INSERT:
@@ -151,14 +152,13 @@ Loop:
 				continue Loop
 			}
 
-
 			// TODO: REDUCE RESPONSES
 			responseToClient := make([]dto.Dto, 0, len(responses))
 			for i := 0; i < len(responses); i++ {
 				responseToClient = append(responseToClient, responses[i].Data...)
 			}
-			
-			//sort.Sort(dto.ByTime(responses))
+
+			sort.Sort(dto.ByTime(responseToClient))
 
 			// PASS REDUCED RESPONSES TO CLIENT
 			req.Response <- dto.NewRestResponse("", 0, responseToClient)
