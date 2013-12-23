@@ -141,15 +141,18 @@ Loop:
 			}
 
 			// WAIT FOR ALL RESPONSES
+			// Create slice for results
+			responses := make([]dto.Dto, 0, avaliableNodes)
 			for i := 0; i < avaliableNodes; i++ {
 				response := <-responseChan
 				log.Finest("Got Select (partial) result %d/%d - %s", i, avaliableNodes, response)
+				responses = append(responses, response.Data...)
 			}
 
 			// TODO: REDUCE RESPONSES
 
 			// PASS REDUCED RESPONSES TO CLIENT
-			req.Response <- dto.NewRestResponse("", id, nil)
+			req.Response <- dto.NewRestResponse("", id, responses)
 
 		case common.TASK_INFO:
 			nodes := node.NodeManager.GetNodes()
@@ -181,9 +184,11 @@ Loop:
 				log.Debug("Waiting for status infos")
 			}
 			for i := 0; i < avaliableNodes; i++ {
+				//TODO: ADD TIMEOUT
 				result := <-responseChan
 				log.Finest("Get info", result)
 			}
+			//TODO: DO SOMETHING WITH INFOs
 
 		default:
 			log.Error("Worker can't handle task type ", req.Type)
