@@ -6,12 +6,13 @@ import (
 	"testing"
 )
 
+const (
+	NODE_ID int32 = 0
+	TASK_ID int64 = 0
+)
+
 func Test_processResult_For_Info(t *testing.T) {
 	//Prepare
-	const (
-		NODE_ID int32 = 0
-		TASK_ID int64 = 0
-	)
 	// CREATE CHANNEL FOR GETTING TASKS USED BY NODE
 	getTaskChan := make(chan dto.GetTaskRequest)
 	// CREATE CHANNEL FOR SENDING RESULT (TO WORKER)
@@ -53,19 +54,12 @@ func Test_processResult_For_Info(t *testing.T) {
 	}
 
 	actual := response.Data[0]
-	if expected.String() != actual.String() {
-		t.Error("Expected: ", expected, " but got: ", actual)
-	}
+	AssertEqual(expected, actual, t)
 
 }
 
 func Test_processResult_For_Select_Without_Aggregation_Empty_Response(t *testing.T) {
 
-	//Prepare
-	const (
-		NODE_ID int32 = 0
-		TASK_ID int64 = 0
-	)
 	// CREATE CHANNEL FOR GETTING TASKS USED BY NODE
 	getTaskChan := make(chan dto.GetTaskRequest)
 	// CREATE CHANNEL FOR SENDING RESULT (TO WORKER)
@@ -106,11 +100,6 @@ func Test_processResult_For_Select_Without_Aggregation_Empty_Response(t *testing
 
 func Test_processResult_For_Select_Without_Aggregation_One_Element_In_Response(t *testing.T) {
 
-	//Prepare
-	const (
-		NODE_ID int32 = 0
-		TASK_ID int64 = 0
-	)
 	// CREATE CHANNEL FOR GETTING TASKS USED BY NODE
 	getTaskChan := make(chan dto.GetTaskRequest)
 	// CREATE CHANNEL FOR SENDING RESULT (TO WORKER)
@@ -153,18 +142,11 @@ func Test_processResult_For_Select_Without_Aggregation_One_Element_In_Response(t
 	}
 
 	actual := response.Data[0]
-	if expected.String() != actual.String() {
-		t.Error("Expected: ", expected, " but got: ", actual)
-	}
+	AssertEqual(expected, actual, t)
 }
 
 func Test_processResult_For_Select_Without_Aggregation_3_Elements_In_Response(t *testing.T) {
 
-	//Prepare
-	const (
-		NODE_ID int32 = 0
-		TASK_ID int64 = 0
-	)
 	// CREATE CHANNEL FOR GETTING TASKS USED BY NODE
 	getTaskChan := make(chan dto.GetTaskRequest)
 	// CREATE CHANNEL FOR SENDING RESULT (TO WORKER)
@@ -207,8 +189,14 @@ func Test_processResult_For_Select_Without_Aggregation_3_Elements_In_Response(t 
 	}
 
 	for index, actual := range response.Data {
-		if expected[index].String() != actual.String() {
-			t.Error("Expected: ", expected, " but got: ", actual)
-		}
+		AssertEqual(expected[index], actual, t)
+	}
+}
+
+type Test *testing.T
+
+func AssertEqual(expected, actual dto.Dto, t *testing.T) {
+	if expected.String() != actual.String() {
+		t.Error("Expected: ", expected, " but got: ", actual)
 	}
 }
