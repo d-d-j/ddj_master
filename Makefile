@@ -14,3 +14,4 @@ integrationTest: all
 
 clean:
 	rm -f ddj_Master
+	go clean ddj_Master
