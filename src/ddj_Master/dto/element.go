@@ -11,6 +11,7 @@ type Element struct {
 	Tag, Metric int32
 	Time        int64
 	Value       float32
+	Padding     int32
 }
 
 func NewElement(Tag int32, Metric int32, Time int64, Value float32) *Element {

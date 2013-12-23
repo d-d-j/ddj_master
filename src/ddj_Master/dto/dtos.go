@@ -4,6 +4,21 @@ import (
 	"bytes"
 )
 
+//From: http://golang.org/pkg/sort/#example_
+type ByTime []Dto
+
+func (this ByTime) Len() int      { return len(this) }
+func (this ByTime) Swap(i, j int) { this[i], this[j] = this[j], this[i] }
+func (this ByTime) Less(i, j int) bool {
+	a, okA := (this[i]).(*Element)
+	b, okB := (this[j]).(*Element)
+	if okA && okB {
+		return a.Time < b.Time
+	} else {
+		panic("Cannot use this method on non Element")
+	}
+}
+
 type Dtos []Dto
 
 func (this Dtos) Encode() ([]byte, error) {

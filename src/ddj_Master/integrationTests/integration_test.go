@@ -19,7 +19,7 @@ type RestResponse struct {
 const (
 	NUMBER_OF_TAGS_PER_METRICS int = 4
 	NUMBER_OF_METRICS          int = 4
-	INSERTED_DATA              int = 10
+	INSERTED_DATA              int = 1000
 	// TODO: use cfg values instead of hardcoded port
 	HOST string = "http://localhost:8888/data"
 )
@@ -42,7 +42,6 @@ func SetUp(b *testing.B) {
 			expected[i] = e
 		}
 
-		b.Log("Inserting ", INSERTED_DATA, " elements")
 		for i := 0; i < INSERTED_DATA; i++ {
 
 			req, err := http.NewRequest("POST", HOST, strings.NewReader(data[i]))
@@ -61,6 +60,7 @@ func SetUp(b *testing.B) {
 			response.Body.Close()
 		}
 		insert_completed = true
+		b.Log("Inserted ", INSERTED_DATA, " elements")
 	}
 }
 

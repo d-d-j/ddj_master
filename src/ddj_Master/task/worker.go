@@ -6,6 +6,7 @@ import (
 	"ddj_Master/dto"
 	"ddj_Master/node"
 	"fmt"
+	"sort"
 )
 
 type TaskWorker struct {
@@ -150,6 +151,7 @@ Loop:
 			}
 
 			// TODO: REDUCE RESPONSES
+			sort.Sort(dto.ByTime(responses))
 
 			// PASS REDUCED RESPONSES TO CLIENT
 			req.Response <- dto.NewRestResponse("", id, responses)
