@@ -46,7 +46,7 @@ func (serv InsertService) InsertData(PostData dto.Element) {
 	serv.setHeader()
 	log.Finest("Inserting data - data to insert: ", PostData)
 	responseChan := make(chan *dto.RestResponse)
-	restRequestChannel <- dto.RestRequest{common.TASK_INSERT, &PostData, responseChan}
+	restRequestChannel <- dto.RestRequest{Type: common.TASK_INSERT, Data: &PostData, Response: responseChan}
 	response := <-responseChan
 	log.Finest("Result: ", response)
 	serv.setInsertResponse(response)

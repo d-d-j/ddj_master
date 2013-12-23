@@ -61,7 +61,7 @@ func (n *Node) waitForLogin() error {
 		n.Status = common.NODE_ERROR
 		return err
 	}
-	log.Debug("Node received login data (CUDA GPU COUNT = ", cudaGpuCount, ") from node ", n.Id)
+	log.Debug("Node received login data (CUDA GPU COUNT = %d) from node %d" , cudaGpuCount, n.Id)
 
 	buffer = make([]byte, 4*cudaGpuCount)
 	if !n.read(buffer) {
@@ -78,7 +78,7 @@ func (n *Node) waitForLogin() error {
 		}
 	}
 	n.PreferredDeviceId = n.GpuIds[0]
-	log.Debug("Node ", n.Id, " is ready with devices ", n.GpuIds)
+	log.Debug("Node %d is ready with devices %v", n.Id,  n.GpuIds)
 	n.Status = common.NODE_READY
 	return err
 }
@@ -106,7 +106,7 @@ func (n *Node) readerRoutine() {
 		go n.processResult(r)
 	}
 
-	log.Info("Node reader stopped for Node ", n.Id)
+	log.Info("Node reader stopped for Node %s", n.Id)
 	n.stop <- true
 }
 
@@ -117,7 +117,7 @@ func (n *Node) processResult(result dto.Result) {
 	taskChan := make(chan *dto.Task)
 
 	//Send GetTaskReuest to get channel on which we will return result
-	n.GetTaskChannel <- dto.GetTaskRequest{result.TaskId, taskChan}
+	n.GetTaskChannel <- dto.GetTaskRequest{TaskId: result.TaskId, BackChan: taskChan}
 
 	//Wait for task
 	t := <-taskChan
@@ -165,7 +165,7 @@ func (n *Node) senderRoutine() {
 	for {
 		select {
 		case buffer := <-n.Incoming:
-			log.Fine("Sending ", buffer, " to ", n.Id)
+			log.Fine("Sending %v  to %d", buffer, n.Id)
 			n.write(buffer)
 		case <-n.stop:
 			log.Info("Node #%d stopped", n.Id)

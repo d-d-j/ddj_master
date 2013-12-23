@@ -20,7 +20,7 @@ func Test_processResult_For_Info(t *testing.T) {
 	// CREATE CHANNEL FOR SENDING RESPONSE TO CLIENT (REST API)
 	responseChan := make(chan *dto.RestResponse)
 
-	task := dto.NewTask(TASK_ID, dto.RestRequest{common.TASK_INFO, &dto.EmptyElement{}, responseChan}, resultChan)
+	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_INFO, Data: &dto.EmptyElement{}, Response: responseChan}, resultChan)
 	node := NewNode(NODE_ID, nil, getTaskChan)
 
 	// PREPARE DATA FOR TEST
@@ -67,7 +67,7 @@ func Test_processResult_For_Select_Without_Aggregation_Empty_Response(t *testing
 	// CREATE CHANNEL FOR SENDING RESPONSE TO CLIENT (REST API)
 	responseChan := make(chan *dto.RestResponse)
 
-	task := dto.NewTask(TASK_ID, dto.RestRequest{common.TASK_SELECT, &dto.EmptyElement{}, responseChan}, resultChan)
+	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_SELECT, Data: &dto.EmptyElement{}, Response: responseChan}, resultChan)
 	node := NewNode(NODE_ID, nil, getTaskChan)
 
 	// PREPARE DATA FOR TEST
@@ -107,7 +107,7 @@ func Test_processResult_For_Select_Without_Aggregation_One_Element_In_Response(t
 	// CREATE CHANNEL FOR SENDING RESPONSE TO CLIENT (REST API)
 	responseChan := make(chan *dto.RestResponse)
 
-	task := dto.NewTask(TASK_ID, dto.RestRequest{common.TASK_SELECT, &dto.EmptyElement{}, responseChan}, resultChan)
+	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_SELECT, Data: &dto.EmptyElement{}, Response: responseChan}, resultChan)
 	node := NewNode(NODE_ID, nil, getTaskChan)
 
 	// PREPARE DATA FOR TEST
@@ -154,7 +154,7 @@ func Test_processResult_For_Select_Without_Aggregation_3_Elements_In_Response(t 
 	// CREATE CHANNEL FOR SENDING RESPONSE TO CLIENT (REST API)
 	responseChan := make(chan *dto.RestResponse)
 
-	task := dto.NewTask(TASK_ID, dto.RestRequest{common.TASK_SELECT, &dto.EmptyElement{}, responseChan}, resultChan)
+	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_SELECT, Data: &dto.EmptyElement{}, Response: responseChan}, resultChan)
 	node := NewNode(NODE_ID, nil, getTaskChan)
 
 	// PREPARE DATA FOR TEST

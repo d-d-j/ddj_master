@@ -19,7 +19,7 @@ func NewListener(service string, nodeInfoChannel chan<- Info) *Listener {
 		log.Critical("Error: Could not resolve address")
 	}
 
-	log.Info("Listening on: ", service)
+	log.Info("Listening on: %v", service)
 	netListen, error := net.Listen("tcp", service)
 	if error != nil {
 		log.Error(error)

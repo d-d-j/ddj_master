@@ -39,7 +39,7 @@ func (b *Balancer) Balance(work <-chan dto.RestRequest) {
 		case w := <-b.done:
 			b.completed(w)
 		case <-time.After(5 * time.Second):
-			b.dispatch(dto.RestRequest{common.TASK_INFO, new(dto.EmptyElement), nil}, 0)
+			b.dispatch(dto.RestRequest{Type: common.TASK_INFO, Data: new(dto.EmptyElement), Response: nil}, 0)
 		}
 	}
 }

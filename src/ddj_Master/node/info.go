@@ -23,7 +23,7 @@ func (this *MemoryInfo) String() string {
 }
 
 func (this *Info) String() string {
-	return fmt.Sprintf("Node #%d\t", this.nodeId, this.MemoryInfo.String())
+	return fmt.Sprintf("Node #%d %s\t", this.nodeId, this.MemoryInfo.String())
 }
 
 func (this *Info) Size() int {

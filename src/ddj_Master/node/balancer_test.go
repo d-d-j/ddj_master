@@ -114,6 +114,6 @@ func Test_Update_Called_3_Times_Will_Fire_All_3_Nodes_And_GPUs(t *testing.T) {
 		actual[i] = lb.CurrentInsertNodeId*10 + nodes[lb.CurrentInsertNodeId].PreferredDeviceId
 	}
 	if expected != actual {
-		t.Errorf("Expected: ", expected, "but got: ", actual)
+		t.Errorf("Expected: %v but got: %v", expected, actual)
 	}
 }

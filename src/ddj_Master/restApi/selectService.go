@@ -28,7 +28,7 @@ func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) dto.Res
 		return dto.RestResponse{}
 	}
 	log.Fine("Query: ", &data)
-	restRequestChannel <- dto.RestRequest{common.TASK_SELECT, &data, responseChan}
+	restRequestChannel <- dto.RestRequest{Type: common.TASK_SELECT, Data: &data, Response: responseChan}
 	response := <-responseChan
 	serv.setSelectHeaderErrors(response)
 	return *response
@@ -54,7 +54,7 @@ func prepareQuery(metrics, tags, times, aggr string) (dto.Query, error) {
 		return dto.Query{}, err
 	}
 
-	return dto.Query{int32(len(metricsArr)), metricsArr, int32(len(tagsArr)), tagsArr, int32(len(timesArr) / 2), timesArr, aggregation}, nil
+	return dto.Query{MetricsCount: int32(len(metricsArr)), Metrics: metricsArr, TagsCount: int32(len(tagsArr)), Tags: tagsArr, TimeSpansCount: int32(len(timesArr) / 2), TimeSpans: timesArr, AggregationType: aggregation}, nil
 }
 
 func prepareAggregationType(aggregation string) (int32, error) {

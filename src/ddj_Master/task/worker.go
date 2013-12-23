@@ -42,7 +42,7 @@ func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer) *node.No
 	// get node
 	var insertNode *node.Node
 	nodeChan := make(chan *node.Node)
-	nodeReq := node.GetNodeRequest{nodeId, nodeChan}
+	nodeReq := node.GetNodeRequest{NodeId: nodeId, BackChan: nodeChan}
 	node.NodeManager.GetChan <- nodeReq
 	insertNode = <-nodeChan
 	return insertNode
@@ -174,7 +174,7 @@ Loop:
 
 			// TODO: SET NODE INFO IN NODES
 			for i := 0; i < len(responses); i++ {
-				log.Finest("Get info", responses)
+				log.Finest("Get info %v", responses)
 			}
 
 		default:

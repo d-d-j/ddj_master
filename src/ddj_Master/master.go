@@ -32,7 +32,7 @@ func main() {
 
 	// Start rest api server with tcp services for inserts and selects
 	portNum := fmt.Sprintf(":%d", cfg.Ports.RestApi)
-	var server = restApi.Server{portNum}
+	var server = restApi.Server{Port: portNum}
 	chanReq := server.StartApi()
 
 	// Initialize node manager
