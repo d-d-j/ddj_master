@@ -6,7 +6,7 @@ import (
 )
 
 func Test_EncodeDecode_Header(t *testing.T) {
-	expected := Header{1, 4, 24}
+	expected := Header{1, 4, 24, 0}
 	buf, err := expected.Encode()
 	if err != nil {
 		t.Error(err)
@@ -23,7 +23,7 @@ func Test_EncodeDecode_Header(t *testing.T) {
 
 func Test_Encode_Header(t *testing.T) {
 	expected := []byte{1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 76, 199, 124, 0, 132, 14, 55, 0, 0, 0, 249, 63, 0, 0, 0, 0, 0, 0, 96, 9, 0, 0, 0, 0}
-	actual, err := (&Header{1, 4, 24}).Encode()
+	actual, err := (&Header{1, 4, 24, 0}).Encode()
 	if err != nil {
 		t.Error(err)
 	}
@@ -33,8 +33,8 @@ func Test_Encode_Header(t *testing.T) {
 }
 
 func Test_Decode_Header(t *testing.T) {
-	expected := Header{1, 4, 24}
-	buf := []byte{1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 76, 199, 124, 0, 132, 14, 55, 0, 0, 0, 249, 63, 0, 0, 0, 0, 0, 0, 96, 9, 0, 0, 0, 0}
+	expected := Header{1, 4, 24, 1}
+	buf := []byte{1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 24, 0, 0, 0, 1, 0, 0, 0, 76, 199, 124, 0, 132, 14, 55, 0, 0, 0, 249, 63, 0, 0, 0, 0, 0, 0, 96, 9, 0, 0, 0, 0}
 	var actual Header
 	err := actual.Decode(buf)
 	if err != nil {

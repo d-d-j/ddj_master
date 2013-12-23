@@ -53,3 +53,11 @@ func (m *Manager) Manage() {
 		}
 	}
 }
+
+func (this *Manager) SendToAllNodes(message []byte) {
+	// SEND MESSAGE TO ALL NODES
+	for _, n := range this.nodes {
+	log.Finest("Sending message to node #%d", n.Id)
+	n.Incoming <- message
+	}
+}

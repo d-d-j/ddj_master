@@ -11,9 +11,9 @@ type Request struct {
 	Data []byte
 }
 
-func NewRequest(id int64, ttype int32, size int32, data Dto) *Request {
+func NewRequest(id int64, ttype int32, size int32, data Dto, deviceId int32) *Request {
 	r := new(Request)
-	r.Header = Header{id, ttype, size}
+	r.Header = Header{id, ttype, size, deviceId}
 	var err error
 	r.Data, err = data.Encode()
 	if err != nil {
@@ -23,7 +23,7 @@ func NewRequest(id int64, ttype int32, size int32, data Dto) *Request {
 }
 
 func (r *Request) String() string {
-	return fmt.Sprintf("Request with type %d and task id %d", r.Header.Type, r.Header.TaskId)
+	return fmt.Sprintf("Request with type %d and task id %d - dev#%d", r.Header.Type, r.Header.TaskId, r.Header.DeviceId)
 }
 
 func (r *Request) Encode() ([]byte, error) {

@@ -7,7 +7,6 @@ import (
 
 type LoadBalancer struct {
 	CurrentInsertNodeId int32
-	CurrentInsertGpuId  int32
 	timeout             int32
 	nodes               map[int32]*Node
 }
@@ -23,7 +22,6 @@ func NewLoadBalancer(timeout int32, nodes map[int32]*Node) *LoadBalancer {
 
 func (this *LoadBalancer) reset() {
 	this.CurrentInsertNodeId = common.CONST_UNINITIALIZED
-	this.CurrentInsertGpuId = common.CONST_UNINITIALIZED
 }
 
 func (this *LoadBalancer) Balance(info <-chan Info) {
@@ -46,7 +44,7 @@ func (this *LoadBalancer) update(newInfo *Info) {
 	if this.IsUnitialized() {
 		for _, node := range this.nodes {
 			this.CurrentInsertNodeId = node.Id
-			this.CurrentInsertGpuId = node.GpuIds[0]
+			node.PreferredDeviceId = node.GpuIds[0]
 			break
 		}
 		return
@@ -57,8 +55,8 @@ func (this *LoadBalancer) update(newInfo *Info) {
 	)
 
 	bestNodeId := common.CONST_UNINITIALIZED
-	bestGpuId := common.CONST_UNINITIALIZED
 	bestRank := -(int(^uint(0) >> 1))
+
 	//TODO: Calculate full rank when data will be available
 	//Now we have no info about card load, ram, proc etc
 	for id, node := range this.nodes {
@@ -66,8 +64,8 @@ func (this *LoadBalancer) update(newInfo *Info) {
 		if this.CurrentInsertNodeId == node.Id {
 			rank -= CurrentNodePenalty
 			for gpuId := range node.GpuIds {
-				if this.CurrentInsertGpuId != int32(gpuId) {
-					bestGpuId = gpuId
+				if node.PreferredDeviceId != int32(gpuId) {
+					node.PreferredDeviceId = int32(gpuId)
 					break
 				}
 			}
@@ -81,13 +79,8 @@ func (this *LoadBalancer) update(newInfo *Info) {
 	}
 
 	this.CurrentInsertNodeId = int32(bestNodeId)
-	if bestGpuId == common.CONST_UNINITIALIZED {
-		this.CurrentInsertGpuId = this.nodes[int32(bestNodeId)].GpuIds[0]
-	} else {
-		this.CurrentInsertGpuId = int32(bestGpuId)
-	}
 }
 
 func (this *LoadBalancer) IsUnitialized() bool {
-	return this.CurrentInsertGpuId == common.CONST_UNINITIALIZED || this.CurrentInsertNodeId == common.CONST_UNINITIALIZED
+	return this.CurrentInsertNodeId == common.CONST_UNINITIALIZED
 }

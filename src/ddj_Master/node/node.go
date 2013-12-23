@@ -14,12 +14,13 @@ import (
 // some channels for sending and receiving data.
 type Node struct {
 	Communication
-	Id             int32
-	Status         int32
-	GpuIds         []int32
-	Stats          Info
-	stop           chan bool
-	GetTaskChannel chan dto.GetTaskRequest
+	Id          		int32
+	Status      		int32
+	GpuIds      		[]int32
+	Stats       		Info
+	stop        		chan bool
+	GetTaskChannel 		chan dto.GetTaskRequest
+	PreferredDeviceId	int32
 }
 
 func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest) *Node {
@@ -29,6 +30,7 @@ func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest)
 	n.stop = make(chan bool)
 	n.Communication = makeCommunication(connection)
 	n.GetTaskChannel = taskChannel
+	n.PreferredDeviceId = common.CONST_UNINITIALIZED
 	return n
 }
 
@@ -69,12 +71,13 @@ func (n *Node) waitForLogin() error {
 	n.GpuIds = make([]int32, cudaGpuCount)
 	for i := int32(0); i < cudaGpuCount; i++ {
 		err = binary.Read(buf, binary.LittleEndian, &(n.GpuIds[i]))
-		if err != nil {
+		if err != nil || len(n.GpuIds) == 0 {
 			log.Error("Node login error for node ", n.Id)
 			n.Status = common.NODE_ERROR
 			return err
 		}
 	}
+	n.PreferredDeviceId = n.GpuIds[0]
 	log.Debug("Node ", n.Id, " is ready with devices ", n.GpuIds)
 	n.Status = common.NODE_READY
 	return err
@@ -106,6 +109,7 @@ func (n *Node) readerRoutine() {
 	log.Info("Node reader stopped for Node ", n.Id)
 	n.stop <- true
 }
+
 
 func (n *Node) processResult(result dto.Result) {
 
@@ -142,12 +146,17 @@ func (n *Node) processResult(result dto.Result) {
 			elements[i] = &e
 		}
 		responseData = elements
+	default:
+		log.Error("Cannot parse task result data - wrong task type")
+		t.ResultChan <- dto.NewRestResponse("Wrong task type", result.TaskId, nil)
+		return
 	}
-	if err != nil {
+	if err != nil || responseData == nil {
 		log.Error("Cannot parse task result data", err)
-		t.ResultChan <- dto.NewRestResponse("", result.TaskId, nil)
+		t.ResultChan <- dto.NewRestResponse("Task result data error", result.TaskId, nil)
+	} else {
+		t.ResultChan <- dto.NewRestResponse("", result.TaskId, responseData)
 	}
-	t.ResultChan <- dto.NewRestResponse("", result.TaskId, responseData)
 }
 
 // Sending goroutine for Node - waits for data to be sent over Node.Incoming,

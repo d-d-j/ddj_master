@@ -10,10 +10,11 @@ type Header struct {
 	TaskId   int64
 	Type     int32
 	DataSize int32
+	DeviceId int32
 }
 
 func (h *Header) String() string {
-	return fmt.Sprintf("#%d Code: %d [%d]", h.TaskId, h.Type, h.DataSize)
+	return fmt.Sprintf("#%d Code: %d [%d] - dev#%d", h.TaskId, h.Type, h.DataSize, h.DeviceId)
 }
 
 func (h *Header) Encode() ([]byte, error) {

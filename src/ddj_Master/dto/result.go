@@ -2,6 +2,7 @@ package dto
 
 import (
 	"fmt"
+	"ddj_Master/common"
 )
 
 type Result struct {
@@ -11,7 +12,7 @@ type Result struct {
 
 func NewResult(id int64, ttype int32, size int32, data []byte) *Result {
 	r := new(Result)
-	r.Header = Header{id, ttype, size}
+	r.Header = Header{id, ttype, size, common.CONST_UNINITIALIZED}
 	r.Data = data
 	return r
 }

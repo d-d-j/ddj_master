@@ -1,6 +1,8 @@
 package dto
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Task struct {
 	Id           int64
@@ -27,8 +29,9 @@ func NewTask(id int64, request RestRequest, resultChan chan *RestResponse) *Task
 	return t
 }
 
-func (t *Task) MakeRequest() *Request {
-	return NewRequest(t.Id, t.Type, t.DataSize, t.Data)
+// if request is made for all gpu cards in node then common.CONST_UNINITIALIZED should be passed as deviceId
+func (t *Task) MakeRequest(deviceId int32) *Request {
+	return NewRequest(t.Id, t.Type, t.DataSize, t.Data, deviceId)
 }
 
 func (t *Task) String() string {

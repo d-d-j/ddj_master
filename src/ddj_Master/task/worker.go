@@ -6,7 +6,6 @@ import (
 	"ddj_Master/dto"
 	"ddj_Master/node"
 	"fmt"
-	"sort"
 )
 
 type TaskWorker struct {
@@ -48,18 +47,142 @@ func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer) *node.No
 	return insertNode
 }
 
-func createMessage(req dto.RestRequest, t *dto.Task) []byte {
+// if request is made for all gpu cards in node then common.CONST_UNINITIALIZED should be passed as deviceId
+func createMessage(req dto.RestRequest, t *dto.Task, deviceId int32) []byte {
 	var (
 		message []byte
 		err     error
 	)
-	message, err = t.MakeRequest().Encode()
+	message, err = t.MakeRequest(deviceId).Encode()
 	if err != nil {
 		log.Error("Error while encoding request - ", err)
 		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
 		return nil
 	}
 	return message
+}
+
+func handleRequestForAllNodes(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer, req dto.RestRequest) []*dto.RestResponse {
+	// TODO: Handle errors better than return nil
+
+	// GET NODES
+	nodes := node.NodeManager.GetNodes()
+	avaliableNodes := len(nodes)
+	responseChan := make(chan *dto.RestResponse, avaliableNodes)
+	if avaliableNodes == 0 {
+		return nil
+	}
+
+	// CREATE TASK
+	id := idGen.GetId()
+	t := dto.NewTask(id, req, responseChan)
+	log.Fine("Created new %s", t)
+	TaskManager.AddChan <- t // add task to dictionary
+
+	// CREATE MESSAGE
+	message := createMessage(req, t, common.CONST_UNINITIALIZED) // create a message to send
+	if message == nil {
+		return nil
+	}
+
+	// SEND MESSAGE TO ALL NODES
+	node.NodeManager.SendToAllNodes(message)
+
+	responses := make([]*dto.RestResponse, avaliableNodes)
+
+	// WAIT FOR ALL RESPONSES
+	for i := 0; i < avaliableNodes; i++ {
+		responses[i] = <-responseChan
+		log.Finest("Got task result [%d/%d] - %s", i, avaliableNodes, responses[i])
+	}
+
+	// REMOVE TASK
+	//TaskManager.DelChan <- t.Id
+
+	return responses
+}
+
+func (w *TaskWorker) Work(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer) {
+Loop:
+	for {
+		req := <-w.reqChan	// GET REQUEST
+
+		switch req.Type {
+		case common.TASK_INSERT:
+			log.Finest("Worker is processing [insert] task")
+
+			// GET NODE FOR INSERT
+			insertNode := getNodeForInsert(req, balancer) // get nodeId from load balancer
+			if insertNode == nil {
+				done <- w
+				continue Loop
+			}
+
+			// CREATE TASK
+			id := idGen.GetId()
+			t := dto.NewTask(id, req, nil)
+			log.Fine("Created new %s", t)
+			TaskManager.AddChan <- t // add task to dictionary
+
+			// CREATE MESSAGE
+			message := createMessage(req, t, insertNode.PreferredDeviceId) // create a message to send
+			if message == nil {
+				done <- w
+				continue Loop
+			}
+
+			// SEND MESSAGE
+			log.Finest("Sending message to node #%d", id, insertNode.Id)
+			insertNode.Incoming <- message
+
+			// PASS RESPONSE TO CLIENT
+			req.Response <- dto.NewRestResponse("", id, nil)
+
+			// TODO: Change this to set task status or sth, then wait for response about insert from node
+			// then set status again to success
+			//TaskManager.DelChan <- t.Id
+
+		case common.TASK_SELECT:
+			log.Debug("Worker is processing [select] task")
+
+			responses := handleRequestForAllNodes(done, idGen, balancer, req)
+			if responses == nil {
+				done <- w
+				continue Loop
+			}
+
+
+			// TODO: REDUCE RESPONSES
+			responseToClient := make([]dto.Dto, 0, len(responses))
+			for i := 0; i < len(responses); i++ {
+				responseToClient = append(responseToClient, responses[i].Data...)
+			}
+			
+			//sort.Sort(dto.ByTime(responses))
+
+			// PASS REDUCED RESPONSES TO CLIENT
+			req.Response <- dto.NewRestResponse("", 0, responseToClient)
+
+		case common.TASK_INFO:
+			log.Debug("Worker is processing [info] task")
+
+			responses := handleRequestForAllNodes(done, idGen, balancer, req)
+			if responses == nil {
+				done <- w
+				continue Loop
+			}
+
+			// TODO: SET NODE INFO IN NODES
+			for i := 0; i < len(responses); i++ {
+				log.Finest("Get info", responses)
+			}
+
+		default:
+			log.Error("Worker can't handle task type ", req.Type)
+		}
+		log.Debug("Worker is done")
+		done <- w
+	}
 }
 
 func (w *TaskWorker) String() string {
@@ -80,122 +203,4 @@ func (w *TaskWorker) DecrementPending() {
 
 func (w *TaskWorker) RequestChan() chan dto.RestRequest {
 	return w.reqChan
-}
-
-func (w *TaskWorker) Work(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer) {
-Loop:
-	for {
-		req := <-w.reqChan
-		log.Debug("Worker is working")
-		switch req.Type {
-		case common.TASK_INSERT:
-			log.Finest("Worker is processing [insert] task")
-
-			insertNode := getNodeForInsert(req, balancer) // get nodeId from load balancer
-			if insertNode == nil {
-				done <- w
-				continue Loop
-			}
-
-			id := idGen.GetId()
-			t := dto.NewTask(id, req, nil)
-			log.Debug("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
-			TaskManager.AddChan <- t // add task to dictionary
-
-			message := createMessage(req, t) // create a message to send
-			if message == nil {
-				done <- w
-				continue Loop
-			}
-
-			log.Finest("Sending message [%d] to node #%d", id, insertNode.Id)
-			insertNode.Incoming <- message
-			req.Response <- dto.NewRestResponse("", id, nil)
-			log.Finest("Worker finish task [%d]", id)
-
-		case common.TASK_SELECT:
-			log.Debug("Worker is processing [select] task")
-
-			// GET NODES
-			nodes := node.NodeManager.GetNodes()
-			avaliableNodes := len(nodes)
-			responseChan := make(chan *dto.RestResponse, avaliableNodes)
-
-			// CREATE TASK
-			id := idGen.GetId()
-			t := dto.NewTask(id, req, responseChan)
-			log.Fine("Created new %s", t)
-			TaskManager.AddChan <- t // add task to dictionary
-
-			// CREATE MESSAGE
-			message := createMessage(req, t) // create a message to send
-			message, err := t.MakeRequest().Encode()
-			if err != nil {
-				log.Error("Cannot parse request: %s", err)
-				continue
-			}
-
-			// SEND MESSAGE TO ALL NODES
-			for _, n := range nodes {
-				log.Finest("Sending message (select) to node #%d", n.Id)
-				n.Incoming <- message
-			}
-
-			// WAIT FOR ALL RESPONSES
-			// Create slice for results
-			responses := make([]dto.Dto, 0, avaliableNodes)
-			for i := 0; i < avaliableNodes; i++ {
-				response := <-responseChan
-				log.Finest("Got Select (partial) result %d/%d - %s", i, avaliableNodes, response)
-				responses = append(responses, response.Data...)
-			}
-
-			// TODO: REDUCE RESPONSES
-			sort.Sort(dto.ByTime(responses))
-
-			// PASS REDUCED RESPONSES TO CLIENT
-			req.Response <- dto.NewRestResponse("", id, responses)
-
-		case common.TASK_INFO:
-			nodes := node.NodeManager.GetNodes()
-			avaliableNodes := len(nodes)
-			log.Debug("Worker is processing [info] task for all %d nodes", avaliableNodes)
-			responseChan := make(chan *dto.RestResponse, avaliableNodes)
-			for _, n := range nodes {
-				log.Finest("Sending [info] task to #%d", n.Id)
-				id := idGen.GetId()
-				t := dto.NewTask(id, req, responseChan)
-				log.Fine("Created new task with: id=", t.Id, " type=", t.Type, " size=", t.DataSize)
-				log.Finest(t)
-				TaskManager.AddChan <- t         // add task to dictionary
-				message := createMessage(req, t) // create a message to send
-				message, err := t.MakeRequest().Encode()
-				if err != nil {
-					log.Error("Cannot parse request: %s", err)
-					continue
-				}
-				log.Finest("Sending message [%d] to node #%d", id, n.Id)
-				nodeChan := make(chan *node.Node)
-				nodeReq := node.GetNodeRequest{n.Id, nodeChan}
-				node.NodeManager.GetChan <- nodeReq
-				currentNode := <-nodeChan
-				currentNode.Incoming <- message
-				log.Finest("Worker send task [%d]", id)
-			}
-			if avaliableNodes != 0 {
-				log.Debug("Waiting for status infos")
-			}
-			for i := 0; i < avaliableNodes; i++ {
-				//TODO: ADD TIMEOUT
-				result := <-responseChan
-				log.Finest("Get info", result)
-			}
-			//TODO: DO SOMETHING WITH INFOs
-
-		default:
-			log.Error("Worker can't handle task type ", req.Type)
-		}
-		log.Debug("Worker is done")
-		done <- w
-	}
 }
