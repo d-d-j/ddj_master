@@ -7,18 +7,6 @@ type Dto interface {
 	Size() int
 }
 
-type InDto interface {
-	Decoder
-	String() string
-	Size() int
-}
-
-type OutDto interface {
-	Encoder
-	String() string
-	Size() int
-}
-
 type Encoder interface {
 	Encode() ([]byte, error)
 }
