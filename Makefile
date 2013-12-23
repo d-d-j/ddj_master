@@ -7,7 +7,7 @@ run: all
 	./ddj_Master
 
 test: all
-	go test ./...
+	go test -cover ./...
 
 integrationTest: all
 	go test ./src/ddj_Master/integrationTests/ -bench="."
