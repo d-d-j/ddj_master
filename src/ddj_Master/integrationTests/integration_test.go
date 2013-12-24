@@ -93,22 +93,22 @@ func Benchmark_Select_First_Value(b *testing.B) {
 		b.Error("Error occurred: ", err)
 		b.FailNow()
 	}
-	Assert(response, b)
+	Assert(response, expected, b)
 }
 
-func Benchmark_Select_N_Values_For_All_Tags_And_Metrics(b *testing.B) {
+func Benchmark_Select_Last_Ten_Inserted_Value(b *testing.B) {
 
 	SetUp(b)
 	dataCount := 0
 	if b.N > INSERTED_DATA {
 		dataCount = INSERTED_DATA
 	} else {
-		dataCount = b.N
+		dataCount = b.N + 10
 	}
 
 	b.ResetTimer()
 
-	selectAll := fmt.Sprintf("%s/metric/all/tag/all/time/0-%d/aggregation/none", HOST, dataCount)
+	selectAll := fmt.Sprintf("%s/metric/all/tag/all/time/%d-%d/aggregation/none", HOST, dataCount-10, dataCount)
 	req, err := http.Get(selectAll)
 	defer req.Body.Close()
 	if err != nil {
@@ -129,18 +129,18 @@ func Benchmark_Select_N_Values_For_All_Tags_And_Metrics(b *testing.B) {
 		b.Error("Error occurred: ", err)
 		b.FailNow()
 	}
-	Assert(response, b)
+	Assert(response, expected[dataCount-10:dataCount], b)
 }
 
-func Assert(response RestResponse, b *testing.B) {
-	if len(response.Data) > INSERTED_DATA {
-		b.Error("Too many values returned. Expected less or equal than ", INSERTED_DATA, " but got ", len(response.Data))
+func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {
+	if len(response.Data) > len(expectedValues) {
+		b.Error("Too many values returned. Expected less or equal than ", len(expectedValues), " but got ", len(response.Data))
 		b.Log("Did you forget to restart server?")
 		b.FailNow()
 	}
 	for index, element := range response.Data {
-		if expected[index].String() != element.String() {
-			b.Error("Expected ", expected[index], " but got ", element)
+		if expectedValues[index].String() != element.String() {
+			b.Error("Expected ", expectedValues[index], " but got ", element)
 		}
 	}
 }
