@@ -32,78 +32,6 @@ func NewTaskWorker(idx int, jobsPerWorker int32) Worker {
 	return w
 }
 
-func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer) *node.Node {
-	nodeId := balancer.CurrentInsertNodeId
-	if nodeId == common.CONST_UNINITIALIZED {
-		log.Warn("No node connected")
-		req.Response <- dto.NewRestResponse("No node connected", 0, nil)
-		return nil
-	}
-	// get node
-	var insertNode *node.Node
-	nodeChan := make(chan *node.Node)
-	nodeReq := node.GetNodeRequest{NodeId: nodeId, BackChan: nodeChan}
-	node.NodeManager.GetChan <- nodeReq
-	insertNode = <-nodeChan
-	return insertNode
-}
-
-func createMessage(req dto.RestRequest, t *dto.Task, deviceId int32) []byte {
-	var (
-		message []byte
-		err     error
-	)
-	message, err = t.MakeRequest(deviceId).Encode()
-	if err != nil {
-		log.Error("Error while encoding request - ", err)
-		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
-		return nil
-	}
-	return message
-}
-
-func handleRequestForAllNodes(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer, req dto.RestRequest) []*dto.RestResponse {
-	// TODO: Handle errors better than return nil
-
-	// GET NODES
-	nodes := node.NodeManager.GetNodes()
-	avaliableNodes := len(nodes)
-	responseChan := make(chan *dto.RestResponse, avaliableNodes)
-	if avaliableNodes == 0 {
-		return nil
-	}
-
-	// CREATE TASK
-	id := idGen.GetId()
-	t := dto.NewTask(id, req, responseChan)
-	log.Fine("Created new %s", t)
-	TaskManager.AddChan <- t // add task to dictionary
-
-	// CREATE MESSAGE
-	message, err := t.MakeRequestForAllGpu().Encode()
-	if err != nil {
-		log.Error("Error while encoding request - ", err)
-		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
-		return nil
-	}
-
-	// SEND MESSAGE TO ALL NODES
-	node.NodeManager.SendToAllNodes(message)
-
-	responses := make([]*dto.RestResponse, avaliableNodes)
-
-	// WAIT FOR ALL RESPONSES
-	for i := 0; i < avaliableNodes; i++ {
-		responses[i] = <-responseChan
-		log.Finest("Got task result [%d/%d] - %s", i, avaliableNodes, responses[i])
-	}
-
-	// REMOVE TASK
-	//TaskManager.DelChan <- t.Id
-
-	return responses
-}
-
 func (w *TaskWorker) Work(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer) {
 Loop:
 	for {
@@ -188,22 +116,87 @@ Loop:
 	}
 }
 
+func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer) *node.Node {
+	nodeId := balancer.CurrentInsertNodeId
+	if nodeId == common.CONST_UNINITIALIZED {
+		log.Warn("No node connected")
+		req.Response <- dto.NewRestResponse("No node connected", common.TASK_UNINITIALIZED, nil)
+		return nil
+	}
+	// get node
+	var insertNode *node.Node
+	nodeChan := make(chan *node.Node)
+	nodeReq := node.GetNodeRequest{NodeId: nodeId, BackChan: nodeChan}
+	node.NodeManager.GetChan <- nodeReq
+	insertNode = <-nodeChan
+	return insertNode
+}
+
+func createMessage(req dto.RestRequest, t *dto.Task, deviceId int32) []byte {
+	var (
+		message []byte
+		err     error
+	)
+	message, err = t.MakeRequest(deviceId).Encode()
+	if err != nil {
+		log.Error("Error while encoding request - ", err)
+		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
+		return nil
+	}
+	return message
+}
+
+func handleRequestForAllNodes(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer, req dto.RestRequest) []*dto.RestResponse {
+	// TODO: Handle errors better than return nil
+
+	// GET NODES
+	nodes := node.NodeManager.GetNodes()
+	avaliableNodes := len(nodes)
+	responseChan := make(chan *dto.RestResponse, avaliableNodes)
+	if avaliableNodes == 0 {
+		return nil
+	}
+
+	// CREATE TASK
+	id := idGen.GetId()
+	t := dto.NewTask(id, req, responseChan)
+	log.Fine("Created new %s", t)
+	TaskManager.AddChan <- t // add task to dictionary
+
+	// CREATE MESSAGE
+	message, err := t.MakeRequestForAllGpu().Encode()
+	if err != nil {
+		log.Error("Error while encoding request - ", err)
+		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
+		return nil
+	}
+
+	// SEND MESSAGE TO ALL NODES
+	node.NodeManager.SendToAllNodes(message)
+
+	responses := make([]*dto.RestResponse, avaliableNodes)
+
+	// WAIT FOR ALL RESPONSES
+	for i := 0; i < avaliableNodes; i++ {
+		responses[i] = <-responseChan
+		log.Finest("Got task result [%d/%d] - %s", i, avaliableNodes, responses[i])
+	}
+
+	// REMOVE TASK
+	TaskManager.DelChan <- t.Id
+
+	return responses
+}
+
+//Interface implementation
 func (w *TaskWorker) String() string {
 	return fmt.Sprintf("Worker #%d pending:%d", w.index, w.pending)
 }
 
-func (w *TaskWorker) Id() int {
-	return w.index
-}
+func (w *TaskWorker) Id() int { return w.index }
 
-func (w *TaskWorker) IncrementPending() {
-	w.pending++
-}
+func (w *TaskWorker) IncrementPending() { w.pending++ }
 
-func (w *TaskWorker) DecrementPending() {
-	w.pending--
-}
+func (w *TaskWorker) DecrementPending() { w.pending-- }
 
-func (w *TaskWorker) RequestChan() chan dto.RestRequest {
-	return w.reqChan
-}
+func (w *TaskWorker) RequestChan() chan dto.RestRequest { return w.reqChan }
