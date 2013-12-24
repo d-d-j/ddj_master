@@ -32,7 +32,7 @@ func (c *Communication) read(buffer []byte) bool {
 	bytesRead, error := c.connection.Read(buffer)
 	if error != nil {
 		c.connection.Close()
-		log.Error("Problem with connection: %s", error)
+		log.Error("Problem with connection: ", error)
 		return false
 	}
 	log.Debug("Read %d bytes", bytesRead)
@@ -45,7 +45,7 @@ func (c *Communication) write(buffer []byte) bool {
 	bytesSend, error := c.connection.Write(buffer)
 	if error != nil {
 		c.connection.Close()
-		log.Error("Problem with connection: %s", error)
+		log.Error("Problem with connection: ", error)
 		return false
 	}
 	log.Debug("Written %d bytes", bytesSend)
