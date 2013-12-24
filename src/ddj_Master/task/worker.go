@@ -10,9 +10,10 @@ import (
 )
 
 type TaskWorker struct {
-	reqChan chan dto.RestRequest
-	pending int
-	index   int
+	reqChan     chan dto.RestRequest
+	getNodeChan chan node.GetNodeRequest
+	pending     int
+	index       int
 }
 
 type Worker interface {
@@ -24,11 +25,12 @@ type Worker interface {
 	String() string
 }
 
-func NewTaskWorker(idx int, jobsPerWorker int32) Worker {
+func NewTaskWorker(idx int, jobsPerWorker int32, getNodeChan chan node.GetNodeRequest) Worker {
 	w := new(TaskWorker)
 	w.index = idx
 	w.pending = 0
 	w.reqChan = make(chan dto.RestRequest, jobsPerWorker)
+	w.getNodeChan = getNodeChan
 	return w
 }
 
@@ -42,7 +44,7 @@ Loop:
 			log.Finest("Worker is processing [insert] task")
 
 			// GET NODE FOR INSERT
-			insertNode := getNodeForInsert(req, balancer) // get nodeId from load balancer
+			insertNode := getNodeForInsert(req, balancer, w.getNodeChan) // get nodeId from load balancer
 			if insertNode == nil {
 				done <- w
 				continue Loop
@@ -116,7 +118,7 @@ Loop:
 	}
 }
 
-func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer) *node.Node {
+func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer, getNodeChan chan node.GetNodeRequest) *node.Node {
 	nodeId := balancer.CurrentInsertNodeId
 	if nodeId == common.CONST_UNINITIALIZED {
 		log.Warn("No node connected")
@@ -127,7 +129,7 @@ func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer) *node.No
 	var insertNode *node.Node
 	nodeChan := make(chan *node.Node)
 	nodeReq := node.GetNodeRequest{NodeId: nodeId, BackChan: nodeChan}
-	node.NodeManager.GetChan <- nodeReq
+	getNodeChan <- nodeReq
 	insertNode = <-nodeChan
 	return insertNode
 }
@@ -183,7 +185,7 @@ func handleRequestForAllNodes(done chan Worker, idGen common.Int64Generator, bal
 	}
 
 	// REMOVE TASK
-	TaskManager.DelChan <- t.Id
+	//TaskManager.DelChan <- t.Id
 
 	return responses
 }
