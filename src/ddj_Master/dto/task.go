@@ -34,8 +34,8 @@ func (t *Task) MakeRequest(deviceId int32) *Request {
 	return NewRequest(t.Id, t.Type, t.DataSize, t.Data, deviceId)
 }
 
-func (t *Task) MakeRequestForAllGpu() *Request {
-	return NewRequest(t.Id, t.Type, t.DataSize, t.Data, common.ALL_GPU)
+func (t *Task) MakeRequestForAllGpus() *Request {
+	return NewRequest(t.Id, t.Type, t.DataSize, t.Data, common.ALL_GPUs)
 }
 
 func (t *Task) String() string {

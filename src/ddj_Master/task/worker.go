@@ -166,7 +166,7 @@ func handleRequestForAllNodes(done chan Worker, idGen common.Int64Generator, bal
 	TaskManager.AddChan <- t // add task to dictionary
 
 	// CREATE MESSAGE
-	message, err := t.MakeRequestForAllGpu().Encode()
+	message, err := t.MakeRequestForAllGpus().Encode()
 	if err != nil {
 		log.Error("Error while encoding request - ", err)
 		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
