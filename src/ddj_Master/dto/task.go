@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"ddj_Master/common"
 	"fmt"
 )
 
@@ -9,8 +10,8 @@ type Task struct {
 	Type         int32
 	Data         Dto
 	DataSize     int32
-	ResponseChan chan *RestResponse   // channel for sending response to (REST API) client
-	ResultChan	 chan *RestResponse   // channel for sending result to worker
+	ResponseChan chan *RestResponse // channel for sending response to (REST API) client
+	ResultChan   chan *RestResponse // channel for sending result to worker
 }
 
 type GetTaskRequest struct {
@@ -29,9 +30,12 @@ func NewTask(id int64, request RestRequest, resultChan chan *RestResponse) *Task
 	return t
 }
 
-// if request is made for all gpu cards in node then common.CONST_UNINITIALIZED should be passed as deviceId
 func (t *Task) MakeRequest(deviceId int32) *Request {
 	return NewRequest(t.Id, t.Type, t.DataSize, t.Data, deviceId)
+}
+
+func (t *Task) MakeRequestForAllGpu() *Request {
+	return NewRequest(t.Id, t.Type, t.DataSize, t.Data, common.ALL_GPU)
 }
 
 func (t *Task) String() string {

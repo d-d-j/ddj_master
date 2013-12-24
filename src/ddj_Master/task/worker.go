@@ -48,7 +48,6 @@ func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer) *node.No
 	return insertNode
 }
 
-// if request is made for all gpu cards in node then common.CONST_UNINITIALIZED should be passed as deviceId
 func createMessage(req dto.RestRequest, t *dto.Task, deviceId int32) []byte {
 	var (
 		message []byte
@@ -81,8 +80,10 @@ func handleRequestForAllNodes(done chan Worker, idGen common.Int64Generator, bal
 	TaskManager.AddChan <- t // add task to dictionary
 
 	// CREATE MESSAGE
-	message := createMessage(req, t, common.CONST_UNINITIALIZED) // create a message to send
-	if message == nil {
+	message, err := t.MakeRequestForAllGpu().Encode()
+	if err != nil {
+		log.Error("Error while encoding request - ", err)
+		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
 		return nil
 	}
 
@@ -126,8 +127,10 @@ Loop:
 			TaskManager.AddChan <- t // add task to dictionary
 
 			// CREATE MESSAGE
-			message := createMessage(req, t, insertNode.PreferredDeviceId) // create a message to send
-			if message == nil {
+			message, err := t.MakeRequest(insertNode.PreferredDeviceId).Encode()
+			if err != nil {
+				log.Error("Error while encoding request - ", err)
+				req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
 				done <- w
 				continue Loop
 			}

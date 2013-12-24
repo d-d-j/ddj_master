@@ -8,11 +8,11 @@ const (
 
 //TaskType
 const (
-	TASK_ERROR      int32 = 0
-	TASK_INSERT     int32 = 1
-	TASK_SELECT		int32 = 2
-	TASK_FLUSH      int32 = 3
-	TASK_INFO       int32 = 4
+	TASK_ERROR  int32 = 0
+	TASK_INSERT int32 = 1
+	TASK_SELECT int32 = 2
+	TASK_FLUSH  int32 = 3
+	TASK_INFO   int32 = 4
 )
 
 //Aggregation Type
@@ -32,4 +32,9 @@ const (
 //Constants
 const (
 	CONST_UNINITIALIZED = -1
+)
+
+//DEVICE
+const (
+	ALL_GPU = CONST_UNINITIALIZED
 )
