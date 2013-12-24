@@ -70,46 +70,34 @@ func Benchmark_Select_First_Value(b *testing.B) {
 
 	SetUp(b)
 
-	b.ResetTimer()
+	response := Select("/metric/0/tag/0/time/0-0/aggregation/none", b)
 
-	selectAll := fmt.Sprintf("%s/metric/0/tag/0/time/0-%d/aggregation/none", HOST, 0)
-	req, err := http.Get(selectAll)
-	defer req.Body.Close()
-	if err != nil {
-		b.Log("Error occurred: ", err)
-	}
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		b.Log("Error occurred: ", err)
-		b.FailNow()
-	}
-
-	b.StopTimer()
-
-	response := RestResponse{}
-
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		b.Error("Error occurred: ", err)
-		b.FailNow()
-	}
 	Assert(response, expected, b)
 }
 
-func Benchmark_Select_Last_Ten_Inserted_Value(b *testing.B) {
+func Benchmark_Select_Ten_Inserted_Values_From_All_Tags_And_Metrics(b *testing.B) {
 
 	SetUp(b)
-	dataCount := 0
-	if b.N > INSERTED_DATA {
-		dataCount = INSERTED_DATA
-	} else {
-		dataCount = b.N + 10
-	}
 
+	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/none", INSERTED_DATA-10, INSERTED_DATA), b)
+
+	Assert(response, expected[INSERTED_DATA-10:INSERTED_DATA], b)
+}
+
+func Benchmark_Select_All(b *testing.B) {
+
+	SetUp(b)
+
+	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/none", 0, INSERTED_DATA), b)
+
+	Assert(response, expected[:INSERTED_DATA], b)
+}
+
+func Select(query string, b *testing.B) RestResponse {
 	b.ResetTimer()
 
-	selectAll := fmt.Sprintf("%s/metric/all/tag/all/time/%d-%d/aggregation/none", HOST, dataCount-10, dataCount)
-	req, err := http.Get(selectAll)
+	selectUrl := fmt.Sprintf("%s/%s", HOST, query)
+	req, err := http.Get(selectUrl)
 	defer req.Body.Close()
 	if err != nil {
 		b.Log("Error occurred: ", err)
@@ -129,7 +117,8 @@ func Benchmark_Select_Last_Ten_Inserted_Value(b *testing.B) {
 		b.Error("Error occurred: ", err)
 		b.FailNow()
 	}
-	Assert(response, expected[dataCount-10:dataCount], b)
+
+	return response
 }
 
 func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {
