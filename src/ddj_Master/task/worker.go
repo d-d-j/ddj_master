@@ -79,7 +79,7 @@ Loop:
 		case common.TASK_SELECT:
 			log.Debug("Worker is processing [select] task")
 
-			responses := handleRequestForAllNodes(done, idGen, balancer, req)
+			responses := handleRequestForAllNodes(done, idGen, req)
 			if responses == nil {
 				done <- w
 				continue Loop
@@ -99,7 +99,7 @@ Loop:
 		case common.TASK_INFO:
 			log.Debug("Worker is processing [info] task")
 
-			responses := handleRequestForAllNodes(done, idGen, balancer, req)
+			responses := handleRequestForAllNodes(done, idGen, req)
 			if responses == nil {
 				done <- w
 				continue Loop
@@ -148,7 +148,7 @@ func createMessage(req dto.RestRequest, t *dto.Task, deviceId int32) []byte {
 	return message
 }
 
-func handleRequestForAllNodes(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer, req dto.RestRequest) []*dto.RestResponse {
+func handleRequestForAllNodes(done chan Worker, idGen common.Int64Generator, req dto.RestRequest) []*dto.RestResponse {
 	// TODO: Handle errors better than return nil
 
 	// GET NODES
