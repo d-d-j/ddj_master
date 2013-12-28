@@ -7,6 +7,7 @@ import (
 	"ddj_Master/common"
 	"ddj_Master/dto"
 	"encoding/binary"
+	"fmt"
 	"net"
 )
 
@@ -14,13 +15,13 @@ import (
 // some channels for sending and receiving data.
 type Node struct {
 	Communication
-	Id          		int32
-	Status      		int32
-	GpuIds      		[]int32
-	Stats       		Info
-	stop        		chan bool
-	GetTaskChannel 		chan dto.GetTaskRequest
-	PreferredDeviceId	int32
+	Id                int32
+	Status            int32
+	GpuIds            []int32
+	Stats             Info
+	stop              chan bool
+	GetTaskChannel    chan dto.GetTaskRequest
+	PreferredDeviceId int32
 }
 
 func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest) *Node {
@@ -61,7 +62,7 @@ func (n *Node) waitForLogin() error {
 		n.Status = common.NODE_ERROR
 		return err
 	}
-	log.Debug("Node received login data (CUDA GPU COUNT = %d) from node %d" , cudaGpuCount, n.Id)
+	log.Debug("Node received login data (CUDA GPU COUNT = %d) from node %d", cudaGpuCount, n.Id)
 
 	buffer = make([]byte, 4*cudaGpuCount)
 	if !n.read(buffer) {
@@ -78,7 +79,7 @@ func (n *Node) waitForLogin() error {
 		}
 	}
 	n.PreferredDeviceId = n.GpuIds[0]
-	log.Debug("Node %d is ready with devices %v", n.Id,  n.GpuIds)
+	log.Debug("Node %d is ready with devices %v", n.Id, n.GpuIds)
 	n.Status = common.NODE_READY
 	return err
 }
@@ -110,7 +111,6 @@ func (n *Node) readerRoutine() {
 	n.stop <- true
 }
 
-
 func (n *Node) processResult(result dto.Result) {
 
 	//Create return channel on which we will get channel to send response
@@ -119,12 +119,11 @@ func (n *Node) processResult(result dto.Result) {
 	//Send GetTaskReuest to get channel on which we will return result
 	n.GetTaskChannel <- dto.GetTaskRequest{TaskId: result.TaskId, BackChan: taskChan}
 
-	//Wait for task
-	t := <-taskChan
+	var err error
 
 	//Create rest response from dto.Result
 	var responseData []dto.Dto
-	var err error
+
 	switch result.Type {
 	case common.TASK_INFO:
 		var nodeInfo Info
@@ -148,7 +147,15 @@ func (n *Node) processResult(result dto.Result) {
 		responseData = elements
 	default:
 		log.Error("Cannot parse task result data - wrong task type")
-		t.ResultChan <- dto.NewRestResponse("Wrong task type", result.TaskId, nil)
+		err = fmt.Errorf("Unknown task type")
+	}
+
+	//Wait for task
+	t := <-taskChan
+
+	if t == nil {
+		//FIXME: This should never happen
+		log.Critical("Task %d does not exist", result.TaskId)
 		return
 	}
 	if err != nil || responseData == nil {

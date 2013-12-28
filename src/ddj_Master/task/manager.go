@@ -36,7 +36,9 @@ func (m *Manager) Manage() {
 	for {
 		select {
 		case get := <-m.GetChan:
-			get.BackChan <- m.tasks[get.TaskId]
+			t := m.tasks[get.TaskId]
+			log.Finest("Get task: %s", t)
+			get.BackChan <- t
 		case add := <-m.AddChan:
 			log.Finest("Add new task: %s", add)
 			m.tasks[add.Id] = add
