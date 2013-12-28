@@ -14,6 +14,8 @@ type TaskWorker struct {
 	getNodeChan chan node.GetNodeRequest
 	pending     int
 	index       int
+	balancer    *node.LoadBalancer
+	taskManager *Manager
 }
 
 type Worker interface {
@@ -23,6 +25,7 @@ type Worker interface {
 	DecrementPending()
 	Id() int
 	String() string
+	getNodeForInsert() (*node.Node, error)
 }
 
 func NewTaskWorker(idx int, jobsPerWorker int32, getNodeChan chan node.GetNodeRequest) Worker {
@@ -44,8 +47,10 @@ Loop:
 			log.Finest("Worker is processing [insert] task")
 
 			// GET NODE FOR INSERT
-			insertNode := getNodeForInsert(req, balancer, w.getNodeChan) // get nodeId from load balancer
-			if insertNode == nil {
+			insertNode, err := w.getNodeForInsert()
+			if err != nil {
+				log.Warn("Problem with getting node to insert, ", err)
+				req.Response <- dto.NewRestResponse("No node connected", common.TASK_UNINITIALIZED, nil)
 				done <- w
 				continue Loop
 			}
@@ -118,20 +123,15 @@ Loop:
 	}
 }
 
-func getNodeForInsert(req dto.RestRequest, balancer *node.LoadBalancer, getNodeChan chan node.GetNodeRequest) *node.Node {
-	nodeId := balancer.CurrentInsertNodeId
+func (w *TaskWorker) getNodeForInsert() (*node.Node, error) {
+	nodeId := w.balancer.CurrentInsertNodeId
 	if nodeId == common.CONST_UNINITIALIZED {
-		log.Warn("No node connected")
-		req.Response <- dto.NewRestResponse("No node connected", common.TASK_UNINITIALIZED, nil)
-		return nil
+		return nil, fmt.Errorf("Balancer is uninitialized")
 	}
-	// get node
-	var insertNode *node.Node
+
 	nodeChan := make(chan *node.Node)
-	nodeReq := node.GetNodeRequest{NodeId: nodeId, BackChan: nodeChan}
-	getNodeChan <- nodeReq
-	insertNode = <-nodeChan
-	return insertNode
+	w.getNodeChan <- node.GetNodeRequest{NodeId: nodeId, BackChan: nodeChan}
+	return <-nodeChan, nil
 }
 
 func createMessage(req dto.RestRequest, t *dto.Task, deviceId int32) []byte {
