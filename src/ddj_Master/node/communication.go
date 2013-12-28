@@ -36,6 +36,7 @@ func (c *Communication) read(buffer []byte) bool {
 		return false
 	}
 	log.Debug("Read %d bytes", bytesRead)
+	log.Fine("Read: %d", buffer)
 	return true
 }
 
