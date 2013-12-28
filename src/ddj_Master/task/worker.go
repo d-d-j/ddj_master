@@ -19,7 +19,7 @@ type TaskWorker struct {
 }
 
 type Worker interface {
-	Work(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer)
+	Work(done chan Worker, idGen common.Int64Generator)
 	RequestChan() chan dto.RestRequest
 	IncrementPending()
 	DecrementPending()
@@ -28,16 +28,17 @@ type Worker interface {
 	getNodeForInsert() (*node.Node, error)
 }
 
-func NewTaskWorker(idx int, jobsPerWorker int32, getNodeChan chan node.GetNodeRequest) Worker {
+func NewTaskWorker(idx int, jobsPerWorker int32, getNodeChan chan node.GetNodeRequest, nodeBalancer *node.LoadBalancer) Worker {
 	w := new(TaskWorker)
 	w.index = idx
 	w.pending = 0
 	w.reqChan = make(chan dto.RestRequest, jobsPerWorker)
 	w.getNodeChan = getNodeChan
+	w.balancer = nodeBalancer
 	return w
 }
 
-func (w *TaskWorker) Work(done chan Worker, idGen common.Int64Generator, balancer *node.LoadBalancer) {
+func (w *TaskWorker) Work(done chan Worker, idGen common.Int64Generator) {
 Loop:
 	for {
 		req := <-w.reqChan // GET REQUEST

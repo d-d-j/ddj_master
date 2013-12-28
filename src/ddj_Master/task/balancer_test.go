@@ -12,7 +12,7 @@ func Test_Update_Called_10_Times_Will_Fire_All_10_Workers(t *testing.T) {
 	)
 	done := make(chan Worker)
 	balancer := Balancer{}
-	pool := MockWorkersPool(SIZE, 1, done, nil)
+	pool := NewWorkersPool(int32(SIZE), 1, done, nil)
 	balancer.pool = pool
 	requestChan := make(chan dto.RestRequest)
 	go balancer.Balance(requestChan)

@@ -12,8 +12,8 @@ func NewWorkersPool(size int32, jobsPerWorker int32, done chan Worker, loadBal *
 	idGen := common.NewTaskIdGenerator()
 	s := int(size)
 	for i := 0; i < s; i++ {
-		worker := NewTaskWorker(i, jobsPerWorker, node.NodeManager.GetChan)
-		go worker.Work(done, idGen, loadBal)
+		worker := NewTaskWorker(i, jobsPerWorker, node.NodeManager.GetChan, loadBal)
+		go worker.Work(done, idGen)
 		pool[i] = worker
 	}
 	return pool
