@@ -12,6 +12,7 @@ import (
 type TaskWorker struct {
 	reqChan     chan dto.RestRequest
 	getNodeChan chan node.GetNodeRequest
+	done        chan Worker
 	pending     int
 	index       int
 	balancer    *node.LoadBalancer
@@ -19,8 +20,9 @@ type TaskWorker struct {
 }
 
 type Worker interface {
-	Work(done chan Worker, idGen common.Int64Generator)
+	Work(idGen common.Int64Generator)
 	RequestChan() chan dto.RestRequest
+	Done()
 	IncrementPending()
 	DecrementPending()
 	Id() int
@@ -28,17 +30,18 @@ type Worker interface {
 	getNodeForInsert() (*node.Node, error)
 }
 
-func NewTaskWorker(idx int, jobsPerWorker int32, getNodeChan chan node.GetNodeRequest, nodeBalancer *node.LoadBalancer) Worker {
+func NewTaskWorker(idx int, jobsPerWorker int32, getNodeChan chan node.GetNodeRequest, done chan Worker, nodeBalancer *node.LoadBalancer) Worker {
 	w := new(TaskWorker)
 	w.index = idx
 	w.pending = 0
 	w.reqChan = make(chan dto.RestRequest, jobsPerWorker)
 	w.getNodeChan = getNodeChan
 	w.balancer = nodeBalancer
+	w.done = done
 	return w
 }
 
-func (w *TaskWorker) Work(done chan Worker, idGen common.Int64Generator) {
+func (w *TaskWorker) Work(idGen common.Int64Generator) {
 Loop:
 	for {
 		req := <-w.reqChan // GET REQUEST
@@ -52,7 +55,7 @@ Loop:
 			if err != nil {
 				log.Warn("Problem with getting node to insert, ", err)
 				req.Response <- dto.NewRestResponse("No node connected", common.TASK_UNINITIALIZED, nil)
-				done <- w
+				w.Done()
 				continue Loop
 			}
 
@@ -67,7 +70,7 @@ Loop:
 			if err != nil {
 				log.Error("Error while encoding request - ", err)
 				req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
-				done <- w
+				w.Done()
 				continue Loop
 			}
 
@@ -85,9 +88,9 @@ Loop:
 		case common.TASK_SELECT:
 			log.Debug("Worker is processing [select] task")
 
-			responses := handleRequestForAllNodes(done, idGen, req)
+			responses := handleRequestForAllNodes(idGen, req)
 			if responses == nil {
-				done <- w
+				w.Done()
 				continue Loop
 			}
 
@@ -105,9 +108,9 @@ Loop:
 		case common.TASK_INFO:
 			log.Debug("Worker is processing [info] task")
 
-			responses := handleRequestForAllNodes(done, idGen, req)
+			responses := handleRequestForAllNodes(idGen, req)
 			if responses == nil {
-				done <- w
+				w.Done()
 				continue Loop
 			}
 
@@ -120,7 +123,7 @@ Loop:
 			log.Error("Worker can't handle task type ", req.Type)
 		}
 		log.Debug("Worker is done")
-		done <- w
+		w.Done()
 	}
 }
 
@@ -149,7 +152,7 @@ func createMessage(req dto.RestRequest, t *dto.Task, deviceId int32) []byte {
 	return message
 }
 
-func handleRequestForAllNodes(done chan Worker, idGen common.Int64Generator, req dto.RestRequest) []*dto.RestResponse {
+func handleRequestForAllNodes(idGen common.Int64Generator, req dto.RestRequest) []*dto.RestResponse {
 	// TODO: Handle errors better than return nil
 
 	// GET NODES
@@ -203,3 +206,5 @@ func (w *TaskWorker) IncrementPending() { w.pending++ }
 func (w *TaskWorker) DecrementPending() { w.pending-- }
 
 func (w *TaskWorker) RequestChan() chan dto.RestRequest { return w.reqChan }
+
+func (w *TaskWorker) Done() { w.done <- w }
