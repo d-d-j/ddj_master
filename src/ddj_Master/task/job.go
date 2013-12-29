@@ -4,6 +4,7 @@ import (
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
 	"ddj_Master/dto"
+	"ddj_Master/node"
 	"sort"
 )
 
@@ -81,4 +82,45 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	}
 
 	return true
+}
+
+func handleRequestForAllNodes(id int64, req dto.RestRequest) []*dto.RestResponse {
+	// TODO: Handle errors better than return nil
+
+	// GET NODES
+	nodes := node.NodeManager.GetNodes()
+	avaliableNodes := len(nodes)
+	responseChan := make(chan *dto.RestResponse, avaliableNodes)
+	if avaliableNodes == 0 {
+		return nil
+	}
+
+	// CREATE TASK
+	t := dto.NewTask(id, req, responseChan)
+	log.Fine("Created new %s", t)
+	TaskManager.AddChan <- t // add task to dictionary
+
+	// CREATE MESSAGE
+	message, err := t.MakeRequestForAllGpus().Encode()
+	if err != nil {
+		log.Error("Error while encoding request - ", err)
+		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
+		return nil
+	}
+
+	// SEND MESSAGE TO ALL NODES
+	node.NodeManager.SendToAllNodes(message)
+
+	responses := make([]*dto.RestResponse, avaliableNodes)
+
+	// WAIT FOR ALL RESPONSES
+	for i := 0; i < avaliableNodes; i++ {
+		responses[i] = <-responseChan
+		log.Finest("Got task result [%d/%d] - %s", i, avaliableNodes, responses[i])
+	}
+
+	// REMOVE TASK
+	//TaskManager.DelChan <- t.Id
+
+	return responses
 }
