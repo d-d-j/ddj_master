@@ -8,7 +8,7 @@ import (
 	"sort"
 )
 
-type job func(dto.RestRequest) bool
+type job func (dto.RestRequest) bool
 
 func (w *TaskWorker) getJob(taskType int32) job {
 	switch taskType {
@@ -73,7 +73,7 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	}
 
 	// TODO: REDUCE RESPONSES
-	responseToClient := make([]dto.Dto, 0, len(responses))
+	responseToClient := make([]dto.Dto,0, len(responses))
 	for i := 0; i < len(responses); i++ {
 		responseToClient = append(responseToClient, responses[i].Data...)
 	}
@@ -123,38 +123,56 @@ func handleRequestForAllNodes(id int64, req dto.RestRequest) []*dto.RestResponse
 
 	// GET NODES
 	nodes := node.NodeManager.GetNodes()
-	avaliableNodes := len(nodes)
+	availableNodes := len(nodes)
 
-	responseChan := make(chan *dto.RestResponse, avaliableNodes)
-	if avaliableNodes == 0 {
+	t, responseChan := CreateTaskForRequest(req, availableNodes, id)
+	if availableNodes == 0 {
 		log.Error("No nodes connected")
 		req.Response <- dto.NewRestResponse("No nodes connected", 0, nil)
 		return nil
 	}
 
+
+	if BroadcastTaskToAllNodes(t, req) == -1 {
+		return nil
+	}
+
+	return GatherAllResponses(availableNodes, responseChan)
+}
+
+
+func CreateTaskForRequest(req dto.RestRequest, numResponses int, taskId int64) (*dto.Task, chan *dto.RestResponse) {
+	responseChan := make(chan *dto.RestResponse, numResponses)
+
 	// CREATE TASK
-	t := dto.NewTask(id, req, responseChan)
+	t := dto.NewTask(taskId, req, responseChan)
 	log.Fine("Created new %s", t)
 	TaskManager.AddChan <- t // add task to dictionary
 
+	return t, responseChan
+}
+
+func BroadcastTaskToAllNodes(t *dto.Task, req dto.RestRequest) int {
 	// CREATE MESSAGE
 	message, err := t.MakeRequestForAllGpus().Encode()
 	if err != nil {
 		log.Error("Error while encoding request - ", err)
 		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
-		return nil
+		return -1
 	}
 
 	// SEND MESSAGE TO ALL NODES
-	log.Debug("Sending message to all ", avaliableNodes, " nodes")
 	node.NodeManager.SendToAllNodes(message)
+	return 0
+}
 
-	responses := make([]*dto.RestResponse, avaliableNodes)
+func GatherAllResponses(numResponses int, responseChan chan *dto.RestResponse) []*dto.RestResponse {
+	responses := make([]*dto.RestResponse, numResponses)
 
 	// WAIT FOR ALL RESPONSES
-	for i := 0; i < avaliableNodes; i++ {
+	for i := 0; i < numResponses; i++ {
 		responses[i] = <-responseChan
-		log.Finest("Got task result [%d/%d] - %s", i, avaliableNodes, responses[i])
+		log.Finest("Got task result [%d/%d] - %s", i, numResponses, responses[i])
 	}
 
 	// REMOVE TASK
@@ -162,3 +180,4 @@ func handleRequestForAllNodes(id int64, req dto.RestRequest) []*dto.RestResponse
 
 	return responses
 }
+
