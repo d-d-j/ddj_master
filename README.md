@@ -27,6 +27,11 @@ append `export PATH=$PATH:/usr/local/go/bin` to `/etc/profile`
 
         curl -G 'http://localhost:8888/data/metric/all/tag/all/time/10-20,30-60/aggregation/none'
 
+4. FLush
+
+		curl -X POST 'http://localhost:8888/data/flush'
+
+
 
 ## Integration tests
 1. run master

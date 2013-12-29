@@ -84,14 +84,35 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	return true
 }
 
+func (w *TaskWorker) Flush(req dto.RestRequest) bool {
+	log.Debug("Worker is processing flush task")
+
+	responses := handleRequestForAllNodes(w.GetId(), req)
+	if responses == nil {
+		req.Response <- dto.NewRestResponse("Nil response", responses[0].TaskId, []dto.Dto{})
+		return false
+	}
+
+	// TODO: SET NODE INFO IN NODES
+	for i := 0; i < len(responses); i++ {
+		log.Finest("Get flush response %v", responses)
+	}
+
+	req.Response <- dto.NewRestResponse("", responses[0].TaskId, []dto.Dto{})
+
+	return true
+}
+
 func handleRequestForAllNodes(id int64, req dto.RestRequest) []*dto.RestResponse {
 	// TODO: Handle errors better than return nil
 
 	// GET NODES
 	nodes := node.NodeManager.GetNodes()
 	avaliableNodes := len(nodes)
+
 	responseChan := make(chan *dto.RestResponse, avaliableNodes)
 	if avaliableNodes == 0 {
+		log.Debug("No nodes connected")
 		return nil
 	}
 
@@ -109,6 +130,7 @@ func handleRequestForAllNodes(id int64, req dto.RestRequest) []*dto.RestResponse
 	}
 
 	// SEND MESSAGE TO ALL NODES
+	log.Debug("Sending message to all ", avaliableNodes, " nodes")
 	node.NodeManager.SendToAllNodes(message)
 
 	responses := make([]*dto.RestResponse, avaliableNodes)

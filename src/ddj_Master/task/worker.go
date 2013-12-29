@@ -67,6 +67,12 @@ Loop:
 				continue Loop
 			}
 
+		case common.TASK_FLUSH:
+			if !w.Info(req) {
+				w.Done()
+				continue Loop
+			}
+
 		default:
 			log.Error("Worker can't handle task type ", req.Type)
 		}

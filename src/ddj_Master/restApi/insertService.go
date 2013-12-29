@@ -12,6 +12,7 @@ import (
 type InsertService struct {
 	gorest.RestService `root:"/" consumes:"application/json" produces:"application/json"`
 	insertData         gorest.EndPoint `method:"POST" path:"/data/" postdata:"ddj_Master.dto.Element"`
+	flushBuffer        gorest.EndPoint `method:"POST" path:"/data/flush" postdata:"string"`
 	getOptions         gorest.EndPoint `method:"OPTIONS" path:"/data"`
 }
 
@@ -49,5 +50,15 @@ func (serv InsertService) InsertData(PostData dto.Element) {
 	restRequestChannel <- dto.RestRequest{Type: common.TASK_INSERT, Data: &PostData, Response: responseChan}
 	response := <-responseChan
 	log.Finest("Result: ", response)
+	serv.setInsertResponse(response)
+}
+
+func (serv InsertService) FlushBuffer(_ string) {
+	serv.setHeader()
+	log.Finest("Flush GPU buffer")
+	responseChan := make(chan *dto.RestResponse)
+	restRequestChannel <- dto.RestRequest{Type: common.TASK_FLUSH, Data: new(dto.EmptyElement), Response: responseChan}
+	response := <-responseChan
+	log.Finest("Flush Result: ", response)
 	serv.setInsertResponse(response)
 }
