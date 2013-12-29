@@ -17,7 +17,14 @@ func (this NonAggregation) Aggregate(input []*dto.RestResponse) dto.Dtos {
 		return nil
 	}
 
-	output := make([]dto.Dto, 0, len(input))
+	totalSize := 0
+	for _, element := range input {
+		if element != nil {
+			totalSize += len(element.Data)
+		}
+	}
+
+	output := make([]dto.Dto, 0, totalSize)
 	for _, element := range input {
 		if element != nil {
 			output = append(output, element.Data...)
