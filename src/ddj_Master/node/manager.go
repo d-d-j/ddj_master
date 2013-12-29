@@ -32,6 +32,10 @@ func (this *Manager) GetNodes() map[int32]*Node {
 	return this.nodes
 }
 
+func (this *Manager) GetNodesLen() int {
+	return len(this.nodes)
+}
+
 func (m *Manager) Manage() {
 	log.Info("Node manager started managing")
 	for {
@@ -55,6 +59,7 @@ func (m *Manager) Manage() {
 }
 
 func (this *Manager) SendToAllNodes(message []byte) {
+	log.Debug("Sending message to all %d", this.GetNodesLen(), " nodes")
 	// SEND MESSAGE TO ALL NODES
 	for _, n := range this.nodes {
 		log.Finest("Sending message to node #%d", n.Id)

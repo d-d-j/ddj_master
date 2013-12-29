@@ -67,7 +67,18 @@ func (w *TaskWorker) Insert(req dto.RestRequest) bool {
 func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	log.Debug("Worker is processing [select] task")
 
-	responses := handleRequestForAllNodes(w.GetId(), req)
+	availableNodes := node.NodeManager.GetNodesLen()
+	t, responseChan := CreateTaskForRequest(req, availableNodes, w.GetId())
+	if availableNodes == 0 {
+		log.Error("No nodes connected")
+		req.Response <- dto.NewRestResponse("No nodes connected", 0, nil)
+		return false
+	}
+	if BroadcastTaskToAllNodes(t, req) == -1 {
+		return false
+	}
+
+	responses := GatherAllResponses(availableNodes, responseChan)
 	if responses == nil {
 		return false
 	}
@@ -87,8 +98,20 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 
 func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	log.Debug("Worker is processing [info] task")
+	// TODO: Handle errors better
 
-	responses := handleRequestForAllNodes(w.GetId(), req)
+	availableNodes := node.NodeManager.GetNodesLen()
+	t, responseChan := CreateTaskForRequest(req, availableNodes, w.GetId())
+	if availableNodes == 0 {
+		log.Error("No nodes connected")
+		req.Response <- dto.NewRestResponse("No nodes connected", 0, nil)
+		return false
+	}
+	if BroadcastTaskToAllNodes(t, req) == -1 {
+		return false
+	}
+
+	responses := GatherAllResponses(availableNodes, responseChan)
 	if responses == nil {
 		return false
 	}
@@ -104,7 +127,18 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 	log.Debug("Worker is processing flush task")
 
-	responses := handleRequestForAllNodes(w.GetId(), req)
+	availableNodes := node.NodeManager.GetNodesLen()
+	t, responseChan := CreateTaskForRequest(req, availableNodes, w.GetId())
+	if availableNodes == 0 {
+		log.Error("No nodes connected")
+		req.Response <- dto.NewRestResponse("No nodes connected", 0, nil)
+		return false
+	}
+	if BroadcastTaskToAllNodes(t, req) == -1 {
+		return false
+	}
+
+	responses := GatherAllResponses(availableNodes, responseChan)
 	if responses == nil {
 		return false
 	}
@@ -117,29 +151,6 @@ func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 
 	return true
 }
-
-func handleRequestForAllNodes(id int64, req dto.RestRequest) []*dto.RestResponse {
-	// TODO: Handle errors better than return nil
-
-	// GET NODES
-	nodes := node.NodeManager.GetNodes()
-	availableNodes := len(nodes)
-
-	t, responseChan := CreateTaskForRequest(req, availableNodes, id)
-	if availableNodes == 0 {
-		log.Error("No nodes connected")
-		req.Response <- dto.NewRestResponse("No nodes connected", 0, nil)
-		return nil
-	}
-
-
-	if BroadcastTaskToAllNodes(t, req) == -1 {
-		return nil
-	}
-
-	return GatherAllResponses(availableNodes, responseChan)
-}
-
 
 func CreateTaskForRequest(req dto.RestRequest, numResponses int, taskId int64) (*dto.Task, chan *dto.RestResponse) {
 	responseChan := make(chan *dto.RestResponse, numResponses)
