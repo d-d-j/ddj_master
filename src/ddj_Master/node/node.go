@@ -41,7 +41,7 @@ func (n *Node) StartWork(balancerChannel chan<- []Info) {
 		go n.readerRoutine()
 		go n.senderRoutine()
 	}
-	balancerChannel <- []Info{Info{n.Id, MemoryInfo{1, 1, 1, 1}}}
+	balancerChannel <- []Info{Info{n.Id, MemoryInfo{1, 1, 1, 1, 1}}}
 	log.Debug("Node %d READY", n.Id)
 }
 

@@ -12,14 +12,15 @@ type Info struct {
 }
 
 type MemoryInfo struct {
-	MemoryTotal    int32
-	MemoryFree     int32
-	GpuMemoryTotal int32
-	GpuMemoryFree  int32
+	GpuId			 int32
+	MemoryTotal      int32
+	MemoryFree       int32
+	GpuMemoryTotal   int32
+	GpuMemoryFree    int32
 }
 
 func (this *MemoryInfo) String() string {
-	return fmt.Sprintf("RAM: %d/%d\tGPU: %d/%d", this.MemoryFree, this.MemoryTotal, this.GpuMemoryFree, this.GpuMemoryTotal)
+	return fmt.Sprintf("GPUId: %d RAM: %d/%d\tGPU: %d/%d", this.GpuId, this.MemoryFree, this.MemoryTotal, this.GpuMemoryFree, this.GpuMemoryTotal)
 }
 
 func (this *Info) String() string {
@@ -27,11 +28,11 @@ func (this *Info) String() string {
 }
 
 func (this *Info) Size() int {
-	return 24
+	return 28
 }
 
 func (this *MemoryInfo) Size() int {
-	return 16
+	return 20
 }
 
 func (this *MemoryInfo) Decode(buf []byte) error {
@@ -42,7 +43,11 @@ func (this *MemoryInfo) Decode(buf []byte) error {
 
 func (this *MemoryInfo) Encode() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, this.MemoryTotal)
+	err := binary.Write(buf, binary.LittleEndian, this.GpuId)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buf, binary.LittleEndian, this.MemoryTotal)
 	if err != nil {
 		return nil, err
 	}

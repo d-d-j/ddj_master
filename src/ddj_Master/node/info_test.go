@@ -6,7 +6,7 @@ import (
 
 func Test_MemoryInfo_EncodeDecode(t *testing.T) {
 
-	expected := &MemoryInfo{5, 4, 3, 2}
+	expected := &MemoryInfo{1, 5, 4, 3, 2}
 	actual := &MemoryInfo{}
 	buf, err := expected.Encode()
 	if err != nil {
