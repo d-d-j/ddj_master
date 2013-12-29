@@ -47,34 +47,10 @@ func (w *TaskWorker) Work() {
 Loop:
 	for {
 		req := <-w.reqChan // GET REQUEST
-
-		switch req.Type {
-		case common.TASK_INSERT:
-			if !w.Insert(req) {
-				w.Done()
-				continue Loop
-			}
-
-		case common.TASK_SELECT:
-			if !w.Select(req) {
-				w.Done()
-				continue Loop
-			}
-
-		case common.TASK_INFO:
-			if !w.Info(req) {
-				w.Done()
-				continue Loop
-			}
-
-		case common.TASK_FLUSH:
-			if !w.Info(req) {
-				w.Done()
-				continue Loop
-			}
-
-		default:
-			log.Error("Worker can't handle task type ", req.Type)
+		j := w.getJob(req.Type)
+		if !j(req) {
+			w.Done()
+			continue Loop
 		}
 		log.Debug("Worker is done")
 		w.Done()

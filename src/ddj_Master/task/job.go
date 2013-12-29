@@ -8,6 +8,23 @@ import (
 	"sort"
 )
 
+type job func(dto.RestRequest) bool
+
+func (w *TaskWorker) getJob(taskType int32) job {
+	switch taskType {
+	case common.TASK_INSERT:
+		return w.Insert
+	case common.TASK_SELECT:
+		return w.Select
+	case common.TASK_INFO:
+		return w.Info
+	case common.TASK_FLUSH:
+		return w.Info
+	}
+	log.Error("Worker can't handle task type ", taskType)
+	return func(req dto.RestRequest) bool { return false }
+}
+
 func (w *TaskWorker) Insert(req dto.RestRequest) bool {
 	log.Finest("Worker is processing [insert] task")
 
@@ -92,7 +109,6 @@ func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 		return false
 	}
 
-	// TODO: SET NODE INFO IN NODES
 	for i := 0; i < len(responses); i++ {
 		log.Finest("Get flush response %v", responses)
 	}
