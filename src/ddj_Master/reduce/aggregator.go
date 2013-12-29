@@ -6,21 +6,21 @@ import (
 )
 
 type Aggregator interface {
-	Aggregate([][]*dto.RestResponse) dto.Dtos
+	Aggregate([]*dto.RestResponse) dto.Dtos
 }
 
 type NonAggregation struct{}
 
-func (this NonAggregation) Aggregate(input [][]*dto.RestResponse) dto.Dtos {
+func (this NonAggregation) Aggregate(input []*dto.RestResponse) dto.Dtos {
 
 	if input == nil {
 		return nil
 	}
 
 	output := make([]dto.Dto, 0, len(input))
-	for j := 0; j < len(input); j++ {
-		for i := 0; i < len(input[j]); i++ {
-			output = append(output, input[j][i].Data...)
+	for _, element := range input {
+		if element != nil {
+			output = append(output, element.Data...)
 		}
 	}
 
