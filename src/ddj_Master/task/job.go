@@ -89,7 +89,6 @@ func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 
 	responses := handleRequestForAllNodes(w.GetId(), req)
 	if responses == nil {
-		req.Response <- dto.NewRestResponse("Nil response", responses[0].TaskId, []dto.Dto{})
 		return false
 	}
 
@@ -112,7 +111,8 @@ func handleRequestForAllNodes(id int64, req dto.RestRequest) []*dto.RestResponse
 
 	responseChan := make(chan *dto.RestResponse, avaliableNodes)
 	if avaliableNodes == 0 {
-		log.Debug("No nodes connected")
+		log.Error("No nodes connected")
+		req.Response <- dto.NewRestResponse("No nodes connected", 0, nil)
 		return nil
 	}
 
