@@ -5,11 +5,14 @@ import (
 )
 
 type Aggregator interface {
-	Aggregate([][]dto.Dto) []dto.Dto
+	Aggregate([]dto.Dtos) dto.Dtos
 }
 
 type NonAggregation struct{}
 
-func (this NonAggregation) Aggregate([][]dto.Dto) []dto.Dto {
+func (this NonAggregation) Aggregate(input []dto.Dtos) dto.Dtos {
+	if len(input) == 1 {
+		return input[0]
+	}
 	return nil
 }
