@@ -5,10 +5,10 @@ import (
 	"ddj_Master/common"
 	"ddj_Master/dto"
 	"ddj_Master/node"
-	"sort"
+	"ddj_Master/reduce"
 )
 
-type job func (dto.RestRequest) bool
+type job func(dto.RestRequest) bool
 
 func (w *TaskWorker) getJob(taskType int32) job {
 	switch taskType {
@@ -83,13 +83,8 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 		return false
 	}
 
-	// TODO: REDUCE RESPONSES
-	responseToClient := make([]dto.Dto,0, len(responses))
-	for i := 0; i < len(responses); i++ {
-		responseToClient = append(responseToClient, responses[i].Data...)
-	}
-
-	sort.Sort(dto.ByTime(responseToClient))
+	aggregator := reduce.GetAggregator(t.AggregationType)
+	responseToClient := aggregator.Aggregate(responses)
 
 	// PASS REDUCED RESPONSES TO CLIENT
 	req.Response <- dto.NewRestResponse("", 0, responseToClient)
@@ -191,4 +186,3 @@ func GatherAllResponses(numResponses int, responseChan chan *dto.RestResponse) [
 
 	return responses
 }
-
