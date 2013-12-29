@@ -11,7 +11,7 @@ const (
 	TASK_ID int64 = 0
 )
 
-func Test_processResult_For_Info(t *testing.T) {
+func Test_processResult_For_Info_With_One_GPU(t *testing.T) {
 	//Prepare
 	// CREATE CHANNEL FOR GETTING TASKS USED BY NODE
 	getTaskChan := make(chan dto.GetTaskRequest)
@@ -57,6 +57,58 @@ func Test_processResult_For_Info(t *testing.T) {
 	AssertEqual(expected, actual, t)
 
 }
+
+func Test_processResult_For_Info_With_Two_GPUS(t *testing.T) {
+	//Prepare
+	// CREATE CHANNEL FOR GETTING TASKS USED BY NODE
+	getTaskChan := make(chan dto.GetTaskRequest)
+	// CREATE CHANNEL FOR SENDING RESULT (TO WORKER)
+	resultChan := make(chan *dto.RestResponse)
+	// CREATE CHANNEL FOR SENDING RESPONSE TO CLIENT (REST API)
+	responseChan := make(chan *dto.RestResponse)
+
+	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_INFO, Data: &dto.EmptyElement{}, Response: responseChan}, resultChan)
+	node := NewNode(NODE_ID, nil, getTaskChan)
+
+	// PREPARE DATA FOR TEST
+	info1 := &Info{NODE_ID, MemoryInfo{1, 1, 1, 1}}
+	info2 := &Info{NODE_ID, MemoryInfo{2, 2, 2, 2}}
+//	data1, err := info1.MemoryInfo.Encode()
+//	data2, err := info2.MemoryInfo.Encode()
+	data, err := dto.Dtos{&info1.MemoryInfo, &info2.MemoryInfo}.Encode()
+	expected := []*Info{info1, info2}
+	if err != nil {
+		t.Error("Error occurred", err)
+	}
+	result := *dto.NewResult(0, common.TASK_INFO, int32(info1.MemoryInfo.Size()+info1.MemoryInfo.Size()), data)
+
+	// RUN TESTED METHOD
+	go node.processResult(result)
+
+	// SIMULATE WORK
+	getTaskRequest := <-getTaskChan
+	if getTaskRequest.TaskId != TASK_ID {
+		t.Error("Wrong task request. Expected: ", TASK_ID, " but got: ", getTaskRequest.TaskId)
+	}
+
+	getTaskRequest.BackChan <- task
+
+	response := <-resultChan
+	if response.TaskId != TASK_ID {
+		t.Error("Wrong task Id in response. Expected: ", TASK_ID, " but got: ", response.TaskId)
+	}
+	if response.Error != "" {
+		t.Error("Error occurred", response.Error)
+	}
+	if len(response.Data) != 2 {
+		t.Error("Wrong data returned. Expected only one value")
+	}
+
+	actual := response.Data
+	AssertEqual(expected[0], actual[0], t)
+	AssertEqual(expected[1], actual[1], t)
+}
+
 
 func Test_processResult_For_Select_Without_Aggregation_Empty_Response(t *testing.T) {
 
