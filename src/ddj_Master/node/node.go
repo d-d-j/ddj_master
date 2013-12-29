@@ -126,11 +126,22 @@ func (n *Node) processResult(result dto.Result) {
 
 	switch result.Type {
 	case common.TASK_INFO:
-		var nodeInfo Info
-		err = nodeInfo.MemoryInfo.Decode(result.Data)
-		nodeInfo.nodeId = n.Id
-		log.Debug("Node info %s", nodeInfo.String())
-		responseData = []dto.Dto{&nodeInfo}
+		infoSize := (&MemoryInfo{}).Size()
+		numGpus := len(result.Data) / infoSize
+		gpuInfos := make([]dto.Dto, numGpus)
+
+		for i:=0; i < numGpus; i++{
+			var info Info
+			err = info.MemoryInfo.Decode(result.Data[i*infoSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			info.nodeId = n.Id
+			gpuInfos[i] = &info;
+			log.Debug("Node info %s", info.String())
+		}
+		responseData = gpuInfos
 	case common.TASK_SELECT:
 		elementSize := (&dto.Element{}).Size()
 		length := len(result.Data) / elementSize

@@ -30,6 +30,10 @@ func (this *Info) Size() int {
 	return 24
 }
 
+func (this *MemoryInfo) Size() int {
+	return 16
+}
+
 func (this *MemoryInfo) Decode(buf []byte) error {
 	buffer := bytes.NewBuffer(buf)
 	return binary.Read(buffer, binary.LittleEndian, this)
