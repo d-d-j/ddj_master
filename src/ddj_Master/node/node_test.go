@@ -108,7 +108,6 @@ func Test_processResult_For_Info_With_Two_GPUS(t *testing.T) {
 	AssertEqual(expected[1], actual[1], t)
 }
 
-
 func Test_processResult_For_Select_Without_Aggregation_Empty_Response(t *testing.T) {
 
 	// CREATE CHANNEL FOR GETTING TASKS USED BY NODE
@@ -118,7 +117,7 @@ func Test_processResult_For_Select_Without_Aggregation_Empty_Response(t *testing
 	// CREATE CHANNEL FOR SENDING RESPONSE TO CLIENT (REST API)
 	responseChan := make(chan *dto.RestResponse)
 
-	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_SELECT, Data: &dto.EmptyElement{}, Response: responseChan}, resultChan)
+	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_SELECT, Data: &dto.Query{}, Response: responseChan}, resultChan)
 	node := NewNode(NODE_ID, nil, getTaskChan)
 
 	// PREPARE DATA FOR TEST
@@ -158,7 +157,7 @@ func Test_processResult_For_Select_Without_Aggregation_One_Element_In_Response(t
 	// CREATE CHANNEL FOR SENDING RESPONSE TO CLIENT (REST API)
 	responseChan := make(chan *dto.RestResponse)
 
-	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_SELECT, Data: &dto.EmptyElement{}, Response: responseChan}, resultChan)
+	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_SELECT, Data: &dto.Query{}, Response: responseChan}, resultChan)
 	node := NewNode(NODE_ID, nil, getTaskChan)
 
 	// PREPARE DATA FOR TEST
@@ -205,7 +204,7 @@ func Test_processResult_For_Select_Without_Aggregation_3_Elements_In_Response(t 
 	// CREATE CHANNEL FOR SENDING RESPONSE TO CLIENT (REST API)
 	responseChan := make(chan *dto.RestResponse)
 
-	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_SELECT, Data: &dto.EmptyElement{}, Response: responseChan}, resultChan)
+	task := dto.NewTask(TASK_ID, dto.RestRequest{Type: common.TASK_SELECT, Data: &dto.Query{}, Response: responseChan}, resultChan)
 	node := NewNode(NODE_ID, nil, getTaskChan)
 
 	// PREPARE DATA FOR TEST
