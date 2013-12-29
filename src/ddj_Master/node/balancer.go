@@ -55,7 +55,7 @@ func (this *LoadBalancer) update(newInfo *[]Info) {
 	)
 
 	bestNodeId := common.CONST_UNINITIALIZED
-	bestRank := -(int(^uint(0) >> 1))
+	bestRank := common.CONST_INT_MIN_VALUE
 
 	//TODO: Calculate full rank when data will be available
 	//Now we have no info about card load, ram, proc etc

@@ -32,6 +32,7 @@ const (
 //Constants
 const (
 	CONST_UNINITIALIZED = -1
+	CONST_INT_MIN_VALUE = -(int(^uint(0) >> 1))
 )
 
 //DEVICE
