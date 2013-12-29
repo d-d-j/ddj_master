@@ -1,6 +1,7 @@
 package reduce
 
 import (
+	"ddj_Master/common"
 	"ddj_Master/dto"
 	"sort"
 )
@@ -10,6 +11,14 @@ type Aggregator interface {
 }
 
 type NonAggregation struct{}
+
+func GetAggregator(aggregationType int32) Aggregator {
+	switch aggregationType {
+	case common.AGGREGATION_NONE:
+		return NonAggregation{}
+	}
+	panic("Unknown aggregation")
+}
 
 func (this NonAggregation) Aggregate(input []*dto.RestResponse) dto.Dtos {
 

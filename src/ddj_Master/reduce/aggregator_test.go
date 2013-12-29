@@ -1,6 +1,7 @@
 package reduce
 
 import (
+	"ddj_Master/common"
 	"ddj_Master/dto"
 	"testing"
 )
@@ -62,4 +63,28 @@ func Test_NonAggregation_Should_Return_Sorted_Elements_From_All_Input_Slices(t *
 	if actual.String() != expected.String() {
 		t.Error("Expected ", expected, " but got ", actual)
 	}
+}
+
+func Test_GetAggregator(t *testing.T) {
+	actual := GetAggregator(common.AGGREGATION_NONE)
+	_, ok := actual.(NonAggregation)
+	if !ok {
+		t.Error("Expected NonAggregation")
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			t.Log("Recovered ", r)
+		}
+	}()
+	actual = GetAggregator(common.CONST_UNINITIALIZED)
+	t.Error("Expected panic")
+}
+
+func Test_GetAggregator_Should_Pannic_When_Pass_Invalid_Aggregation_Type(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Expected panic")
+		}
+	}()
+	GetAggregator(common.CONST_UNINITIALIZED) //This should call panic
 }
