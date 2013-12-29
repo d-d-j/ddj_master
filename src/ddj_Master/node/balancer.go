@@ -3,6 +3,7 @@ package node
 import (
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
+	"ddj_Master/dto"
 )
 
 type LoadBalancer struct {
@@ -24,7 +25,7 @@ func (this *LoadBalancer) reset() {
 	this.CurrentInsertNodeId = common.CONST_UNINITIALIZED
 }
 
-func (this *LoadBalancer) Balance(info <-chan []Info) {
+func (this *LoadBalancer) Balance(info <-chan []dto.Info) {
 
 	log.Info("Node manager balancer started")
 	for {
@@ -35,7 +36,7 @@ func (this *LoadBalancer) Balance(info <-chan []Info) {
 	}
 }
 
-func (this *LoadBalancer) update(newInfo *[]Info) {
+func (this *LoadBalancer) update(newInfo *[]dto.Info) {
 	if newInfo == nil {
 		this.reset()
 		return

@@ -18,7 +18,7 @@ type Node struct {
 	Id                int32
 	Status            int32
 	GpuIds            []int32
-	Stats             Info
+	Stats             dto.Info
 	stop              chan bool
 	GetTaskChannel    chan dto.GetTaskRequest
 	PreferredDeviceId int32
@@ -35,13 +35,13 @@ func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest)
 	return n
 }
 
-func (n *Node) StartWork(balancerChannel chan<- []Info) {
+func (n *Node) StartWork(balancerChannel chan<- []dto.Info) {
 	err := n.waitForLogin()
 	if err == nil {
 		go n.readerRoutine()
 		go n.senderRoutine()
 	}
-	balancerChannel <- []Info{Info{n.Id, MemoryInfo{1, 1, 1, 1, 1}}}
+	balancerChannel <- []dto.Info{dto.Info{n.Id, dto.MemoryInfo{1, 1, 1, 1, 1}}}
 	log.Debug("Node %d READY", n.Id)
 }
 
@@ -126,18 +126,18 @@ func (n *Node) processResult(result dto.Result) {
 
 	switch result.Type {
 	case common.TASK_INFO:
-		infoSize := (&MemoryInfo{}).Size()
+		infoSize := (&dto.MemoryInfo{}).Size()
 		numGpus := len(result.Data) / infoSize
 		gpuInfos := make([]dto.Dto, numGpus)
 
 		for i:=0; i < numGpus; i++{
-			var info Info
+			var info dto.Info
 			err = info.MemoryInfo.Decode(result.Data[i*infoSize:])
 			if err != nil {
 				log.Error("Problem with parsing data", err)
 				continue
 			}
-			info.nodeId = n.Id
+			info.NodeId = n.Id
 			gpuInfos[i] = &info;
 			log.Debug("Node info %s", info.String())
 		}

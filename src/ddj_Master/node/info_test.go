@@ -2,12 +2,13 @@ package node
 
 import (
 	"testing"
+	"ddj_Master/dto"
 )
 
 func Test_MemoryInfo_EncodeDecode(t *testing.T) {
 
-	expected := &MemoryInfo{1, 5, 4, 3, 2}
-	actual := &MemoryInfo{}
+	expected := &dto.MemoryInfo{1, 5, 4, 3, 2}
+	actual := &dto.MemoryInfo{}
 	buf, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred: ", err)

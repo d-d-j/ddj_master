@@ -3,6 +3,7 @@ package node
 import (
 	"ddj_Master/common"
 	"testing"
+	"ddj_Master/dto"
 )
 
 // TODO: Test preffered node gpu id
@@ -33,7 +34,7 @@ func Test_Update_With_Nil_Entry_Cause_Balancer_Reset(t *testing.T) {
 
 func Test_Update_With_No_Nodes_Cause_Balancer_Reset(t *testing.T) {
 	nodes := make(map[int32]*Node)
-	info := &[]Info{Info{1, MemoryInfo{1, 1, 1, 1, 1}}}
+	info := &[]dto.Info{dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1}}}
 	actual := NewLoadBalancer(0, nodes)
 	expected := NewLoadBalancer(0, nil)
 	actual.update(info)
@@ -48,7 +49,7 @@ func Test_Update_Unitialized_Balancer_Set_It_To_First_Node_And_GPU(t *testing.T)
 	nodes[2].GpuIds = []int32{0, 1, 2}
 
 	lb := NewLoadBalancer(0, nodes)
-	info := &[]Info{Info{1, MemoryInfo{1, 1, 1, 1, 1}}}
+	info := &[]dto.Info{dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1}}}
 	lb.update(info)
 	if lb.CurrentInsertNodeId != 1 || nodes[1].PreferredDeviceId != 0 {
 		t.Errorf("Wrong card selected. Expected #%d:%d but get #%d:%d", 1, 0, lb.CurrentInsertNodeId, nodes[1].PreferredDeviceId)
@@ -63,7 +64,7 @@ func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU(t *testing.T) {
 	lb := NewLoadBalancer(0, nodes)
 	lb.CurrentInsertNodeId = 1
 	nodes[1].PreferredDeviceId = 0
-	info := &[]Info{Info{1, MemoryInfo{1, 1, 1, 1, 1}}}
+	info := &[]dto.Info{dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1}}}
 
 	for i := 0; i < 3; i++ {
 		lb.update(info)
@@ -84,7 +85,7 @@ func Test_Update_With_Two_Nodes_Cause_Changing_Node(t *testing.T) {
 	lb.CurrentInsertNodeId = 1
 	nodes[1].PreferredDeviceId = 0
 	nodes[2].PreferredDeviceId = 0
-	info := &[]Info{Info{1, MemoryInfo{1, 1, 1, 1, 1}}}
+	info := &[]dto.Info{dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1}}}
 
 	for i := 0; i < 4; i++ {
 		nodeId := i%2 + 1
@@ -105,7 +106,7 @@ func Test_Update_Called_3_Times_Will_Fire_All_3_Nodes_And_GPUs(t *testing.T) {
 	}
 
 	lb := NewLoadBalancer(0, nodes)
-	info := &[]Info{Info{1, MemoryInfo{1, 1, 1, 1, 1}}}
+	info := &[]dto.Info{dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1}}}
 
 	actual := [9]int32{}
 	expected := [9]int32{0, 1, 2, 10, 11, 12, 20, 21, 22}

@@ -24,7 +24,7 @@ func Test_processResult_For_Info_With_One_GPU(t *testing.T) {
 	node := NewNode(NODE_ID, nil, getTaskChan)
 
 	// PREPARE DATA FOR TEST
-	expected := &Info{NODE_ID, MemoryInfo{1, 1, 1, 1, 1}}
+	expected := &dto.Info{NODE_ID, dto.MemoryInfo{1, 1, 1, 1, 1}}
 	data, err := expected.MemoryInfo.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
@@ -71,11 +71,11 @@ func Test_processResult_For_Info_With_Two_GPUS(t *testing.T) {
 	node := NewNode(NODE_ID, nil, getTaskChan)
 
 	// PREPARE DATA FOR TEST
-	info1 := &Info{NODE_ID, MemoryInfo{1, 1, 1, 1, 1}}
-	info2 := &Info{NODE_ID, MemoryInfo{2, 2, 2, 2, 2}}
+	info1 := &dto.Info{NODE_ID, dto.MemoryInfo{1, 1, 1, 1, 1}}
+	info2 := &dto.Info{NODE_ID, dto.MemoryInfo{2, 2, 2, 2, 2}}
 
 	data, err := dto.Dtos{&info1.MemoryInfo, &info2.MemoryInfo}.Encode()
-	expected := []*Info{info1, info2}
+	expected := []*dto.Info{info1, info2}
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
