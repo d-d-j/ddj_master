@@ -24,7 +24,7 @@ func (this *LoadBalancer) reset() {
 	this.CurrentInsertNodeId = common.CONST_UNINITIALIZED
 }
 
-func (this *LoadBalancer) Balance(info <-chan Info) {
+func (this *LoadBalancer) Balance(info <-chan []Info) {
 
 	log.Info("Node manager balancer started")
 	for {
@@ -35,7 +35,7 @@ func (this *LoadBalancer) Balance(info <-chan Info) {
 	}
 }
 
-func (this *LoadBalancer) update(newInfo *Info) {
+func (this *LoadBalancer) update(newInfo *[]Info) {
 	if newInfo == nil {
 		this.reset()
 		return

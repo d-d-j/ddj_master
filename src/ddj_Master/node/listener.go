@@ -10,10 +10,10 @@ import (
 type Listener struct {
 	netListen    net.Listener
 	idGenerator  common.Int32Generator
-	balancerChan chan<- Info
+	balancerChan chan<- []Info
 }
 
-func NewListener(service string, nodeInfoChannel chan<- Info) *Listener {
+func NewListener(service string, nodeInfoChannel chan<- []Info) *Listener {
 	_, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
 		log.Critical("Error: Could not resolve address")

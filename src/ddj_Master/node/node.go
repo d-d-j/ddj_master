@@ -35,13 +35,13 @@ func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest)
 	return n
 }
 
-func (n *Node) StartWork(balancerChannel chan<- Info) {
+func (n *Node) StartWork(balancerChannel chan<- []Info) {
 	err := n.waitForLogin()
 	if err == nil {
 		go n.readerRoutine()
 		go n.senderRoutine()
 	}
-	balancerChannel <- Info{n.Id, MemoryInfo{1, 1, 1, 1}}
+	balancerChannel <- []Info{Info{n.Id, MemoryInfo{1, 1, 1, 1}}}
 	log.Debug("Node %d READY", n.Id)
 }
 

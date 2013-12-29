@@ -38,7 +38,7 @@ func main() {
 	// Initialize node manager
 	log.Info("Initialize node manager")
 	go node.NodeManager.Manage()
-	infoChan := make(chan node.Info)
+	infoChan := make(chan []node.Info)
 	nodeBal := node.NewLoadBalancer(cfg.Balancer.Timeout, node.NodeManager.GetNodes())
 	go nodeBal.Balance(infoChan)
 
