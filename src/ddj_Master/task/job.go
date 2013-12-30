@@ -84,11 +84,27 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	}
 
 	aggregator := reduce.GetAggregator(t.AggregationType)
-	responseToClient := aggregator.Aggregate(responses)
+	responseToClient := aggregator.Aggregate(nil)
 
 	// PASS REDUCED RESPONSES TO CLIENT
 	req.Response <- dto.NewRestResponse("", 0, responseToClient)
 	return true
+}
+
+func parseResultsToElements(results []*dto.Result) []*dto.Element {
+	elementSize := (&dto.Element{}).Size()
+	length := len(results) / elementSize
+	elements := make([]*dto.Element, length)
+	for i := 0; i < length; i++ {
+		var e dto.Element
+		err := e.Decode(results[0].Data[i*elementSize:])
+		if err != nil {
+			log.Error("Problem with parsing data", err)
+			continue
+		}
+		elements[i] = &e
+	}
+	return elements
 }
 
 func (w *TaskWorker) Info(req dto.RestRequest) bool {
@@ -172,12 +188,12 @@ func BroadcastTaskToAllNodes(t *dto.Task, req dto.RestRequest) int {
 	return 0
 }
 
-func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.RestResponse {
-	responses := make([]*dto.RestResponse, numResponses)
+func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.Result {
+	responses := make([]*dto.Result, numResponses)
 
 	// WAIT FOR ALL RESPONSES
 	for i := 0; i < numResponses; i++ {
-		//	responses[i] = <-responseChan
+		responses[i] = <-responseChan
 		log.Finest("Got task result [%d/%d] - %s", i, numResponses, responses[i])
 	}
 
