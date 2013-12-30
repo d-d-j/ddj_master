@@ -121,6 +121,38 @@ func Select(query string, b *testing.B) RestResponse {
 	return response
 }
 
+func Benchmark_Select_All_Max(b *testing.B) {
+
+	SetUp(b)
+
+	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/max", 0, INSERTED_DATA), b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	if response.Data[0].String() != expected[0].Value.String() {
+		b.Error("Got ", response.Data, " when expected ", expected[INSERTED_DATA].Value)
+	}
+}
+
+func Benchmark_Select_All_Min(b *testing.B) {
+
+	SetUp(b)
+
+	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", 0, INSERTED_DATA), b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	if response.Data[0].String() != expected[0].Value.String() {
+		b.Error("Got ", response.Data, " when expected ", expected[0].Value)
+	}
+}
+
 func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
