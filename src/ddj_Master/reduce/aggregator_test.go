@@ -28,9 +28,7 @@ func Test_NonAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One
 	input := expected
 
 	actual := NonAggregation(input)
-	for index, elem := range actual {
-		AssertEqual(expected[index], elem, t)
-	}
+	AssertElementsEqual(expected, actual, t)
 }
 
 func Test_NonAggregation_Should_Return_Same_Slice_But_Sorted_As_Input_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
@@ -40,9 +38,7 @@ func Test_NonAggregation_Should_Return_Same_Slice_But_Sorted_As_Input_If_There_W
 
 	actual := NonAggregation(input)
 
-	for index, elem := range actual {
-		AssertEqual(expected[index], elem, t)
-	}
+	AssertElementsEqual(expected, actual, t)
 }
 
 func Test_NonAggregation_Should_Return_Sorted_Elements_From_All_Input_Slices(t *testing.T) {
@@ -57,14 +53,84 @@ func Test_NonAggregation_Should_Return_Sorted_Elements_From_All_Input_Slices(t *
 		dto.NewElement(1, 0, 0, 0.33), dto.NewElement(1, 0, 0, 0.33), dto.NewElement(1, 2, 1, 0.33),
 		dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 4, 2, 0.33),
 	}
-	for index, elem := range actual {
-		AssertEqual(expected[index], elem, t)
+	AssertElementsEqual(expected, actual, t)
+}
+
+func Test_MaxAggregation_Should_Return_Nil_When_Input_Is_Nil(t *testing.T) {
+	actual := MaxAggregation(nil)
+	if actual != nil {
+		t.Error("Expected nil but got ", actual)
 	}
 }
 
-func AssertEqual(expected, actual dto.Dto, t *testing.T) {
-	if expected.String() != actual.String() {
-		t.Error("Expected: ", expected, " but got: ", actual)
+func Test_MaxAggregation_Should_Return_Empty_Slice_If_Input_Containse_Only_nil(t *testing.T) {
+	input := make([]*dto.Element, 5)
+
+	actual := MaxAggregation(input)
+	if len(actual) != 0 && actual != nil {
+		t.Error("Expected empty slice but got ", actual)
+	}
+}
+
+func Test_MaxAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{dto.NewElement(1, 2, 0, 0.33)}
+
+	actual := MaxAggregation(input)
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_MaxAggregation_Should_Return_Same_Slice_But_Sorted_As_Input_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
+
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.33)}
+
+	actual := MaxAggregation(input)
+
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_MaxAggregation_Should_Return_Max_Element_From_All_Input_Slices(t *testing.T) {
+
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{
+		dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.23),
+		dto.NewElement(1, 4, 2, 0.13), dto.NewElement(1, 2, 1, 0.033), dto.NewElement(1, 0, 0, 0.3),
+	}
+
+	actual := MaxAggregation(input)
+
+	AssertValuesEqual(expected, actual, t)
+
+}
+
+func AssertElementsEqual(expected []*dto.Element, actual dto.Dtos, t *testing.T) {
+	if len(expected) != len(actual) {
+		t.Error("Wrong dimension. Expected ", len(expected), " but got ", len(actual))
+	}
+
+	for index, elem := range actual {
+		if expected[index].String() != elem.String() {
+			t.Error("Expected: ", expected, " but got: ", actual)
+		}
+	}
+}
+
+func AssertValuesEqual(expected []*dto.Value, actual dto.Dtos, t *testing.T) {
+	if len(expected) != len(actual) {
+		t.Error("Wrong dimension. Expected ", len(expected), " but got ", len(actual))
+	}
+
+	for index, elem := range actual {
+		if expected[index].String() != elem.String() {
+			t.Error("Expected: ", expected, " but got: ", actual)
+		}
 	}
 }
 

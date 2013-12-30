@@ -33,3 +33,7 @@ func NonAggregation(input []*dto.Element) dto.Dtos {
 
 	return output
 }
+
+func MaxAggregation(input []*dto.Element) dto.Dtos {
+	return nil
+}
