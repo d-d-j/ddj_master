@@ -78,10 +78,7 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 		return false
 	}
 
-	responses := GatherAllResponses(availableNodes, responseChan)
-	if responses == nil {
-		return false
-	}
+	responses := parseResultsToElements(GatherAllResponses(availableNodes, responseChan))
 
 	aggregator := reduce.GetAggregator(t.AggregationType)
 	responseToClient := aggregator.Aggregate(responses)
@@ -89,6 +86,26 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	// PASS REDUCED RESPONSES TO CLIENT
 	req.Response <- dto.NewRestResponse("", 0, responseToClient)
 	return true
+}
+
+func parseResultsToElements(results []*dto.Result) []*dto.Element {
+	elementSize := (&dto.Element{}).Size()
+	resultsCount := len(results)
+	elements := make([]*dto.Element, 0, resultsCount)
+
+	for i := 0; i < resultsCount; i++ {
+		length := len(results[i].Data) / elementSize
+		for j := 0; j < length; j++ {
+			var e dto.Element
+			err := e.Decode(results[i].Data[j*elementSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			elements = append(elements, &e)
+		}
+	}
+	return elements
 }
 
 func (w *TaskWorker) Info(req dto.RestRequest) bool {
@@ -106,7 +123,7 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 		return false
 	}
 
-	responses := GatherAllResponses(availableNodes, responseChan)
+	responses := parseResultsToInfos(GatherAllResponses(availableNodes, responseChan))
 	if responses == nil {
 		return false
 	}
@@ -117,6 +134,27 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	}
 
 	return true
+}
+
+//TODO: Generate Info not memoryInfo.
+func parseResultsToInfos(results []*dto.Result) []*dto.MemoryInfo {
+	infoSize := (&dto.MemoryInfo{}).Size()
+	resultsCount := len(results)
+	elements := make([]*dto.MemoryInfo, 0, resultsCount)
+
+	for i := 0; i < resultsCount; i++ {
+		length := len(results[i].Data) / infoSize
+		for j := 0; j < length; j++ {
+			var e dto.MemoryInfo
+			err := e.Decode(results[i].Data[j*infoSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			elements = append(elements, &e)
+		}
+	}
+	return elements
 }
 
 func (w *TaskWorker) Flush(req dto.RestRequest) bool {
@@ -147,8 +185,8 @@ func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 	return true
 }
 
-func CreateTaskForRequest(req dto.RestRequest, numResponses int, taskId int64) (*dto.Task, chan *dto.RestResponse) {
-	responseChan := make(chan *dto.RestResponse, numResponses)
+func CreateTaskForRequest(req dto.RestRequest, numResponses int, taskId int64) (*dto.Task, chan *dto.Result) {
+	responseChan := make(chan *dto.Result, numResponses)
 
 	// CREATE TASK
 	t := dto.NewTask(taskId, req, responseChan)
@@ -172,8 +210,8 @@ func BroadcastTaskToAllNodes(t *dto.Task, req dto.RestRequest) int {
 	return 0
 }
 
-func GatherAllResponses(numResponses int, responseChan chan *dto.RestResponse) []*dto.RestResponse {
-	responses := make([]*dto.RestResponse, numResponses)
+func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.Result {
+	responses := make([]*dto.Result, numResponses)
 
 	// WAIT FOR ALL RESPONSES
 	for i := 0; i < numResponses; i++ {

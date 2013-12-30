@@ -123,7 +123,7 @@ func Select(query string, b *testing.B) RestResponse {
 
 func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {
 	if len(response.Data) < 1 {
-		b.Log("Notihng returned")
+		b.Log("Nothing returned")
 		b.FailNow()
 	}
 	if len(response.Data) > len(expectedValues) {

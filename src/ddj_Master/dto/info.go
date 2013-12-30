@@ -12,11 +12,11 @@ type Info struct {
 }
 
 type MemoryInfo struct {
-	GpuId			 int32
-	MemoryTotal      int32
-	MemoryFree       int32
-	GpuMemoryTotal   int32
-	GpuMemoryFree    int32
+	GpuId          int32
+	MemoryTotal    int32
+	MemoryFree     int32
+	GpuMemoryTotal int32
+	GpuMemoryFree  int32
 }
 
 func (this *MemoryInfo) String() string {
