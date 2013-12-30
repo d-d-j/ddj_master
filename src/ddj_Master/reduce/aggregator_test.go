@@ -76,7 +76,7 @@ func Test_MaxAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One
 	AssertValuesEqual(expected, actual, t)
 }
 
-func Test_MaxAggregation_Should_Return_Same_Slice_But_Sorted_As_Input_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
+func Test_MaxAggregation_Should_Return_Maximum_From_Input_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
 
 	var value dto.Value
 	value = 0.33
@@ -127,7 +127,7 @@ func Test_MinAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One
 	AssertValuesEqual(expected, actual, t)
 }
 
-func Test_MinAggregation_Should_Return_Same_Slice_But_Sorted_As_Input_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
+func Test_MinAggregation_Should_Return_Minimum_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
 
 	var value dto.Value
 	value = 0.33
@@ -168,7 +168,7 @@ func Test_AddAggregation_Should_Return_Empty_Slice_When_Input_Is_Nil_Or_Empty(t 
 	}
 }
 
-func Test_AddAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
+func Test_AddAggregation_Should_Return_Same_Value_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
 	var value dto.Value
 	value = 0.33
 	expected := []*dto.Value{&value}
@@ -178,7 +178,7 @@ func Test_AddAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One
 	AssertValuesEqual(expected, actual, t)
 }
 
-func Test_AddAggregation_Should_Return_Same_Slice_But_Sorted_As_Input_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
+func Test_AddAggregation_Should_Return_Sum_of_Slice_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
 
 	var value dto.Value
 	value = 0.99
@@ -190,7 +190,7 @@ func Test_AddAggregation_Should_Return_Same_Slice_But_Sorted_As_Input_If_There_W
 	AssertValuesEqual(expected, actual, t)
 }
 
-func Test_AddAggregation_Should_Return_Max_Element_From_All_Input_Slices(t *testing.T) {
+func Test_AddAggregation_Should_Return_Sum_Of_Elements_From_All_Input_Slices(t *testing.T) {
 
 	var value dto.Value
 	value = 0.6
