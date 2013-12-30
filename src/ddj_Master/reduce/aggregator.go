@@ -54,3 +54,22 @@ func MaxAggregation(input []*dto.Element) dto.Dtos {
 	}
 	return dto.Dtos{}
 }
+
+func MinAggregation(input []*dto.Element) dto.Dtos {
+	if input == nil {
+		return nil
+	}
+	var ok bool
+	x := dto.Value(common.CONST_INT_MAX_VALUE)
+	for _, y := range input {
+		if y != nil && y.Value < x {
+			x = y.Value
+			ok = true
+		}
+	}
+
+	if ok {
+		return dto.Dtos{&x}
+	}
+	return dto.Dtos{}
+}
