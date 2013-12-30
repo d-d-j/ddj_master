@@ -93,16 +93,20 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 
 func parseResultsToElements(results []*dto.Result) []*dto.Element {
 	elementSize := (&dto.Element{}).Size()
-	length := len(results) / elementSize
-	elements := make([]*dto.Element, length)
-	for i := 0; i < length; i++ {
-		var e dto.Element
-		err := e.Decode(results[0].Data[i*elementSize:])
-		if err != nil {
-			log.Error("Problem with parsing data", err)
-			continue
+	resultsCount := len(results)
+	elements := make([]*dto.Element, 0, resultsCount)
+
+	for i := 0; i < resultsCount; i++ {
+		length := len(results[i].Data) / elementSize
+		for j := 0; j < length; j++ {
+			var e dto.Element
+			err := e.Decode(results[i].Data[j*elementSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			elements = append(elements, &e)
 		}
-		elements[i] = &e
 	}
 	return elements
 }
