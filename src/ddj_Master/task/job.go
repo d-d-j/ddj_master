@@ -80,8 +80,8 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 
 	responses := parseResultsToElements(GatherAllResponses(availableNodes, responseChan))
 
-	aggregator := reduce.GetAggregator(t.AggregationType)
-	responseToClient := aggregator.Aggregate(responses)
+	aggregate := reduce.GetAggregator(t.AggregationType)
+	responseToClient := aggregate(responses)
 
 	// PASS REDUCED RESPONSES TO CLIENT
 	req.Response <- dto.NewRestResponse("", 0, responseToClient)

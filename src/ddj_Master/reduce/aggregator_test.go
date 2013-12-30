@@ -6,10 +6,8 @@ import (
 	"testing"
 )
 
-var nonAggr NonAggregation
-
 func Test_NonAggregation_Should_Return_Nil_When_Input_Is_Nil(t *testing.T) {
-	actual := nonAggr.Aggregate(nil)
+	actual := NonAggregation(nil)
 	if actual != nil {
 		t.Error("Expected nil but got ", actual)
 	}
@@ -18,7 +16,7 @@ func Test_NonAggregation_Should_Return_Nil_When_Input_Is_Nil(t *testing.T) {
 func Test_NonAggregation_Should_Return_Empty_Slice_If_Input_Containse_Only_nil(t *testing.T) {
 	input := make([]*dto.Element, 5)
 
-	actual := nonAggr.Aggregate(input)
+	actual := NonAggregation(input)
 	if len(actual) != 0 && actual != nil {
 		t.Error("Expected empty slice but got ", actual)
 	}
@@ -29,7 +27,7 @@ func Test_NonAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One
 	expected := []*dto.Element{dto.NewElement(1, 2, 0, 0.33)}
 	input := expected
 
-	actual := nonAggr.Aggregate(input)
+	actual := NonAggregation(input)
 	for index, elem := range actual {
 		AssertEqual(expected[index], elem, t)
 	}
@@ -40,7 +38,7 @@ func Test_NonAggregation_Should_Return_Same_Slice_But_Sorted_As_Input_If_There_W
 	expected := []*dto.Element{dto.NewElement(1, 0, 0, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 4, 2, 0.33)}
 	input := []*dto.Element{dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.33)}
 
-	actual := nonAggr.Aggregate(input)
+	actual := NonAggregation(input)
 
 	for index, elem := range actual {
 		AssertEqual(expected[index], elem, t)
@@ -54,7 +52,7 @@ func Test_NonAggregation_Should_Return_Sorted_Elements_From_All_Input_Slices(t *
 		dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.33),
 	}
 
-	actual := nonAggr.Aggregate(input)
+	actual := NonAggregation(input)
 	expected := []*dto.Element{
 		dto.NewElement(1, 0, 0, 0.33), dto.NewElement(1, 0, 0, 0.33), dto.NewElement(1, 2, 1, 0.33),
 		dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 4, 2, 0.33),
@@ -71,17 +69,13 @@ func AssertEqual(expected, actual dto.Dto, t *testing.T) {
 }
 
 func Test_GetAggregator(t *testing.T) {
-	actual := GetAggregator(common.AGGREGATION_NONE)
-	_, ok := actual.(NonAggregation)
-	if !ok {
-		t.Error("Expected NonAggregation")
-	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			t.Log("Recovered ", r)
 		}
 	}()
-	actual = GetAggregator(common.CONST_UNINITIALIZED)
+	GetAggregator(common.CONST_UNINITIALIZED)
 	t.Error("Expected panic")
 }
 

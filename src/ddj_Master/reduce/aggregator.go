@@ -6,21 +6,17 @@ import (
 	"sort"
 )
 
-type Aggregator interface {
-	Aggregate([]*dto.Element) dto.Dtos
-}
-
-type NonAggregation struct{}
+type Aggregator func([]*dto.Element) dto.Dtos
 
 func GetAggregator(aggregationType int32) Aggregator {
 	switch aggregationType {
 	case common.AGGREGATION_NONE:
-		return NonAggregation{}
+		return NonAggregation
 	}
 	panic("Unknown aggregation")
 }
 
-func (this NonAggregation) Aggregate(input []*dto.Element) dto.Dtos {
+func NonAggregation(input []*dto.Element) dto.Dtos {
 
 	if input == nil {
 		return nil
