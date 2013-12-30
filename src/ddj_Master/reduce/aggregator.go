@@ -13,22 +13,18 @@ func GetAggregator(aggregationType int32) Aggregator {
 	case common.AGGREGATION_NONE:
 		return NonAggregation
 	case common.AGGREGATION_MAX:
-		return NonAggregation
+		return MaxAggregation
+	case common.AGGREGATION_MIN:
+		return MinAggregation
 	}
 	panic("Unknown aggregation")
 }
 
 func NonAggregation(input []*dto.Element) dto.Dtos {
 
-	if input == nil {
-		return nil
-	}
-
 	output := make([]dto.Dto, 0, len(input))
 	for _, element := range input {
-		if element != nil {
-			output = append(output, element)
-		}
+		output = append(output, element)
 	}
 
 	sort.Sort(dto.ByTime(output))
@@ -37,39 +33,33 @@ func NonAggregation(input []*dto.Element) dto.Dtos {
 }
 
 func MaxAggregation(input []*dto.Element) dto.Dtos {
-	if input == nil {
-		return nil
+
+	if len(input) < 1 {
+		return dto.Dtos{}
 	}
-	var ok bool
-	x := dto.Value(common.CONST_INT_MIN_VALUE)
+	x := input[0].Value
+
 	for _, y := range input {
-		if y != nil && y.Value > x {
+		if !y.Value.Less(x) {
 			x = y.Value
-			ok = true
 		}
 	}
 
-	if ok {
-		return dto.Dtos{&x}
-	}
-	return dto.Dtos{}
+	return dto.Dtos{&x}
 }
 
 func MinAggregation(input []*dto.Element) dto.Dtos {
-	if input == nil {
-		return nil
+
+	if len(input) < 1 {
+		return dto.Dtos{}
 	}
-	var ok bool
-	x := dto.Value(common.CONST_INT_MAX_VALUE)
+	x := input[0].Value
+
 	for _, y := range input {
-		if y != nil && y.Value < x {
+		if y.Value.Less(x) {
 			x = y.Value
-			ok = true
 		}
 	}
 
-	if ok {
-		return dto.Dtos{&x}
-	}
-	return dto.Dtos{}
+	return dto.Dtos{&x}
 }

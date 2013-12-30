@@ -34,3 +34,7 @@ func (v Value) Size() int {
 
 	return binary.Size(v)
 }
+
+func (v Value) Less(y Value) bool {
+	return v < y
+}
