@@ -123,7 +123,7 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 		return false
 	}
 
-	responses := GatherAllResponses(availableNodes, responseChan)
+	responses := parseResultsToInfos(GatherAllResponses(availableNodes, responseChan))
 	if responses == nil {
 		return false
 	}
@@ -136,16 +136,17 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	return true
 }
 
-func parseResultsToInfos(results []*dto.Result) []*dto.Element {
-	elementSize := (&dto.Element{}).Size()
+//TODO: Generate Info not memoryInfo.
+func parseResultsToInfos(results []*dto.Result) []*dto.MemoryInfo {
+	infoSize := (&dto.MemoryInfo{}).Size()
 	resultsCount := len(results)
-	elements := make([]*dto.Element, 0, resultsCount)
+	elements := make([]*dto.MemoryInfo, 0, resultsCount)
 
 	for i := 0; i < resultsCount; i++ {
-		length := len(results[i].Data) / elementSize
+		length := len(results[i].Data) / infoSize
 		for j := 0; j < length; j++ {
-			var e dto.Element
-			err := e.Decode(results[i].Data[j*elementSize:])
+			var e dto.MemoryInfo
+			err := e.Decode(results[i].Data[j*infoSize:])
 			if err != nil {
 				log.Error("Problem with parsing data", err)
 				continue

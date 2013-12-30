@@ -102,86 +102,16 @@ func (n *Node) readerRoutine() {
 			r.Data = make([]byte, r.DataSize)
 			n.read(r.Data)
 		}
-		//Create return channel on which we will get channel to send response
+
 		taskChan := make(chan *dto.Task)
-		//Send GetTaskReuest to get channel on which we will return result
 		n.GetTaskChannel <- dto.GetTaskRequest{TaskId: r.TaskId, BackChan: taskChan}
-		//Wait for task
 		t := <-taskChan
-
 		t.ResultChan <- r
-
 	}
 
 	log.Info("Node reader stopped for Node %s", n.Id)
 	n.stop <- true
 }
-
-// func (n *Node) processResult(result dto.Result) {
-
-// 	//Create return channel on which we will get channel to send response
-// 	taskChan := make(chan *dto.Task)
-
-// 	//Send GetTaskReuest to get channel on which we will return result
-// 	n.GetTaskChannel <- dto.GetTaskRequest{TaskId: result.TaskId, BackChan: taskChan}
-
-// 	var err error
-
-// 	//Create rest response from dto.Result
-// 	var responseData []dto.Dto
-
-// 	switch result.Type {
-// 	case common.TASK_INFO:
-// 		infoSize := (&dto.MemoryInfo{}).Size()
-// 		numGpus := len(result.Data) / infoSize
-// 		gpuInfos := make([]dto.Dto, numGpus)
-
-// 		for i := 0; i < numGpus; i++ {
-// 			var info dto.Info
-// 			err = info.MemoryInfo.Decode(result.Data[i*infoSize:])
-// 			if err != nil {
-// 				log.Error("Problem with parsing data", err)
-// 				continue
-// 			}
-// 			info.NodeId = n.Id
-// 			gpuInfos[i] = &info
-// 			log.Debug("Node info %s", info.String())
-// 		}
-// 		responseData = gpuInfos
-// 	case common.TASK_SELECT:
-// 		elementSize := (&dto.Element{}).Size()
-// 		length := len(result.Data) / elementSize
-// 		elements := make([]dto.Dto, length)
-// 		for i := 0; i < length; i++ {
-// 			var e dto.Element
-// 			err = e.Decode(result.Data[i*elementSize:])
-// 			if err != nil {
-// 				log.Error("Problem with parsing data", err)
-// 				continue
-// 			}
-// 			elements[i] = &e
-// 		}
-// 		responseData = elements
-// 	default:
-// 		log.Error("Cannot parse task result data - wrong task type")
-// 		err = fmt.Errorf("Unknown task type")
-// 	}
-
-// 	//Wait for task
-// 	t := <-taskChan
-
-// 	if t == nil {
-// 		//FIXME: This should never happen
-// 		log.Critical("Task %d does not exist", result.TaskId)
-// 		return
-// 	}
-// 	if err != nil || responseData == nil {
-// 		log.Error("Cannot parse task result data", err)
-// 		t.ResultChan <- dto.NewRestResponse("Task result data error", result.TaskId, nil)
-// 	} else {
-// 		t.ResultChan <- dto.NewRestResponse("", result.TaskId, responseData)
-// 	}
-// }
 
 // Sending goroutine for Node - waits for data to be sent over Node.Incoming,
 // then sends it over the socket
