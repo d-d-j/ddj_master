@@ -20,6 +20,8 @@ const (
 	AGGREGATION_NONE    int32 = 0
 	AGGREGATION_ADD     int32 = 1
 	AGGREGATION_AVERAGE int32 = 2
+	AGGREGATION_MIN     int32 = 3
+	AGGREGATION_MAX     int32 = 4
 )
 
 //NodeStatus
@@ -32,7 +34,8 @@ const (
 //Constants
 const (
 	CONST_UNINITIALIZED = -1
-	CONST_INT_MIN_VALUE = -(int(^uint(0) >> 1))
+	CONST_INT_MIN_VALUE = -CONST_INT_MAX_VALUE
+	CONST_INT_MAX_VALUE = (int(^uint(0) >> 1))
 )
 
 //DEVICE

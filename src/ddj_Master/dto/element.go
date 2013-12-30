@@ -10,11 +10,11 @@ import (
 type Element struct {
 	Tag, Metric int32
 	Time        int64
-	Value       float32
+	Value       Value
 	Padding     int32
 }
 
-func NewElement(Tag int32, Metric int32, Time int64, Value float32) *Element {
+func NewElement(Tag int32, Metric int32, Time int64, Value Value) *Element {
 	e := new(Element)
 	e.Tag = Tag
 	e.Metric = Metric
