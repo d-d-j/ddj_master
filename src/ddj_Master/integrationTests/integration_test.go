@@ -122,6 +122,10 @@ func Select(query string, b *testing.B) RestResponse {
 }
 
 func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
 	if len(response.Data) > len(expectedValues) {
 		b.Error("Too many values returned. Expected less or equal than ", len(expectedValues), " but got ", len(response.Data))
 		b.Log("Did you forget to restart server?")
