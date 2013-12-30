@@ -12,7 +12,7 @@ type Task struct {
 	Data            Dto
 	DataSize        int32
 	ResponseChan    chan *RestResponse // channel for sending response to (REST API) client
-	ResultChan      chan *RestResponse // channel for sending result to worker
+	ResultChan      chan *Result       // channel for sending result to worker
 }
 
 type GetTaskRequest struct {
@@ -20,7 +20,7 @@ type GetTaskRequest struct {
 	BackChan chan *Task
 }
 
-func NewTask(id int64, request RestRequest, resultChan chan *RestResponse) *Task {
+func NewTask(id int64, request RestRequest, resultChan chan *Result) *Task {
 	t := new(Task)
 	t.Id = id
 	t.Type = request.Type

@@ -147,8 +147,8 @@ func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 	return true
 }
 
-func CreateTaskForRequest(req dto.RestRequest, numResponses int, taskId int64) (*dto.Task, chan *dto.RestResponse) {
-	responseChan := make(chan *dto.RestResponse, numResponses)
+func CreateTaskForRequest(req dto.RestRequest, numResponses int, taskId int64) (*dto.Task, chan *dto.Result) {
+	responseChan := make(chan *dto.Result, numResponses)
 
 	// CREATE TASK
 	t := dto.NewTask(taskId, req, responseChan)
@@ -172,12 +172,12 @@ func BroadcastTaskToAllNodes(t *dto.Task, req dto.RestRequest) int {
 	return 0
 }
 
-func GatherAllResponses(numResponses int, responseChan chan *dto.RestResponse) []*dto.RestResponse {
+func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.RestResponse {
 	responses := make([]*dto.RestResponse, numResponses)
 
 	// WAIT FOR ALL RESPONSES
 	for i := 0; i < numResponses; i++ {
-		responses[i] = <-responseChan
+		//	responses[i] = <-responseChan
 		log.Finest("Got task result [%d/%d] - %s", i, numResponses, responses[i])
 	}
 
