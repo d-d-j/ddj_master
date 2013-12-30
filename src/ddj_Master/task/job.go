@@ -79,10 +79,10 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	}
 
 	responses := parseResultsToElements(GatherAllResponses(availableNodes, responseChan))
-
-	aggregator := reduce.GetAggregator(t.AggregationType)
-	responseToClient := aggregator.Aggregate(responses)
-
+	log.Finest("Response from node ", responses)
+	aggregate := reduce.GetAggregator(t.AggregationType)
+	responseToClient := aggregate(responses)
+	log.Finest("Response after aggregation ", responseToClient)
 	// PASS REDUCED RESPONSES TO CLIENT
 	req.Response <- dto.NewRestResponse("", 0, responseToClient)
 	return true

@@ -6,22 +6,17 @@ import (
 	"testing"
 )
 
-var nonAggr NonAggregation
-
-func Test_NonAggregation_Should_Return_Nil_When_Input_Is_Nil(t *testing.T) {
-	actual := nonAggr.Aggregate(nil)
-	if actual != nil {
-		t.Error("Expected nil but got ", actual)
+func Test_NonAggregation_Should_Return_Empty_Slice_When_Input_Is_Nil_Or_Empty(t *testing.T) {
+	actual := NonAggregation(nil)
+	if len(actual) != 0 {
+		t.Error("Expected empty slice but got ", actual)
 	}
 }
 
-func Test_NonAggregation_Should_Return_Empty_Slice_If_Input_Containse_Only_nil(t *testing.T) {
+func Test_NonAggregation_Should_Panic_When_Input_Containse_nil(t *testing.T) {
 	input := make([]*dto.Element, 5)
-
-	actual := nonAggr.Aggregate(input)
-	if len(actual) != 0 && actual != nil {
-		t.Error("Expected empty slice but got ", actual)
-	}
+	defer ExpectedPanic(t)
+	NonAggregation(input)
 }
 
 func Test_NonAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
@@ -29,10 +24,8 @@ func Test_NonAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One
 	expected := []*dto.Element{dto.NewElement(1, 2, 0, 0.33)}
 	input := expected
 
-	actual := nonAggr.Aggregate(input)
-	for index, elem := range actual {
-		AssertEqual(expected[index], elem, t)
-	}
+	actual := NonAggregation(input)
+	AssertElementsEqual(expected, actual, t)
 }
 
 func Test_NonAggregation_Should_Return_Same_Slice_But_Sorted_As_Input_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
@@ -40,11 +33,9 @@ func Test_NonAggregation_Should_Return_Same_Slice_But_Sorted_As_Input_If_There_W
 	expected := []*dto.Element{dto.NewElement(1, 0, 0, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 4, 2, 0.33)}
 	input := []*dto.Element{dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.33)}
 
-	actual := nonAggr.Aggregate(input)
+	actual := NonAggregation(input)
 
-	for index, elem := range actual {
-		AssertEqual(expected[index], elem, t)
-	}
+	AssertElementsEqual(expected, actual, t)
 }
 
 func Test_NonAggregation_Should_Return_Sorted_Elements_From_All_Input_Slices(t *testing.T) {
@@ -54,42 +45,209 @@ func Test_NonAggregation_Should_Return_Sorted_Elements_From_All_Input_Slices(t *
 		dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.33),
 	}
 
-	actual := nonAggr.Aggregate(input)
+	actual := NonAggregation(input)
 	expected := []*dto.Element{
 		dto.NewElement(1, 0, 0, 0.33), dto.NewElement(1, 0, 0, 0.33), dto.NewElement(1, 2, 1, 0.33),
 		dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 4, 2, 0.33),
 	}
+	AssertElementsEqual(expected, actual, t)
+}
+
+func Test_MaxAggregation_Should_Return_Empty_Slice_When_Input_Is_Nil_Or_Empty(t *testing.T) {
+	actual := MaxAggregation(nil)
+	if len(actual) != 0 {
+		t.Error("Expected empty slice but got ", actual)
+	}
+}
+
+func Test_MaxAggregation_Should_Panic_When_Input_Containse_nil(t *testing.T) {
+	input := make([]*dto.Element, 5)
+	defer ExpectedPanic(t)
+	MaxAggregation(input)
+}
+
+func Test_MaxAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{dto.NewElement(1, 2, 0, 0.33)}
+
+	actual := MaxAggregation(input)
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_MaxAggregation_Should_Return_Maximum_From_Input_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
+
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.33)}
+
+	actual := MaxAggregation(input)
+
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_MaxAggregation_Should_Return_Max_Element_From_All_Input_Slices(t *testing.T) {
+
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{
+		dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.23),
+		dto.NewElement(1, 4, 2, 0.13), dto.NewElement(1, 2, 1, 0.033), dto.NewElement(1, 0, 0, 0.3),
+	}
+
+	actual := MaxAggregation(input)
+
+	AssertValuesEqual(expected, actual, t)
+
+}
+
+func Test_MinAggregation_Should_Panic_When_Input_Containse_nil(t *testing.T) {
+	input := make([]*dto.Element, 5)
+	defer ExpectedPanic(t)
+	MinAggregation(input)
+}
+
+func Test_MinAggregation_Should_Return_Empty_Slice_When_Input_Is_Nil_Or_Empty(t *testing.T) {
+	actual := MinAggregation(nil)
+	if len(actual) != 0 {
+		t.Error("Expected empty slice but got ", actual)
+	}
+}
+
+func Test_MinAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{dto.NewElement(1, 2, 0, 0.33)}
+
+	actual := MinAggregation(input)
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_MinAggregation_Should_Return_Minimum_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
+
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.33)}
+
+	actual := MinAggregation(input)
+
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_MinAggregation_Should_Return_Max_Element_From_All_Input_Slices(t *testing.T) {
+
+	var value dto.Value
+	value = 0.0
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{
+		dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.23),
+		dto.NewElement(1, 4, 2, 0.13), dto.NewElement(1, 2, 1, 0.0), dto.NewElement(1, 0, 0, 0.3),
+	}
+
+	actual := MinAggregation(input)
+
+	AssertValuesEqual(expected, actual, t)
+
+}
+
+func Test_AddAggregation_Should_Panic_When_Input_Containse_nil(t *testing.T) {
+	input := make([]*dto.Element, 5)
+	defer ExpectedPanic(t)
+	AddAggregation(input)
+}
+
+func Test_AddAggregation_Should_Return_Empty_Slice_When_Input_Is_Nil_Or_Empty(t *testing.T) {
+	actual := AddAggregation(nil)
+	if len(actual) != 0 {
+		t.Error("Expected empty slice but got ", actual)
+	}
+}
+
+func Test_AddAggregation_Should_Return_Same_Value_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{dto.NewElement(1, 2, 0, 0.33)}
+
+	actual := AddAggregation(input)
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_AddAggregation_Should_Return_Sum_of_Slice_If_There_Was_Only_One_Slice_In_Input(t *testing.T) {
+
+	var value dto.Value
+	value = 0.99
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.33)}
+
+	actual := AddAggregation(input)
+
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_AddAggregation_Should_Return_Sum_Of_Elements_From_All_Input_Slices(t *testing.T) {
+
+	var value dto.Value
+	value = 0.6
+	expected := []*dto.Value{&value}
+	input := []*dto.Element{
+		dto.NewElement(1, 4, 2, 0.01), dto.NewElement(1, 2, 1, 0.03), dto.NewElement(1, 0, 0, 0.04),
+		dto.NewElement(1, 4, 2, 0.02), dto.NewElement(1, 2, 1, 0.0), dto.NewElement(1, 0, 0, 0.5),
+	}
+
+	actual := AddAggregation(input)
+
+	AssertValuesEqual(expected, actual, t)
+
+}
+
+func AssertElementsEqual(expected []*dto.Element, actual dto.Dtos, t *testing.T) {
+	if len(expected) != len(actual) {
+		t.Error("Wrong dimension. Expected ", len(expected), " but got ", len(actual))
+	}
+
 	for index, elem := range actual {
-		AssertEqual(expected[index], elem, t)
+		if expected[index].String() != elem.String() {
+			t.Error("Expected: ", expected, " but got: ", actual)
+		}
 	}
 }
 
-func AssertEqual(expected, actual dto.Dto, t *testing.T) {
-	if expected.String() != actual.String() {
-		t.Error("Expected: ", expected, " but got: ", actual)
+func AssertValuesEqual(expected []*dto.Value, actual dto.Dtos, t *testing.T) {
+	if len(expected) != len(actual) {
+		t.Error("Wrong dimension. Expected ", len(expected), " but got ", len(actual))
+	}
+
+	for index, elem := range actual {
+		if expected[index].String() != elem.String() {
+			t.Error("Expected: ", expected, " but got: ", actual)
+		}
 	}
 }
 
-func Test_GetAggregator(t *testing.T) {
-	actual := GetAggregator(common.AGGREGATION_NONE)
-	_, ok := actual.(NonAggregation)
-	if !ok {
-		t.Error("Expected NonAggregation")
-	}
+func Test_GetAggregator_Should_Panic_When_Unknow_Type_Pass(t *testing.T) {
+
 	defer func() {
 		if r := recover(); r != nil {
 			t.Log("Recovered ", r)
 		}
 	}()
-	actual = GetAggregator(common.CONST_UNINITIALIZED)
+	GetAggregator(common.CONST_UNINITIALIZED)
 	t.Error("Expected panic")
 }
 
 func Test_GetAggregator_Should_Pannic_When_Pass_Invalid_Aggregation_Type(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("Expected panic")
-		}
-	}()
+	defer ExpectedPanic(t)
 	GetAggregator(common.CONST_UNINITIALIZED) //This should call panic
+}
+
+func ExpectedPanic(t *testing.T) {
+	if r := recover(); r == nil {
+		t.Error("Expected panic")
+	}
 }
