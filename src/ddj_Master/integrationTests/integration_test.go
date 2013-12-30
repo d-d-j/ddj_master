@@ -153,6 +153,22 @@ func Benchmark_Select_All_Min(b *testing.B) {
 	}
 }
 
+func Benchmark_Select_Sum(b *testing.B) {
+
+	SetUp(b)
+
+	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", 0, 1), b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	if response.Data[0].String() != expected[0].Value.String() {
+		b.Error("Got ", response.Data, " when expected ", expected[0].Value)
+	}
+}
+
 func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
