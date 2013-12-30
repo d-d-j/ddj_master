@@ -78,13 +78,10 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 		return false
 	}
 
-	responses := GatherAllResponses(availableNodes, responseChan)
-	if responses == nil {
-		return false
-	}
+	responses := parseResultsToElements(GatherAllResponses(availableNodes, responseChan))
 
 	aggregator := reduce.GetAggregator(t.AggregationType)
-	responseToClient := aggregator.Aggregate(nil)
+	responseToClient := aggregator.Aggregate(responses)
 
 	// PASS REDUCED RESPONSES TO CLIENT
 	req.Response <- dto.NewRestResponse("", 0, responseToClient)
@@ -137,6 +134,26 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	}
 
 	return true
+}
+
+func parseResultsToInfos(results []*dto.Result) []*dto.Element {
+	elementSize := (&dto.Element{}).Size()
+	resultsCount := len(results)
+	elements := make([]*dto.Element, 0, resultsCount)
+
+	for i := 0; i < resultsCount; i++ {
+		length := len(results[i].Data) / elementSize
+		for j := 0; j < length; j++ {
+			var e dto.Element
+			err := e.Decode(results[i].Data[j*elementSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			elements = append(elements, &e)
+		}
+	}
+	return elements
 }
 
 func (w *TaskWorker) Flush(req dto.RestRequest) bool {

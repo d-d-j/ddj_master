@@ -38,8 +38,8 @@ func Test_ParseResultsToElements_Should_Return_One_Element_When_Called_With_One_
 	}
 	result := dto.NewResult(0, common.TASK_SELECT, int32(expected.Size()), data)
 	actual := parseResultsToElements([]*dto.Result{result})
-	if actual[0].String() != expected.String() {
-		t.Error("Expected empty slice but got ", actual)
+	for index, elem := range actual {
+		AssertEqual(expected, elem, t)
 	}
 }
 

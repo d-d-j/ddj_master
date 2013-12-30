@@ -7,7 +7,7 @@ import (
 )
 
 type Aggregator interface {
-	Aggregate([]*dto.RestResponse) dto.Dtos
+	Aggregate([]*dto.Element) dto.Dtos
 }
 
 type NonAggregation struct{}
@@ -20,23 +20,16 @@ func GetAggregator(aggregationType int32) Aggregator {
 	panic("Unknown aggregation")
 }
 
-func (this NonAggregation) Aggregate(input []*dto.RestResponse) dto.Dtos {
+func (this NonAggregation) Aggregate(input []*dto.Element) dto.Dtos {
 
 	if input == nil {
 		return nil
 	}
 
-	totalSize := 0
+	output := make([]dto.Dto, 0, len(input))
 	for _, element := range input {
 		if element != nil {
-			totalSize += len(element.Data)
-		}
-	}
-
-	output := make([]dto.Dto, 0, totalSize)
-	for _, element := range input {
-		if element != nil {
-			output = append(output, element.Data...)
+			output = append(output, element)
 		}
 	}
 
