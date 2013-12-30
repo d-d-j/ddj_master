@@ -6,20 +6,10 @@ import (
 	"testing"
 )
 
-func Test_NonAggregation_Should_Return_Nil_When_Input_Is_Nil(t *testing.T) {
-	actual := NonAggregation(nil)
-	if actual != nil {
-		t.Error("Expected nil but got ", actual)
-	}
-}
-
-func Test_NonAggregation_Should_Return_Empty_Slice_If_Input_Containse_Only_nil(t *testing.T) {
+func Test_NonAggregation_Should_Panic_When_Input_Containse_nil(t *testing.T) {
 	input := make([]*dto.Element, 5)
-
-	actual := NonAggregation(input)
-	if len(actual) != 0 && actual != nil {
-		t.Error("Expected empty slice but got ", actual)
-	}
+	defer ExpectedPanic(t)
+	NonAggregation(input)
 }
 
 func Test_NonAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
@@ -56,20 +46,10 @@ func Test_NonAggregation_Should_Return_Sorted_Elements_From_All_Input_Slices(t *
 	AssertElementsEqual(expected, actual, t)
 }
 
-func Test_MaxAggregation_Should_Return_Nil_When_Input_Is_Nil(t *testing.T) {
-	actual := MaxAggregation(nil)
-	if actual != nil {
-		t.Error("Expected nil but got ", actual)
-	}
-}
-
-func Test_MaxAggregation_Should_Return_Empty_Slice_If_Input_Containse_Only_nil(t *testing.T) {
+func Test_MaxAggregation_Should_Panic_When_Input_Containse_nil(t *testing.T) {
 	input := make([]*dto.Element, 5)
-
-	actual := MaxAggregation(input)
-	if len(actual) != 0 && actual != nil {
-		t.Error("Expected empty slice but got ", actual)
-	}
+	defer ExpectedPanic(t)
+	MaxAggregation(input)
 }
 
 func Test_MaxAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
@@ -110,20 +90,10 @@ func Test_MaxAggregation_Should_Return_Max_Element_From_All_Input_Slices(t *test
 
 }
 
-func Test_MinAggregation_Should_Return_Nil_When_Input_Is_Nil(t *testing.T) {
-	actual := MinAggregation(nil)
-	if actual != nil {
-		t.Error("Expected nil but got ", actual)
-	}
-}
-
-func Test_MinAggregation_Should_Return_Empty_Slice_If_Input_Containse_Only_nil(t *testing.T) {
+func Test_MinAggregation_Should_Panic_When_Input_Containse_nil(t *testing.T) {
 	input := make([]*dto.Element, 5)
-
-	actual := MinAggregation(input)
-	if len(actual) != 0 && actual != nil {
-		t.Error("Expected empty slice but got ", actual)
-	}
+	defer ExpectedPanic(t)
+	MinAggregation(input)
 }
 
 func Test_MinAggregation_Should_Return_Same_Slice_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
@@ -200,10 +170,12 @@ func Test_GetAggregator(t *testing.T) {
 }
 
 func Test_GetAggregator_Should_Pannic_When_Pass_Invalid_Aggregation_Type(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("Expected panic")
-		}
-	}()
+	defer ExpectedPanic(t)
 	GetAggregator(common.CONST_UNINITIALIZED) //This should call panic
+}
+
+func ExpectedPanic(t *testing.T) {
+	if r := recover(); r == nil {
+		t.Error("Expected panic")
+	}
 }
