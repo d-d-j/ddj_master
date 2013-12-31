@@ -16,6 +16,11 @@ type RestResponse struct {
 	TaskId int64
 	Data   []dto.Element
 }
+type RestForAggregation struct {
+	Error  string
+	TaskId int64
+	Data   []dto.Value
+}
 
 const (
 	NUMBER_OF_TAGS_PER_METRICS int = 4
@@ -123,19 +128,47 @@ func Select(query string, b *testing.B) RestResponse {
 	return response
 }
 
+func SelectAggr(query string, b *testing.B) RestForAggregation {
+	b.ResetTimer()
+
+	selectUrl := fmt.Sprintf("%s/%s", HOST, query)
+	req, err := http.Get(selectUrl)
+	defer req.Body.Close()
+	if err != nil {
+		b.Log("Error occurred: ", err)
+	}
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		b.Log("Error occurred: ", err)
+		b.FailNow()
+	}
+
+	b.StopTimer()
+
+	response := RestForAggregation{}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		b.Error("Error occurred: ", err)
+		b.FailNow()
+	}
+
+	return response
+}
+
 func Benchmark_Select_All_Max(b *testing.B) {
 
 	SetUp(b)
 
-	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/max", 0, INSERTED_DATA), b)
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/max", 0, INSERTED_DATA), b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
 		b.FailNow()
 	}
 
-	if response.Data[0].String() != expected[0].Value.String() {
-		b.Error("Got ", response.Data, " when expected ", expected[INSERTED_DATA].Value)
+	if response.Data[0].String() != expected[INSERTED_DATA-1].Value.String() {
+		b.Error("Got ", response.Data, " when expected ", expected[INSERTED_DATA-1].Value)
 	}
 }
 
@@ -143,7 +176,7 @@ func Benchmark_Select_All_Min(b *testing.B) {
 
 	SetUp(b)
 
-	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", 0, INSERTED_DATA), b)
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", 0, INSERTED_DATA), b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
@@ -159,7 +192,7 @@ func Benchmark_Select_Sum(b *testing.B) {
 
 	SetUp(b)
 
-	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", 0, 1), b)
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", 0, 1), b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
