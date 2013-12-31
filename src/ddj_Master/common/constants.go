@@ -17,11 +17,10 @@ const (
 
 //Aggregation Type
 const (
-	AGGREGATION_NONE    int32 = 0
-	AGGREGATION_ADD     int32 = 1
-	AGGREGATION_AVERAGE int32 = 2
-	AGGREGATION_MIN     int32 = 3
-	AGGREGATION_MAX     int32 = 4
+	AGGREGATION_NONE int32 = 0
+	AGGREGATION_ADD  int32 = 1
+	AGGREGATION_MIN  int32 = 2
+	AGGREGATION_MAX  int32 = 3
 )
 
 //NodeStatus
