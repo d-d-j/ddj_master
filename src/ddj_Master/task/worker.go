@@ -44,16 +44,11 @@ func NewTaskWorker(idx int, jobsPerWorker int32, getNodeChan chan node.GetNodeRe
 }
 
 func (w *TaskWorker) Work() {
-Loop:
 	for {
 		req := <-w.reqChan // GET REQUEST
 		log.Finest(w, "Get request to process")
 		j := w.getJob(req.Type)
-		if !j(req) {
-			w.Done()
-			continue Loop
-		}
-		log.Debug("Worker is done")
+		j(req)
 		w.Done()
 	}
 }
