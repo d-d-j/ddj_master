@@ -77,7 +77,7 @@ func Benchmark_Select_First_Value(b *testing.B) {
 
 	SetUp(b)
 
-	response := Select("/metric/0/tag/0/time/0-0/aggregation/none", b)
+	response := Select("/metric/0/tag/0/time/0-1/aggregation/none", b)
 
 	Assert(response, expected, b)
 }
