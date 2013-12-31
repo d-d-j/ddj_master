@@ -6,7 +6,6 @@ import (
 	"ddj_Master/dto"
 	"ddj_Master/node"
 	"ddj_Master/reduce"
-	"time"
 )
 
 type job func(dto.RestRequest) bool
@@ -215,12 +214,9 @@ func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.
 
 	// WAIT FOR ALL RESPONSES
 	for i := 0; i < numResponses; i++ {
-		timeout := time.After(1 * time.Second)
 		select {
 		case response := <-responseChan:
 			responses[i] = response
-		case <-timeout:
-			panic("TIMEOUT")
 		}
 
 		log.Finest("Got task result [%d/%d] - %s", i+1, numResponses, responses[i])
