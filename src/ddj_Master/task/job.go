@@ -127,6 +127,7 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	if responses == nil {
 		return false
 	}
+	close(responseChan)
 
 	// TODO: SET NODE INFO IN NODES
 	for i := 0; i < len(responses); i++ {
@@ -175,6 +176,7 @@ func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 	if responses == nil {
 		return false
 	}
+	close(responseChan)
 
 	for i := 0; i < len(responses); i++ {
 		log.Finest(w, " get flush response %v", responses)
