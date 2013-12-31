@@ -26,12 +26,12 @@ func (w *TaskWorker) getJob(taskType int32) job {
 }
 
 func (w *TaskWorker) Insert(req dto.RestRequest) bool {
-	log.Finest("Worker is processing [insert] task")
+	log.Finest(w, " is processing [insert] task")
 
 	// GET NODE FOR INSERT
 	insertNode, err := w.getNodeForInsert()
 	if err != nil {
-		log.Warn("Problem with getting node to insert, ", err)
+		log.Warn(w, " has problem with getting node to insert, ", err)
 		req.Response <- dto.NewRestResponse("No node connected", common.TASK_UNINITIALIZED, nil)
 		return false
 	}
@@ -39,19 +39,19 @@ func (w *TaskWorker) Insert(req dto.RestRequest) bool {
 	// CREATE TASK
 	id := w.GetId()
 	t := dto.NewTask(id, req, nil)
-	log.Fine("Created new %s", t)
+	log.Fine(w, " created new %s", t)
 	TaskManager.AddChan <- t // add task to dictionary
 
 	// CREATE MESSAGE
 	message, err := t.MakeRequest(insertNode.PreferredDeviceId).Encode()
 	if err != nil {
-		log.Error("Error while encoding request - ", err)
+		log.Error(w, " encourage error while encoding request - ", err)
 		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
 		return false
 	}
 
 	// SEND MESSAGE
-	log.Finest("Sending message to node #%d", id, insertNode.Id)
+	log.Finest(w, " is sending message to node #%d", id, insertNode.Id)
 	insertNode.Incoming <- message
 
 	// PASS RESPONSE TO CLIENT
@@ -65,7 +65,7 @@ func (w *TaskWorker) Insert(req dto.RestRequest) bool {
 }
 
 func (w *TaskWorker) Select(req dto.RestRequest) bool {
-	log.Debug("Worker is processing [select] task")
+	log.Debug(w, " is processing [select] task")
 
 	availableNodes := node.NodeManager.GetNodesLen()
 	t, responseChan := CreateTaskForRequest(req, availableNodes, w.GetId())
@@ -79,10 +79,10 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	}
 
 	responses := parseResultsToElements(GatherAllResponses(availableNodes, responseChan))
-	log.Finest("Response from node ", responses)
+	log.Finest(w, " get response from nodes ", responses)
 	aggregate := reduce.GetAggregator(t.AggregationType)
 	responseToClient := aggregate(responses)
-	log.Finest("Response after aggregation ", responseToClient)
+	log.Finest(w, " Response after aggregation ", responseToClient)
 	// PASS REDUCED RESPONSES TO CLIENT
 	req.Response <- dto.NewRestResponse("", 0, responseToClient)
 	return true
@@ -109,7 +109,7 @@ func parseResultsToElements(results []*dto.Result) []*dto.Element {
 }
 
 func (w *TaskWorker) Info(req dto.RestRequest) bool {
-	log.Debug("Worker is processing [info] task")
+	log.Debug(w, " is processing [info] task")
 	// TODO: Handle errors better
 
 	availableNodes := node.NodeManager.GetNodesLen()
@@ -130,7 +130,7 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 
 	// TODO: SET NODE INFO IN NODES
 	for i := 0; i < len(responses); i++ {
-		log.Finest("Get info %v", responses)
+		log.Finest(w, "Get info %v", responses)
 	}
 
 	return true
@@ -158,7 +158,7 @@ func parseResultsToInfos(results []*dto.Result) []*dto.MemoryInfo {
 }
 
 func (w *TaskWorker) Flush(req dto.RestRequest) bool {
-	log.Debug("Worker is processing flush task")
+	log.Debug(w, " is processing flush task")
 
 	availableNodes := node.NodeManager.GetNodesLen()
 	t, responseChan := CreateTaskForRequest(req, availableNodes, w.GetId())
@@ -177,7 +177,7 @@ func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 	}
 
 	for i := 0; i < len(responses); i++ {
-		log.Finest("Get flush response %v", responses)
+		log.Finest(w, " get flush response %v", responses)
 	}
 
 	req.Response <- dto.NewRestResponse("", responses[0].TaskId, []dto.Dto{})

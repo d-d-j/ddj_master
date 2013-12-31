@@ -84,7 +84,7 @@ func createMessage(req dto.RestRequest, t *dto.Task, deviceId int32) []byte {
 
 //Interface implementation
 func (w *TaskWorker) String() string {
-	return fmt.Sprintf("Worker #%d pending:%d", w.index, w.pending)
+	return fmt.Sprintf("Worker #%d (pending:%d)", w.index, w.pending)
 }
 
 func (w *TaskWorker) Id() int { return w.index }
