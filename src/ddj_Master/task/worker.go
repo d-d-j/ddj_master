@@ -47,6 +47,7 @@ func (w *TaskWorker) Work() {
 Loop:
 	for {
 		req := <-w.reqChan // GET REQUEST
+		log.Finest(w, "Get request to process")
 		j := w.getJob(req.Type)
 		if !j(req) {
 			w.Done()
@@ -65,7 +66,11 @@ func (w *TaskWorker) getNodeForInsert() (*node.Node, error) {
 
 	nodeChan := make(chan *node.Node)
 	w.getNodeChan <- node.GetNodeRequest{NodeId: nodeId, BackChan: nodeChan}
-	return <-nodeChan, nil
+	node := <-nodeChan
+	if node == nil {
+		return nil, fmt.Errorf("Node does not existing")
+	}
+	return node, nil
 }
 
 func createMessage(req dto.RestRequest, t *dto.Task, deviceId int32) []byte {
