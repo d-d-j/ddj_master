@@ -117,7 +117,6 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	t, responseChan := CreateTaskForRequest(req, availableNodes, w.GetId())
 	if availableNodes == 0 {
 		log.Error("No nodes connected")
-		req.Response <- dto.NewRestResponse("No nodes connected", 0, nil)
 		return false
 	}
 	if BroadcastTaskToAllNodes(t, req) == -1 {
@@ -131,7 +130,7 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 
 	// TODO: SET NODE INFO IN NODES
 	for i := 0; i < len(responses); i++ {
-		log.Finest(w, "Get info %v", responses)
+		log.Finest(w, "Get info %v", responses[i])
 	}
 
 	return true
@@ -224,7 +223,7 @@ func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.
 			panic("TIMEOUT")
 		}
 
-		log.Finest("Got task result [%d/%d] - %s", i, numResponses, responses[i])
+		log.Finest("Got task result [%d/%d] - %s", i+1, numResponses, responses[i])
 	}
 
 	// REMOVE TASK

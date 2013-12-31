@@ -91,10 +91,16 @@ func (w *TaskWorker) Id() int { return w.index }
 
 func (w *TaskWorker) IncrementPending() { w.pending++ }
 
-func (w *TaskWorker) DecrementPending() { w.pending-- }
+func (w *TaskWorker) DecrementPending() {
+	log.Finest(w, "Pending decrement")
+	w.pending--
+}
 
 func (w *TaskWorker) RequestChan() chan dto.RestRequest { return w.reqChan }
 
-func (w *TaskWorker) Done() { w.done <- w }
+func (w *TaskWorker) Done() {
+	log.Finest(w, "Worker is done")
+	w.done <- w
+}
 
 func (w *TaskWorker) GetId() int64 { return w.idGenerator.GetId() }

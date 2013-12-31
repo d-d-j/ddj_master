@@ -36,7 +36,6 @@ func NewTask(id int64, request RestRequest, resultChan chan *Result) *Task {
 		} else {
 			panic("Type mismatch. TaskType select can be used only with Query data")
 		}
-
 	}
 
 	return t
