@@ -16,7 +16,6 @@ type TaskWorker struct {
 	index       int
 	idGenerator common.Int64Generator
 	balancer    *node.LoadBalancer
-	taskManager *Manager
 }
 
 type Worker interface {
