@@ -41,16 +41,16 @@ func (m *Manager) Manage() {
 	for {
 		select {
 		case get := <-m.GetChan:
-			if _, ok := m.nodes[get.NodeId]; ok {
-				get.BackChan <- m.nodes[get.NodeId]
+			if node, ok := m.nodes[get.NodeId]; ok {
+				get.BackChan <- node
 			} else {
-				get.BackChan <- nil
+				panic("Task not found!")
 			}
-		case add := <-m.AddChan:
-			m.nodes[add.Id] = add
-		case del := <-m.DelChan:
-			delete(m.nodes, del)
-			log.Info("Node manager deleted Node #%d from nodes", del)
+		case newNode := <-m.AddChan:
+			m.nodes[newNode.Id] = newNode
+		case closedNodeId := <-m.DelChan:
+			delete(m.nodes, closedNodeId)
+			log.Info("Node manager deleted Node #%d from nodes", closedNodeId)
 		case <-m.QuitChan:
 			log.Info("Node manager stopped managing")
 			return

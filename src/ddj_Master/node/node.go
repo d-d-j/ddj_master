@@ -107,6 +107,7 @@ func (n *Node) readerRoutine() {
 		taskChan := make(chan *dto.Task)
 		n.GetTaskChannel <- dto.GetTaskRequest{TaskId: r.TaskId, BackChan: taskChan}
 		t := <-taskChan
+		log.Fine("Node is sending data to worker")
 		t.ResultChan <- r
 	}
 
