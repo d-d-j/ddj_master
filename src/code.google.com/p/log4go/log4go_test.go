@@ -89,7 +89,7 @@ var logRecordWriteTests = []struct {
 			Message: "message",
 			Created: now,
 		},
-		Console: "[\x1b[90m23:31:30\x1b[0m] [\x1b[31mCRIT\x1b[0m] (\x1b[32msource\x1b[0m) message\n",
+		Console: "[\x1b[90m23:31:30\x1b[0m] [\x1b[31mCRIT\x1b[0m] (\x1b[32msource\x1b[0m) \x1b[31mmessage\x1b[0m\n",
 	},
 }
 
