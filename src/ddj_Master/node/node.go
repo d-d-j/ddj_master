@@ -104,11 +104,20 @@ func (n *Node) readerRoutine() {
 			n.read(r.Data)
 		}
 
-		taskChan := make(chan *dto.Task)
-		n.GetTaskChannel <- dto.GetTaskRequest{TaskId: r.TaskId, BackChan: taskChan}
-		t := <-taskChan
-		log.Fine("Node is sending data to worker")
-		t.ResultChan <- r
+		go func() {
+			taskChan := make(chan *dto.Task)
+			n.GetTaskChannel <- dto.GetTaskRequest{TaskId: r.TaskId, BackChan: taskChan}
+			t := <-taskChan
+			if t == nil {
+				log.Error(`Task %d does not exist.
+				Some data could be lost.
+				Omitting response from node %d because task %d is nil.
+				Can't send data to worker`, r.TaskId, n.Id, r.TaskId)
+				return
+			}
+			log.Fine("Node is sending data to worker")
+			t.ResultChan <- r
+		}()
 	}
 
 	log.Info("Node reader stopped for Node %s", n.Id)

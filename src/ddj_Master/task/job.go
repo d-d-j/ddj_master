@@ -79,7 +79,7 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	}
 
 	responses := parseResultsToElements(GatherAllResponses(availableNodes, responseChan))
-	close(responseChan)
+	TaskManager.DelChan <- t.Id
 	log.Finest(w, " get response from nodes ", responses)
 	aggregate := reduce.GetAggregator(t.AggregationType)
 	responseToClient := aggregate(responses)
@@ -127,7 +127,7 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	if responses == nil {
 		return false
 	}
-	close(responseChan)
+	TaskManager.DelChan <- t.Id
 
 	// TODO: SET NODE INFO IN NODES
 	for i := 0; i < len(responses); i++ {
@@ -176,7 +176,7 @@ func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 	if responses == nil {
 		return false
 	}
-	close(responseChan)
+	TaskManager.DelChan <- t.Id
 
 	for i := 0; i < len(responses); i++ {
 		log.Finest(w, " get flush response %v", responses)

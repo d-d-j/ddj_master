@@ -44,7 +44,7 @@ func (m *Manager) Manage() {
 			if node, ok := m.nodes[get.NodeId]; ok {
 				get.BackChan <- node
 			} else {
-				panic("Task not found!")
+				panic("Node not found")
 			}
 		case newNode := <-m.AddChan:
 			m.nodes[newNode.Id] = newNode
