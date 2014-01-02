@@ -127,9 +127,11 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	}
 	TaskManager.DelChan <- t.Id
 
+
+	node.NodeManager.InfoChan <- responses
+
 	// TODO: SET NODE INFO IN NODES
 	for i := 0; i < len(responses); i++ {
-
 		log.Finest(w, "Get info %v", responses[i])
 	}
 

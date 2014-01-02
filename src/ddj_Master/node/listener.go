@@ -10,10 +10,9 @@ import (
 type Listener struct {
 	netListen    net.Listener
 	idGenerator  common.Int32Generator
-	balancerChan chan<- []dto.Info
 }
 
-func NewListener(service string, nodeInfoChannel chan<- []dto.Info) *Listener {
+func NewListener(service string) *Listener {
 	_, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
 		log.Critical("Error: Could not resolve address")
@@ -28,7 +27,6 @@ func NewListener(service string, nodeInfoChannel chan<- []dto.Info) *Listener {
 	l := new(Listener)
 	l.netListen = netListen
 	l.idGenerator = common.NewNodeIdGenerator()
-	l.balancerChan = nodeInfoChannel
 	return l
 }
 
@@ -42,7 +40,7 @@ func (l *Listener) WaitForNodes(getTaskChannel chan dto.GetTaskRequest) {
 			log.Info("Accept node: ", connection.RemoteAddr())
 			newNode := NewNode(l.idGenerator.GetId(), connection, getTaskChannel)
 			NodeManager.AddChan <- newNode
-			go newNode.StartWork(l.balancerChan)
+			go newNode.StartWork(NodeManager.InfoChan)
 		}
 	}
 }

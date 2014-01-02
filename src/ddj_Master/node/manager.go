@@ -1,6 +1,7 @@
 package node
 
 import log "code.google.com/p/log4go"
+import "ddj_Master/dto"
 
 // TODO: get rid of this global variable
 var NodeManager = NewManager()
@@ -16,6 +17,7 @@ type Manager struct {
 	GetChan  chan GetNodeRequest
 	DelChan  chan int32
 	QuitChan chan bool
+	InfoChan chan []*dto.Info
 }
 
 func NewManager() *Manager {
@@ -25,6 +27,7 @@ func NewManager() *Manager {
 	m.GetChan = make(chan GetNodeRequest)
 	m.DelChan = make(chan int32)
 	m.QuitChan = make(chan bool)
+	m.InfoChan = make(chan []*dto.Info)
 	return m
 }
 

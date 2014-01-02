@@ -40,9 +40,8 @@ func main() {
 	// Initialize node manager
 	log.Info("Initialize node manager")
 	go node.NodeManager.Manage()
-	infoChan := make(chan []dto.Info)
 	nodeBal := node.NewLoadBalancer(cfg.Balancer.Timeout, node.NodeManager.GetNodes())
-	go nodeBal.Balance(infoChan)
+	go nodeBal.Balance(node.NodeManager.InfoChan)
 
 	// Initialize reduce factory
 	log.Info("Initialize reduce factory")
@@ -58,7 +57,7 @@ func main() {
 	log.Info("Initialize node listener")
 	service := fmt.Sprintf(":%d", cfg.Ports.NodeCommunication)
 	log.Debug(service)
-	list := node.NewListener(service, infoChan)
+	list := node.NewListener(service)
 	go list.WaitForNodes(task.TaskManager.GetChan)
 	defer list.Close() // fire netListen.Close() when program ends
 

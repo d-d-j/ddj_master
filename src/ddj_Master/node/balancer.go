@@ -25,18 +25,19 @@ func (this *LoadBalancer) reset() {
 	this.CurrentInsertNodeId = common.CONST_UNINITIALIZED
 }
 
-func (this *LoadBalancer) Balance(info <-chan []dto.Info) {
+func (this *LoadBalancer) Balance(info <-chan []*dto.Info) {
 
 	log.Info("Node manager balancer started")
 	for {
 		select {
 		case nodeInfo := <-info:
-			this.update(&nodeInfo)
+			log.Debug("Balancer %v", nodeInfo)
+			this.update(nodeInfo)
 		}
 	}
 }
 
-func (this *LoadBalancer) update(newInfo *[]dto.Info) {
+func (this *LoadBalancer) update(newInfo []*dto.Info) {
 	if newInfo == nil {
 		this.reset()
 		return
