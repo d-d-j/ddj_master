@@ -7,6 +7,7 @@ import (
 
 type Result struct {
 	Header
+	NodeId int32
 	Data []byte
 }
 
