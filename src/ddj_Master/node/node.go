@@ -18,7 +18,6 @@ type Node struct {
 	Id                int32
 	Status            int32
 	GpuIds            []int32
-	Stats             dto.Info
 	stop              chan bool
 	GetTaskChannel    chan dto.GetTaskRequest
 	PreferredDeviceId int32
