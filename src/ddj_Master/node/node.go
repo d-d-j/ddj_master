@@ -85,7 +85,6 @@ func (n *Node) waitForLogin() error {
 
 func (n *Node) readerRoutine() {
 
-
 	buffer := make([]byte, (&dto.Header{}).Size())
 	for n.read(buffer) {
 		log.Debug("Node reader received data from #%d", n.Id)

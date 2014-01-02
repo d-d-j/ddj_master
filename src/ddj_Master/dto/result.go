@@ -11,8 +11,9 @@ type Result struct {
 	Data []byte
 }
 
-func NewResult(id int64, ttype int32, size int32, data []byte) *Result {
+func NewResult(id int64, nodeId int32, ttype int32, size int32, data []byte) *Result {
 	r := new(Result)
+	r.NodeId = nodeId
 	r.Header = Header{id, ttype, size, common.CONST_UNINITIALIZED}
 	r.Data = data
 	return r
