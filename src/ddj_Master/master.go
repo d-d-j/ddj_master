@@ -3,12 +3,13 @@ package main
 import (
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
+	"ddj_Master/dto"
 	"ddj_Master/node"
+	"ddj_Master/reduce"
 	"ddj_Master/restApi"
 	"ddj_Master/task"
 	"fmt"
 	"runtime"
-	"ddj_Master/dto"
 )
 
 func loadMasterConfiguration() *common.Config {
@@ -42,6 +43,10 @@ func main() {
 	infoChan := make(chan []dto.Info)
 	nodeBal := node.NewLoadBalancer(cfg.Balancer.Timeout, node.NodeManager.GetNodes())
 	go nodeBal.Balance(infoChan)
+
+	// Initialize reduce factory
+	log.Info("Initialize reduce factory")
+	reduce.Initialize()
 
 	// Initialize task manager (balancer)
 	log.Info("Initialize task manager")

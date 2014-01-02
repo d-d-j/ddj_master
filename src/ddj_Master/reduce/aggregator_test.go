@@ -6,6 +6,15 @@ import (
 	"testing"
 )
 
+func Test_Initialize(t *testing.T) {
+	expected := 4
+	Initialize()
+	actual := len(aggregations)
+	if actual != expected {
+		t.Error("Expected: ", expected, " but got: ", actual)
+	}
+}
+
 func Test_NonAggregation_Should_Return_Empty_Slice_When_Input_Is_Nil_Or_Empty(t *testing.T) {
 	actual := NonAggregation(nil)
 	if len(actual) != 0 {

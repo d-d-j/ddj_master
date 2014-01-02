@@ -8,18 +8,23 @@ import (
 
 type Aggregator func([]*dto.Element) dto.Dtos
 
-func GetAggregator(aggregationType int32) Aggregator {
-	switch aggregationType {
-	case common.AGGREGATION_NONE:
-		return NonAggregation
-	case common.AGGREGATION_MAX:
-		return MaxAggregation
-	case common.AGGREGATION_MIN:
-		return MinAggregation
-	case common.AGGREGATION_ADD:
-		return AddAggregation
+var aggregations map[int32]Aggregator
+
+func Initialize() {
+	aggregations = map[int32]Aggregator{
+		common.AGGREGATION_NONE: NonAggregation,
+		common.AGGREGATION_MAX:  MaxAggregation,
+		common.AGGREGATION_MIN:  MinAggregation,
+		common.AGGREGATION_ADD:  AddAggregation,
 	}
-	panic("Unknown aggregation")
+}
+
+func GetAggregator(aggregationType int32) Aggregator {
+	aggregator := aggregations[aggregationType]
+	if aggregator == nil {
+		panic("Unknown aggregation.")
+	}
+	return aggregator
 }
 
 func NonAggregation(input []*dto.Element) dto.Dtos {
