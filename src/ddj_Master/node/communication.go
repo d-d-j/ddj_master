@@ -29,8 +29,8 @@ func makeCommunication(conn net.Conn) Communication {
 // Defines a read function for a Node, reading from the connection into
 // a buffer passed in. Returns true if read was successful, false otherwise
 func (c *Communication) read(buffer []byte) bool {
-	allBytesToRead := len(buffer);
-	bytesAlreadyRead := 0;
+	allBytesToRead := len(buffer)
+	bytesAlreadyRead := 0
 	for allBytesToRead != 0 {
 		bytesRead, error := c.connection.Read(buffer[bytesAlreadyRead:])
 		if error != nil {
@@ -42,7 +42,7 @@ func (c *Communication) read(buffer []byte) bool {
 		bytesAlreadyRead += bytesRead
 		log.Debug("Communication --> Read %d from %d bytes (%d bytes left)", bytesAlreadyRead, len(buffer), allBytesToRead)
 	}
-	log.Fine("Communication --> Read: %d", buffer)
+	log.Finest("Communication --> Read: %d", buffer)
 	return true
 }
 

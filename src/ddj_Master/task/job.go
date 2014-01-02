@@ -80,10 +80,8 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 
 	responses := parseResultsToElements(GatherAllResponses(availableNodes, responseChan))
 	TaskManager.DelChan <- t.Id
-	log.Finest(w, " get response from nodes ", responses)
 	aggregate := reduce.GetAggregator(t.AggregationType)
 	responseToClient := aggregate(responses)
-	log.Finest(w, " Response after aggregation ", responseToClient)
 
 	req.Response <- dto.NewRestResponse("", 0, responseToClient)
 	return true
@@ -94,11 +92,11 @@ func parseResultsToElements(results []*dto.Result) []*dto.Element {
 	resultsCount := len(results)
 	elements := make([]*dto.Element, 0, resultsCount)
 
-	for i := 0; i < resultsCount; i++ {
-		length := len(results[i].Data) / elementSize
+	for _, result := range results {
+		length := len(result.Data) / elementSize
 		for j := 0; j < length; j++ {
 			var e dto.Element
-			err := e.Decode(results[i].Data[j*elementSize:])
+			err := e.Decode(result.Data[j*elementSize:])
 			if err != nil {
 				log.Error("Problem with parsing data", err)
 				continue
@@ -224,9 +222,6 @@ func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.
 
 		log.Finest("Got task result [%d/%d] - %s", i+1, numResponses, responses[i])
 	}
-
-	// REMOVE TASK
-	//TaskManager.DelChan <- t.Id
 
 	return responses
 }
