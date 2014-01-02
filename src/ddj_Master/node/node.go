@@ -8,6 +8,7 @@ import (
 	"ddj_Master/dto"
 	"encoding/binary"
 	"net"
+	"time"
 )
 
 // Defines a Node with Id, many GpuIds, a connection object, and
@@ -110,14 +111,21 @@ func (n *Node) readerRoutine() {
 			t := <-taskChan
 			if t == nil {
 				log.Error(`Task %d does not exist.
-				Some data could be lost.
-				Omitting response from node %d because task %d is nil.
-				Can't send data to worker`, r.TaskId, n.Id, r.TaskId)
+					Some data could be lost.
+					Omitting response from node %d because task %d is nil.
+					Can't send data to worker`, r.TaskId, n.Id, r.TaskId)
 				return
 			}
-			log.Fine("Node is sending data to worker")
-			t.ResultChan <- r
+			log.Fine("Node is sending data to worker (task: ", t, "\"")
+			timeout := time.After(1 * time.Second)
+			select {
+			case t.ResultChan <- r:
+				log.Fine("Task result sent to worker SUCCESS (task: ", t, "\"")
+			case <-timeout:
+				panic("TIMEOUT - sending task result to worker")
+			}
 		}()
+
 	}
 
 	log.Info("Node reader stopped for Node %s", n.Id)
