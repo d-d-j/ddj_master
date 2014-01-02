@@ -111,11 +111,11 @@ func (n *Node) readerRoutine() {
 		n.GetTaskChannel <- dto.GetTaskRequest{TaskId: r.TaskId, BackChan: taskChan}
 		t := <-taskChan
 		if t == nil {
-			log.Error(`Task %d does not exist.
+			log.Critical(`Task %d does not exist.
 				Some data could be lost.
 				Omitting response from node %d because task %d is nil.
 				Can't send data to worker`, r.TaskId, n.Id, r.TaskId)
-			return
+			panic("Task not exist")
 		}
 		timeout := time.After(1 * time.Second)
 		select {
