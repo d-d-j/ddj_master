@@ -32,7 +32,6 @@ func (c *Communication) read(buffer []byte) bool {
 	allBytesToRead := len(buffer);
 	bytesAlreadyRead := 0;
 	for allBytesToRead != 0 {
-
 		bytesRead, error := c.connection.Read(buffer[bytesAlreadyRead:])
 		if error != nil {
 			c.connection.Close()
@@ -41,7 +40,7 @@ func (c *Communication) read(buffer []byte) bool {
 		}
 		allBytesToRead -= bytesRead
 		bytesAlreadyRead += bytesRead
-		log.Debug("Communication --> Read %d from %d bytes", bytesAlreadyRead, len(buffer))
+		log.Debug("Communication --> Read %d from %d bytes (%d bytes left)", bytesAlreadyRead, len(buffer), allBytesToRead)
 	}
 	log.Fine("Communication --> Read: %d", buffer)
 	return true

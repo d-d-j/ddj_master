@@ -100,31 +100,30 @@ func (n *Node) readerRoutine() {
 		if r.DataSize == 0 {
 			r.Data = make([]byte, 0)
 		} else {
-			log.Finest("Reading response data %d bytes", r.DataSize)
+			log.Finest("Reading response data %d bytes for task %d", r.DataSize, r.TaskId)
 			r.Data = make([]byte, r.DataSize)
 			n.read(r.Data)
+			log.Finest("Response data of %d bytes read SUCCESS", r.DataSize)
 		}
 
-		go func() {
-			taskChan := make(chan *dto.Task)
-			n.GetTaskChannel <- dto.GetTaskRequest{TaskId: r.TaskId, BackChan: taskChan}
-			t := <-taskChan
-			if t == nil {
-				log.Error(`Task %d does not exist.
-					Some data could be lost.
-					Omitting response from node %d because task %d is nil.
-					Can't send data to worker`, r.TaskId, n.Id, r.TaskId)
-				return
-			}
-			log.Fine("Node is sending data to worker (task: ", t, "\"")
-			timeout := time.After(1 * time.Second)
-			select {
-			case t.ResultChan <- r:
-				log.Fine("Task result sent to worker SUCCESS (task: ", t, "\"")
-			case <-timeout:
-				panic("TIMEOUT - sending task result to worker")
-			}
-		}()
+		log.Fine("Node is sending data to worker (taskId: %d)", r.TaskId)
+		taskChan := make(chan *dto.Task)
+		n.GetTaskChannel <- dto.GetTaskRequest{TaskId: r.TaskId, BackChan: taskChan}
+		t := <-taskChan
+		if t == nil {
+			log.Error(`Task %d does not exist.
+				Some data could be lost.
+				Omitting response from node %d because task %d is nil.
+				Can't send data to worker`, r.TaskId, n.Id, r.TaskId)
+			return
+		}
+		timeout := time.After(1 * time.Second)
+		select {
+		case t.ResultChan <- r:
+			log.Fine("Task result sent to worker SUCCESS (task: ", t, "\"")
+		case <-timeout:
+			panic("TIMEOUT - sending task result to worker")
+		}
 
 	}
 
