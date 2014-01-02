@@ -19,7 +19,7 @@ func (w *TaskWorker) getJob(taskType int32) job {
 	case common.TASK_INFO:
 		return w.Info
 	case common.TASK_FLUSH:
-		return w.Info
+		return w.Flush
 	}
 	log.Error("Worker can't handle task type ", taskType)
 	return func(req dto.RestRequest) bool { return false }
@@ -170,17 +170,12 @@ func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 		return false
 	}
 
-	responses := GatherAllResponses(availableNodes, responseChan)
-	if responses == nil {
-		return false
-	}
+	GatherAllResponses(availableNodes, responseChan)
+
 	TaskManager.DelChan <- t.Id
 
-	for i := 0; i < len(responses); i++ {
-		log.Finest(w, " get flush response %v", responses)
-	}
-
-	req.Response <- dto.NewRestResponse("", responses[0].TaskId, []dto.Dto{})
+	log.Finest("Flush is done, sending response to client")
+	req.Response <- dto.NewRestResponse("", t.Id, nil)
 
 	return true
 }

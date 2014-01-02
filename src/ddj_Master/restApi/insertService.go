@@ -49,7 +49,7 @@ func (serv InsertService) InsertData(PostData dto.Element) {
 	responseChan := make(chan *dto.RestResponse)
 	restRequestChannel <- dto.RestRequest{Type: common.TASK_INSERT, Data: &PostData, Response: responseChan}
 	response := <-responseChan
-	log.Finest("Result: ", response)
+	log.Finest("Insert Result: ", response)
 	serv.setInsertResponse(response)
 }
 
