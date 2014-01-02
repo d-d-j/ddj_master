@@ -66,8 +66,10 @@ func SetUp(b *testing.B) {
 			}
 			response.Body.Close()
 		}
+
 		insert_completed = true
 		b.Log("Inserted ", INSERTED_DATA, " elements")
+		Flush(b)
 	}
 }
 
@@ -98,6 +100,24 @@ func Benchmark_Select_All(b *testing.B) {
 	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/none", 0, INSERTED_DATA), b)
 
 	Assert(response, expected[:INSERTED_DATA], b)
+}
+
+func Flush(b *testing.B) {
+	client := &http.Client{}
+	flushUrl := fmt.Sprintf("%s/%s", HOST, "flush")
+	req, err := http.NewRequest("POST", flushUrl, strings.NewReader(""))
+	if err != nil {
+		b.Log("Error occurred: ", err)
+		b.FailNow()
+	}
+	response, err := client.Do(req)
+
+	if response.StatusCode != 202 {
+		b.Log("Status Code:", response.StatusCode, err)
+		b.FailNow()
+	}
+	response.Body.Close()
+	b.Log("Flushed buffers")
 }
 
 func Select(query string, b *testing.B) RestResponse {
