@@ -31,7 +31,7 @@ func (this *LoadBalancer) Balance(info <-chan []*dto.Info) {
 	for {
 		select {
 		case nodeInfo := <-info:
-			log.Debug("Balancer %v", nodeInfo)
+			log.Debug("Balancer got nodeInfos: %v", nodeInfo)
 			this.update(nodeInfo)
 		}
 	}
