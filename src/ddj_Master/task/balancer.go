@@ -20,8 +20,9 @@ type Balancer struct {
 }
 
 func NewBalancer(workersCount int32, jobForWorkerCount int32, loadBal *node.LoadBalancer) *Balancer {
+	log.Info("Creating new task balancer with %d workers and %d pending jobs per each", workersCount, jobForWorkerCount)
 	b := new(Balancer)
-	done := make(chan Worker)
+	done := make(chan Worker, workersCount+1)
 	p := NewWorkersPool(workersCount, jobForWorkerCount, done, loadBal)
 	b.pool = p
 	b.done = done
@@ -33,14 +34,17 @@ func (b *Balancer) Balance(work <-chan dto.RestRequest) {
 	index := 0
 	for {
 		select {
-		case req := <-work:
-			b.dispatch(req, index)
-			index = (index + 1) % b.pool.Len()
 		case w := <-b.done:
 			b.completed(w)
-		case <-time.After(5 * time.Second):
-			b.dispatch(dto.RestRequest{Type: common.TASK_INFO, Data: new(dto.EmptyElement), Response: nil}, index)
-			index = (index + 1) % b.pool.Len()
+		default:
+			select {
+			case req := <-work:
+				b.dispatch(req, index)
+				index = (index + 1) % b.pool.Len()
+			case <-time.After(5 * time.Second):
+				b.dispatch(dto.RestRequest{Type: common.TASK_INFO, Data: new(dto.EmptyElement), Response: nil}, index)
+				index = (index + 1) % b.pool.Len()
+			}
 		}
 	}
 }
