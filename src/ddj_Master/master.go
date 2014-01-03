@@ -3,7 +3,6 @@ package main
 import (
 	log "code.google.com/p/log4go"
 	"ddj_Master/common"
-	"ddj_Master/dto"
 	"ddj_Master/node"
 	"ddj_Master/reduce"
 	"ddj_Master/restApi"
