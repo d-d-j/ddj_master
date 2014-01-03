@@ -37,8 +37,8 @@ func (this *LoadBalancer) Balance(info <-chan []*dto.Info) {
 	}
 }
 
-func (this *LoadBalancer) update(newInfo []*dto.Info) {
-	if newInfo == nil {
+func (this *LoadBalancer) update(newInfos []*dto.Info) {
+	if newInfos == nil {
 		this.reset()
 		return
 	}
@@ -52,26 +52,19 @@ func (this *LoadBalancer) update(newInfo []*dto.Info) {
 		return
 	}
 
-	const (
-		CurrentNodePenalty = 10
-	)
 
+	bestNodeId := this.chooseTheBestNode(newInfos)
+
+	this.CurrentInsertNodeId = int32(bestNodeId)
+}
+
+func (this *LoadBalancer) chooseTheBestNode(nodeInfos []*dto.Info) int {
 	bestNodeId := common.CONST_UNINITIALIZED
 	bestRank := common.CONST_INT_MIN_VALUE
 
-	//TODO: Calculate full rank when data will be available
-	//Now we have no info about card load, ram, proc etc
 	for id, node := range this.nodes {
-		rank := 0
-		if this.CurrentInsertNodeId == node.Id {
-			rank -= CurrentNodePenalty
-			for gpuId := range node.GpuIds {
-				if node.PreferredDeviceId != int32(gpuId) {
-					node.PreferredDeviceId = int32(gpuId)
-					break
-				}
-			}
-		}
+
+		rank := this.calculateNodeRank(node)
 
 		if rank > bestRank {
 			bestNodeId = int(id)
@@ -80,7 +73,24 @@ func (this *LoadBalancer) update(newInfo []*dto.Info) {
 		}
 	}
 
-	this.CurrentInsertNodeId = int32(bestNodeId)
+	return bestNodeId
+}
+
+func (this *LoadBalancer) calculateNodeRank(node *Node) int {
+	rank := 0
+	const (
+		CurrentNodePenalty = 10
+	)
+	if this.CurrentInsertNodeId == node.Id {
+		rank -= CurrentNodePenalty
+		for gpuId := range node.GpuIds {
+			if node.PreferredDeviceId != int32(gpuId) {
+				node.PreferredDeviceId = int32(gpuId)
+				break
+			}
+		}
+	}
+	return rank
 }
 
 func (this *LoadBalancer) IsUnitialized() bool {
