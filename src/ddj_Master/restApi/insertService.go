@@ -36,10 +36,15 @@ func (serv InsertService) setInsertResponse(response *dto.RestResponse) {
 			[]byte("The server is currently unable to handle the request"))
 	} else if response.TaskId == 0 {
 		log.Error("Return HTTP 500")
-		serv.ResponseBuilder().SetResponseCode(500).WriteAndOveride([]byte("Server error - sorry:("))
+		serv.ResponseBuilder().SetResponseCode(500).WriteAndOveride(
+			[]byte("Server error - sorry:("))
+	} else if response.Error != "" {
+		serv.ResponseBuilder().SetResponseCode(500).WriteAndOveride(
+			[]byte(fmt.Sprintf("TaskId: %d, Error: %s", response.TaskId, response.Error)))
 	} else {
 		log.Finest("Return URI to the result")
-		serv.ResponseBuilder().SetResponseCode(202).WriteAndOveride([]byte(fmt.Sprintf("/data/task/%d/status", response.TaskId)))
+		serv.ResponseBuilder().SetResponseCode(202).WriteAndOveride(
+			[]byte(fmt.Sprintf("/data/task/%d/status", response.TaskId)))
 	}
 }
 

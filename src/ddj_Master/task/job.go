@@ -46,20 +46,17 @@ func (w *TaskWorker) Insert(req dto.RestRequest) bool {
 	message, err := t.MakeRequest(insertNode.PreferredDeviceId).Encode()
 	if err != nil {
 		log.Error(w, " encourage error while encoding request - ", err)
-		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
+		req.Response <- dto.NewRestResponse("Internal server error", t.Id, nil)
 		return false
 	}
 
 	// SEND MESSAGE
 	log.Finest(w, " is sending message to node #%d", id, insertNode.Id)
 	insertNode.Incoming <- message
+	TaskManager.DelChan <- t.Id
 
 	// PASS RESPONSE TO CLIENT
 	req.Response <- dto.NewRestResponse("", id, nil)
-
-	// TODO: Change this to set task status or sth, then wait for response about insert from node
-	// then set status again to success
-	//TaskManager.DelChan <- t.Id
 
 	return true
 }
@@ -71,10 +68,11 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	t, responseChan := CreateTaskForRequest(req, availableNodes, w.GetId())
 	if availableNodes == 0 {
 		log.Error("No nodes connected")
-		req.Response <- dto.NewRestResponse("No nodes connected", 0, nil)
+		req.Response <- dto.NewRestResponse("No nodes connected", t.Id, nil)
 		return false
 	}
-	if BroadcastTaskToAllNodes(t, req) == -1 {
+	if !BroadcastTaskToAllNodes(t) {
+		req.Response <- dto.NewRestResponse("Internal server error", t.Id, nil)
 		return false
 	}
 
@@ -83,7 +81,7 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	aggregate := reduce.GetAggregator(t.AggregationType)
 	responseToClient := aggregate(responses)
 
-	req.Response <- dto.NewRestResponse("", 0, responseToClient)
+	req.Response <- dto.NewRestResponse("", t.Id, responseToClient)
 	return true
 }
 
@@ -117,7 +115,7 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 		log.Error("No nodes connected")
 		return false
 	}
-	if BroadcastTaskToAllNodes(t, req) == -1 {
+	if !BroadcastTaskToAllNodes(t) {
 		return false
 	}
 
@@ -126,7 +124,6 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 		return false
 	}
 	TaskManager.DelChan <- t.Id
-
 
 	node.NodeManager.InfoChan <- responses
 
@@ -137,7 +134,6 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 
 	return true
 }
-
 
 func parseResultsToInfos(results []*dto.Result) []*dto.Info {
 	infoSize := (&dto.MemoryInfo{}).Size()
@@ -166,10 +162,11 @@ func (w *TaskWorker) Flush(req dto.RestRequest) bool {
 	t, responseChan := CreateTaskForRequest(req, availableNodes, w.GetId())
 	if availableNodes == 0 {
 		log.Error("No nodes connected")
-		req.Response <- dto.NewRestResponse("No nodes connected", 0, nil)
+		req.Response <- dto.NewRestResponse("No nodes connected", t.Id, nil)
 		return false
 	}
-	if BroadcastTaskToAllNodes(t, req) == -1 {
+	if !BroadcastTaskToAllNodes(t) {
+		req.Response <- dto.NewRestResponse("Internal server error", t.Id, nil)
 		return false
 	}
 
@@ -194,18 +191,17 @@ func CreateTaskForRequest(req dto.RestRequest, numResponses int, taskId int64) (
 	return t, responseChan
 }
 
-func BroadcastTaskToAllNodes(t *dto.Task, req dto.RestRequest) int {
+func BroadcastTaskToAllNodes(t *dto.Task) bool {
 	// CREATE MESSAGE
 	message, err := t.MakeRequestForAllGpus().Encode()
 	if err != nil {
 		log.Error("Error while encoding request - ", err)
-		req.Response <- dto.NewRestResponse("Internal server error", 0, nil)
-		return -1
+		return false
 	}
 
 	// SEND MESSAGE TO ALL NODES
 	node.NodeManager.SendToAllNodes(message)
-	return 0
+	return true
 }
 
 func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.Result {

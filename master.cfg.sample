@@ -1,6 +1,6 @@
 ; Config for DDJ_Master
 [Constants]
-workersCount = 10
+workersCount = 10000
 jobForWorkerCount = 5000
 cpuNumber = 8
 [Balancer]

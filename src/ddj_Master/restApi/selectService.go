@@ -123,5 +123,9 @@ func (serv SelectService) setSelectHeaderErrors(response *dto.RestResponse) {
 		log.Error("Return HTTP 503")
 		serv.ResponseBuilder().SetResponseCode(503).WriteAndOveride(
 			[]byte("The server is currently unable to handle the request"))
-	} // TODO: Set more errors if response.Error != "" or TaskId == 0
+	} else if response.Error != "" {
+		log.Error("Return HTTP 500")
+		serv.ResponseBuilder().SetResponseCode(500).WriteAndOveride(
+			[]byte(fmt.Sprintf("TaskId: %d, Error: %s", response.TaskId, response.Error)))
+	}
 }
