@@ -8,14 +8,12 @@ import (
 
 type LoadBalancer struct {
 	CurrentInsertNodeId int32
-	timeout             int32
 	nodes               map[int32]*Node
 }
 
-func NewLoadBalancer(timeout int32, nodes map[int32]*Node) *LoadBalancer {
+func NewLoadBalancer(nodes map[int32]*Node) *LoadBalancer {
 	lb := new(LoadBalancer)
 	lb.reset()
-	lb.timeout = timeout
 	lb.nodes = nodes
 	lb.update(nil)
 

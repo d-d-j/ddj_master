@@ -40,7 +40,7 @@ func main() {
 	// Initialize node manager
 	log.Info("Initialize node manager")
 	go node.NodeManager.Manage()
-	nodeBal := node.NewLoadBalancer(cfg.Balancer.Timeout, node.NodeManager.GetNodes())
+	nodeBal := node.NewLoadBalancer(node.NodeManager.GetNodes())
 	go nodeBal.Balance(node.NodeManager.InfoChan)
 
 	// Initialize reduce factory

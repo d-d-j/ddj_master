@@ -6,27 +6,22 @@ import (
 	"ddj_Master/dto"
 )
 
-// TODO: Test preffered node gpu id
-
 func AreEqual(expected, actual *LoadBalancer, t *testing.T) {
 	if expected.CurrentInsertNodeId != actual.CurrentInsertNodeId {
 		t.Error("CurrentInsertNodeId Got: ", actual.CurrentInsertNodeId, " when expected ", expected.CurrentInsertNodeId)
-	}
-	if expected.timeout != actual.timeout {
-		t.Error("timeout Got: ", actual.timeout, " when expected ", expected.CurrentInsertNodeId)
 	}
 }
 
 func Test_NewLoadBalancer(t *testing.T) {
 	expected := new(LoadBalancer)
 	expected.CurrentInsertNodeId = common.CONST_UNINITIALIZED
-	actual := NewLoadBalancer(0, nil)
+	actual := NewLoadBalancer(nil)
 	AreEqual(expected, actual, t)
 }
 
 func Test_Update_With_Nil_Entry_Cause_Balancer_Reset(t *testing.T) {
-	actual := NewLoadBalancer(0, nil)
-	expected := NewLoadBalancer(0, nil)
+	actual := NewLoadBalancer(nil)
+	expected := NewLoadBalancer(nil)
 	actual.CurrentInsertNodeId = 1
 	actual.update(nil)
 	AreEqual(expected, actual, t)
@@ -35,8 +30,8 @@ func Test_Update_With_Nil_Entry_Cause_Balancer_Reset(t *testing.T) {
 func Test_Update_With_No_Nodes_Cause_Balancer_Reset(t *testing.T) {
 	nodes := make(map[int32]*Node)
 	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1}}}
-	actual := NewLoadBalancer(0, nodes)
-	expected := NewLoadBalancer(0, nil)
+	actual := NewLoadBalancer(nodes)
+	expected := NewLoadBalancer(nil)
 	actual.update(info)
 	AreEqual(expected, actual, t)
 }
@@ -46,7 +41,7 @@ func Test_Update_With_One_Node_With_One_GPU_Node_And_GPU_Are_Set(t *testing.T) {
 	nodes[1] = NewNode(1, nil, nil)
 	nodes[1].GpuIds = []int32{0}
 
-	lb := NewLoadBalancer(0, nodes)
+	lb := NewLoadBalancer(nodes)
 	lb.CurrentInsertNodeId = 0
 	nodes[1].PreferredDeviceId = 0
 	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1}}}
@@ -67,7 +62,7 @@ func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU(t *testing.T) {
 	nodes[1] = NewNode(1, nil, nil)
 	nodes[1].GpuIds = []int32{0, 1, 2}
 
-	lb := NewLoadBalancer(0, nodes)
+	lb := NewLoadBalancer(nodes)
 	lb.CurrentInsertNodeId = -1
 	nodes[1].PreferredDeviceId = -1
 	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{0, 1, 1, 1, 1}}, &dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 12}}}
@@ -89,7 +84,7 @@ func Test_Update_With_Two_Nodes_Two_GPUs_Each_Cause_Changing_Node(t *testing.T) 
 	nodes[2].GpuIds = []int32{0, 1}
 
 
-	lb := NewLoadBalancer(0, nodes)
+	lb := NewLoadBalancer(nodes)
 	lb.CurrentInsertNodeId = -1
 	nodes[1].PreferredDeviceId = -1
 	nodes[2].PreferredDeviceId = -1
@@ -119,7 +114,7 @@ func Test_CalculateNodeRank(t *testing.T) {
 	nodes[2] = NewNode(2, nil, nil)
 	nodes[2].GpuIds = []int32{0, 1}
 
-	lb := NewLoadBalancer(0, nodes)
+	lb := NewLoadBalancer(nodes)
 
 	nodes[1].PreferredDeviceId = -1
 	nodes[2].PreferredDeviceId = -1
