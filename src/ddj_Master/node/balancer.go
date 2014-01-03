@@ -18,6 +18,7 @@ func NewLoadBalancer(timeout int32, nodes map[int32]*Node) *LoadBalancer {
 	lb.timeout = timeout
 	lb.nodes = nodes
 	lb.update(nil)
+
 	return lb
 }
 
@@ -43,16 +44,6 @@ func (this *LoadBalancer) update(newInfos []*dto.Info) {
 		return
 	}
 
-	if this.IsUnitialized() {
-		for _, node := range this.nodes {
-			this.CurrentInsertNodeId = node.Id
-			node.PreferredDeviceId = node.GpuIds[0]
-			break
-		}
-		return
-	}
-
-
 	bestNodeId := this.chooseTheBestNode(newInfos)
 
 	this.CurrentInsertNodeId = int32(bestNodeId)
@@ -62,35 +53,36 @@ func (this *LoadBalancer) chooseTheBestNode(nodeInfos []*dto.Info) int {
 	bestNodeId := common.CONST_UNINITIALIZED
 	bestRank := common.CONST_INT_MIN_VALUE
 
-	for id, node := range this.nodes {
-
-		rank := this.calculateNodeRank(node)
+	for _, node := range this.nodes {
+		rank := this.calculateNodeRank(node, nodeInfos)
 
 		if rank > bestRank {
-			bestNodeId = int(id)
+			bestNodeId = int(node.Id)
 			bestRank = rank
-			log.Debug(bestRank, id)
+			log.Debug(bestRank, node.Id)
 		}
 	}
 
 	return bestNodeId
 }
 
-func (this *LoadBalancer) calculateNodeRank(node *Node) int {
-	rank := 0
-	const (
-		CurrentNodePenalty = 10
-	)
-	if this.CurrentInsertNodeId == node.Id {
-		rank -= CurrentNodePenalty
-		for gpuId := range node.GpuIds {
-			if node.PreferredDeviceId != int32(gpuId) {
-				node.PreferredDeviceId = int32(gpuId)
-				break
-			}
+func (this *LoadBalancer) calculateNodeRank(node *Node, nodeInfos []*dto.Info) int {
+	nodeRank := int32(0)
+	bestGpuRank := int32(0)
+	for _, info := range nodeInfos {
+		if info.NodeId != node.Id {
+			continue
 		}
+		gpuRank := info.MemoryInfo.GpuMemoryFree
+
+		if gpuRank > bestGpuRank {
+			bestGpuRank = gpuRank
+			node.PreferredDeviceId = info.GpuId
+		}
+		nodeRank += gpuRank
 	}
-	return rank
+
+	return int(nodeRank)
 }
 
 func (this *LoadBalancer) IsUnitialized() bool {
