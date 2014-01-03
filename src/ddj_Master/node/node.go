@@ -18,7 +18,6 @@ type Node struct {
 	Id                int32
 	Status            int32
 	GpuIds            []int32
-	Stats             dto.Info
 	stop              chan bool
 	GetTaskChannel    chan dto.GetTaskRequest
 	PreferredDeviceId int32
@@ -35,13 +34,13 @@ func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest)
 	return n
 }
 
-func (n *Node) StartWork(balancerChannel chan<- []dto.Info) {
+func (n *Node) StartWork(balancerChannel chan<- []*dto.Info) {
 	err := n.waitForLogin()
 	if err == nil {
 		go n.readerRoutine()
 		go n.senderRoutine()
 	}
-	balancerChannel <- []dto.Info{dto.Info{n.Id, dto.MemoryInfo{n.GpuIds[0], 1, 1, 1, 1}}}
+	balancerChannel <- []*dto.Info{&dto.Info{n.Id, dto.MemoryInfo{n.GpuIds[0], 1, 1, 1, 1}}}
 	log.Debug("Node %d READY", n.Id)
 }
 
@@ -89,7 +88,7 @@ func (n *Node) readerRoutine() {
 	buffer := make([]byte, (&dto.Header{}).Size())
 	for n.read(buffer) {
 		log.Debug("Node reader received data from #%d", n.Id)
-		r := new(dto.Result)
+		r := &dto.Result{NodeId: n.Id}
 
 		err := r.Decode(buffer)
 		if err != nil {

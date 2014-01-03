@@ -4,7 +4,8 @@ workersCount = 10
 jobForWorkerCount = 5000
 cpuNumber = 8
 [Balancer]
-timeout = 60				#After this timeout balancer change used node
+weightCPUMem = 1
+weightGPUMem = 1
 [Logging]
 file = log.cfg
 [Ports]

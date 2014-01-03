@@ -127,6 +127,9 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	}
 	TaskManager.DelChan <- t.Id
 
+
+	node.NodeManager.InfoChan <- responses
+
 	// TODO: SET NODE INFO IN NODES
 	for i := 0; i < len(responses); i++ {
 		log.Finest(w, "Get info %v", responses[i])
@@ -135,17 +138,17 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	return true
 }
 
-//TODO: Generate Info not memoryInfo.
-func parseResultsToInfos(results []*dto.Result) []*dto.MemoryInfo {
+
+func parseResultsToInfos(results []*dto.Result) []*dto.Info {
 	infoSize := (&dto.MemoryInfo{}).Size()
 	resultsCount := len(results)
-	elements := make([]*dto.MemoryInfo, 0, resultsCount)
+	elements := make([]*dto.Info, 0, resultsCount)
 
 	for i := 0; i < resultsCount; i++ {
 		length := len(results[i].Data) / infoSize
 		for j := 0; j < length; j++ {
-			var e dto.MemoryInfo
-			err := e.Decode(results[i].Data[j*infoSize:])
+			var e dto.Info
+			err := e.MemoryInfo.Decode(results[i].Data[j*infoSize:])
 			if err != nil {
 				log.Error("Problem with parsing data", err)
 				continue

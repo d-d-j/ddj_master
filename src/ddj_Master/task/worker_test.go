@@ -7,7 +7,7 @@ import (
 
 func Test_getNodeForInsert_with_no_nodes_should_return_nil_and_error(t *testing.T) {
 
-	balancer := node.NewLoadBalancer(0, nil)
+	balancer := node.NewLoadBalancer(nil)
 
 	var worker TaskWorker
 	worker.balancer = balancer
@@ -26,7 +26,7 @@ func Test_getNodeForInsert_should_return_node_provided_on_node_manager_channel(t
 	expected := node.NewNode(NODE_ID, nil, nil)
 	nodes := make(map[int32]*node.Node)
 	nodes[NODE_ID] = expected
-	balancer := node.NewLoadBalancer(0, nodes)
+	balancer := node.NewLoadBalancer(nodes)
 	balancer.CurrentInsertNodeId = NODE_ID
 	getNodeChan := make(chan node.GetNodeRequest, 1)
 
@@ -54,7 +54,7 @@ func Test_getNodeForInsert_should_return_error_when_node_is_nil(t *testing.T) {
 	expected := node.NewNode(NODE_ID, nil, nil)
 	nodes := make(map[int32]*node.Node)
 	nodes[NODE_ID] = expected
-	balancer := node.NewLoadBalancer(0, nodes)
+	balancer := node.NewLoadBalancer(nodes)
 	balancer.CurrentInsertNodeId = NODE_ID
 	getNodeChan := make(chan node.GetNodeRequest, 1)
 

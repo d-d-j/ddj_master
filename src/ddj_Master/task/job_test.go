@@ -22,7 +22,7 @@ func Test_ParseResultsToElements_Should_Return_Empty_Slice_For_Empty_Imput(t *te
 
 func Test_ParseResultsToElements_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *testing.T) {
 	data := []byte{}
-	result := dto.NewResult(0, common.TASK_SELECT, 0, data)
+	result := dto.NewResult(0, 1, common.TASK_SELECT, 0, data)
 	actual := parseResultsToElements([]*dto.Result{result, result, result})
 	if len(actual) != 0 {
 		t.Error("Expected empty slice but got ", actual)
@@ -36,7 +36,7 @@ func Test_ParseResultsToElements_Should_Return_One_Element_When_Called_With_One_
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
-	result := dto.NewResult(0, common.TASK_SELECT, int32(expected.Size()), data)
+	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
 	actual := parseResultsToElements([]*dto.Result{result})
 	for _, elem := range actual {
 		AssertEqual(expected, elem, t)
@@ -50,7 +50,7 @@ func Test_ParseResultsToElements_Should_Return_All_Elements_From_Single_Input(t 
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
-	result := dto.NewResult(0, common.TASK_SELECT, int32(expected.Size()), data)
+	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
 	actual := parseResultsToElements([]*dto.Result{result})
 	// ASSERTIONS
 
@@ -72,7 +72,7 @@ func Test_ParseResultsToElements_Should_Return_All_Elements_From_Input(t *testin
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
-	result := dto.NewResult(0, common.TASK_SELECT, int32(expected.Size()), data)
+	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
 	actual := parseResultsToElements([]*dto.Result{result, result, result, result})
 	// ASSERTIONS
 
@@ -104,7 +104,7 @@ func Test_ParseResultsToInfos_Should_Return_Empty_Slice_For_Empty_Imput(t *testi
 
 func Test_ParseResultsToInfos_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *testing.T) {
 	data := []byte{}
-	result := dto.NewResult(0, common.TASK_INFO, 0, data)
+	result := dto.NewResult(0, 1, common.TASK_INFO, 0, data)
 	actual := parseResultsToInfos([]*dto.Result{result, result, result})
 	if len(actual) != 0 {
 		t.Error("Expected empty slice but got ", actual)
@@ -113,12 +113,12 @@ func Test_ParseResultsToInfos_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *
 
 func Test_ParseResultsToInfos_Should_Return_One_Element_When_Called_With_One_In_Slice(t *testing.T) {
 	// PREPARE DATA FOR TEST
-	expected := &dto.MemoryInfo{1, 1, 1, 1, 1}
+	expected := &dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1}}
 	data, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
-	result := dto.NewResult(0, common.TASK_INFO, int32(expected.Size()), data)
+	result := dto.NewResult(0, 1, common.TASK_INFO, int32(expected.Size()), data)
 	actual := parseResultsToInfos([]*dto.Result{result})
 	for _, elem := range actual {
 		AssertEqual(expected, elem, t)
@@ -128,13 +128,14 @@ func Test_ParseResultsToInfos_Should_Return_One_Element_When_Called_With_One_In_
 func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Single_Input(t *testing.T) {
 	// PREPARE DATA FOR TEST
 	expected := dto.Dtos{
-		&dto.MemoryInfo{1, 1, 1, 1, 1}, &dto.MemoryInfo{1, 1, 1, 1, 1},
-		&dto.MemoryInfo{2, 1, 2, 1, 1}, &dto.MemoryInfo{3, 1, 3, 1, 1}}
+
+		&dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1}}, &dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1}},
+		&dto.Info{0, dto.MemoryInfo{2, 1, 2, 1, 1}}, &dto.Info{0, dto.MemoryInfo{3, 1, 3, 1, 1}}}
 	data, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
-	result := dto.NewResult(0, common.TASK_INFO, int32(expected.Size()), data)
+	result := dto.NewResult(0, 1, common.TASK_INFO, int32(expected.Size()), data)
 	actual := parseResultsToInfos([]*dto.Result{result})
 	// ASSERTIONS
 
@@ -150,13 +151,13 @@ func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Single_Input(t *te
 func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Input(t *testing.T) {
 	// PREPARE DATA FOR TEST
 	expected := dto.Dtos{
-		&dto.MemoryInfo{1, 1, 1, 1, 1}, &dto.MemoryInfo{3, 2, 1, 1, 1},
+		&dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1}}, &dto.Info{0, dto.MemoryInfo{3, 2, 1, 1, 1}},
 	}
 	data, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
-	result := dto.NewResult(0, common.TASK_INFO, int32(expected.Size()), data)
+	result := dto.NewResult(0, 1, common.TASK_INFO, int32(expected.Size()), data)
 	actual := parseResultsToInfos([]*dto.Result{result, result, result, result})
 	// ASSERTIONS
 
