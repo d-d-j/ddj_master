@@ -5,7 +5,7 @@ import (
 )
 
 type RestResponse struct {
-	Error  string
+	Error  string `json:",omitempty"`
 	TaskId int64
 	Data   []Dto
 }

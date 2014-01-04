@@ -11,7 +11,7 @@ type Element struct {
 	Tag, Metric int32
 	Time        int64
 	Value       Value
-	Padding     int32
+	Padding     int32 `json:"-"`
 }
 
 func NewElement(Tag int32, Metric int32, Time int64, Value Value) *Element {
