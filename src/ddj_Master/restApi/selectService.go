@@ -72,7 +72,14 @@ func prepareAggregationType(aggregation string) (int32, error) {
 	}
 }
 
+const ALL string = "all"
+
 func prepareTimeSpans(times string) ([]int64, error) {
+
+	if times == ALL {
+		return []int64{}, nil
+	}
+
 	timesSplited := strings.Split(times, ",")
 	timesArr := make([]int64, len(timesSplited)*2)
 	for i := 0; i < len(timesSplited); i++ {
@@ -92,7 +99,7 @@ func prepareTimeSpans(times string) ([]int64, error) {
 }
 
 func prepareTagsOrMetrics(input string) ([]int32, error) {
-	const ALL string = "all"
+
 	if input == ALL {
 		return make([]int32, 0), nil
 	}
