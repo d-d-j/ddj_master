@@ -255,6 +255,36 @@ func Benchmark_Select_Avg(b *testing.B) {
 	}
 }
 
+func Benchmark_Select_Std(b *testing.B) {
+
+	SetUp(b)
+	from := 10
+	to := 100
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/std", from, to), b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	var mean float64
+	for i := from; i <= to; i++ {
+		mean += float64(expected[i].Value)
+	}
+	mean /= float64(to - from + 1)
+
+	var μ float64
+	for i := from; i <= to; i++ {
+		v := float64(expected[i].Value)
+		μ += (mean - v) * (mean - v)
+	}
+	σ := dto.Value(math.Sqrt(μ) / float64(to-from))
+
+	if math.Abs(float64(response.Data[0]-σ)) > eps {
+		b.Error("Got ", response.Data, " when expected ", σ)
+	}
+}
+
 func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")

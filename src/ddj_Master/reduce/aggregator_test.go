@@ -3,6 +3,7 @@ package reduce
 import (
 	"ddj_Master/common"
 	"ddj_Master/dto"
+	"math"
 	"testing"
 )
 
@@ -231,6 +232,30 @@ func Test_AverageAggregation_Should_Return_Avg_of_Slice(t *testing.T) {
 	input := []Aggregates{&dto.AverageElement{6, 12 * value}, &dto.AverageElement{6, 0}}
 
 	actual := AverageAggregation(input)
+
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_StandardDeviation_Should_Return_StdDev_of_Slice(t *testing.T) {
+
+	var value dto.Value
+	value = dto.Value(math.Sqrt(10.0 / 3.0))
+	expected := []*dto.Value{&value}
+	input := []Aggregates{&dto.VarianceElement{1, 5, 0}, &dto.VarianceElement{1, 6, 0}, &dto.VarianceElement{1, 8, 0}, &dto.VarianceElement{1, 9, 0}}
+
+	actual := StandartdDeviation(input)
+
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_StandardDeviation_Should_Return_StdDev_of_Slice_2(t *testing.T) {
+	//http://en.wikipedia.org/wiki/Standard_deviation#Basic_examples
+	var value dto.Value
+	value = dto.Value(2)
+	expected := []*dto.Value{&value}
+	input := []Aggregates{&dto.VarianceElement{1, 2, 0}, &dto.VarianceElement{3, 4, 0}, &dto.VarianceElement{2, 5, 0}, &dto.VarianceElement{1, 7, 0}, &dto.VarianceElement{1, 9, 0}}
+
+	actual := StandartdDeviation(input)
 
 	AssertValuesEqual(expected, actual, t)
 }
