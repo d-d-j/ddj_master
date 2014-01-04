@@ -39,7 +39,7 @@ func Test_ParseResultsToElements_Should_Return_One_Element_When_Called_With_One_
 	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
 	actual := parseResultsToElements([]*dto.Result{result})
 	for _, elem := range actual {
-		AssertEqual(expected, elem, t)
+		AssertEqual(expected, elem.(*dto.Element), t)
 	}
 }
 
@@ -59,7 +59,7 @@ func Test_ParseResultsToElements_Should_Return_All_Elements_From_Single_Input(t 
 	}
 
 	for index, elem := range actual {
-		AssertEqual(expected[index], elem, t)
+		AssertEqual(expected[index], elem.(*dto.Element), t)
 	}
 }
 
@@ -84,7 +84,7 @@ func Test_ParseResultsToElements_Should_Return_All_Elements_From_Input(t *testin
 	}
 
 	for index, elem := range actual {
-		AssertEqual(expected[index], elem, t)
+		AssertEqual(expected[index], elem.(*dto.Element), t)
 	}
 }
 

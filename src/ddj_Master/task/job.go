@@ -79,22 +79,17 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	responses := parseResultsToElements(GatherAllResponses(availableNodes, responseChan))
 	TaskManager.DelChan <- t.Id
 
-	responsesInterface := make([]reduce.Aggregates, len(responses))
-	for i, v := range responses {
-		responsesInterface[i] = v
-	}
-
 	aggregate := reduce.GetAggregator(t.AggregationType)
-	responseToClient := aggregate(responsesInterface)
+	responseToClient := aggregate(responses)
 
 	req.Response <- dto.NewRestResponse("", t.Id, responseToClient)
 	return true
 }
 
-func parseResultsToElements(results []*dto.Result) []*dto.Element {
+func parseResultsToElements(results []*dto.Result) []reduce.Aggregates {
 	elementSize := (&dto.Element{}).Size()
 	resultsCount := len(results)
-	elements := make([]*dto.Element, 0, resultsCount)
+	elements := make([]reduce.Aggregates, 0, resultsCount)
 
 	for _, result := range results {
 		length := len(result.Data) / elementSize
@@ -109,6 +104,26 @@ func parseResultsToElements(results []*dto.Result) []*dto.Element {
 		}
 	}
 	return elements
+}
+
+func parseResultsToValues(results []*dto.Result) []reduce.Aggregates {
+	elementSize := (dto.Value(0)).Size()
+	resultsCount := len(results)
+	values := make([]reduce.Aggregates, 0, resultsCount)
+
+	for _, result := range results {
+		length := len(result.Data) / elementSize
+		for j := 0; j < length; j++ {
+			var e dto.Value
+			err := e.Decode(result.Data[j*elementSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			values = append(values, &e)
+		}
+	}
+	return values
 }
 
 func (w *TaskWorker) Info(req dto.RestRequest) bool {
