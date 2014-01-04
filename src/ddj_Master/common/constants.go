@@ -15,14 +15,6 @@ const (
 	TASK_INFO   int32 = 4
 )
 
-//Aggregation Type
-const (
-	AGGREGATION_NONE int32 = 0
-	AGGREGATION_ADD  int32 = 1
-	AGGREGATION_MIN  int32 = 2
-	AGGREGATION_MAX  int32 = 3
-)
-
 //NodeStatus
 const (
 	NODE_ERROR     int32 = 0
