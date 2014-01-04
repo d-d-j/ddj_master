@@ -7,7 +7,7 @@ import (
 )
 
 func Test_Initialize(t *testing.T) {
-	expected := 4
+	expected := 5
 	Initialize()
 	actual := len(aggregations)
 	if actual != expected {
@@ -217,7 +217,7 @@ func Test_AverageAggregation_Should_Return_Same_Value_As_Input_If_There_Was_Only
 	var value dto.Value
 	value = 0.33
 	expected := []*dto.Value{&value}
-	input := []Aggregates{&dto.VarianceElement{1, 1 * value, 0}}
+	input := []Aggregates{&dto.AverageElement{1, 1 * value}}
 
 	actual := AverageAggregation(input)
 	AssertValuesEqual(expected, actual, t)
@@ -228,7 +228,7 @@ func Test_AverageAggregation_Should_Return_Avg_of_Slice(t *testing.T) {
 	var value dto.Value
 	value = 0.33
 	expected := []*dto.Value{&value}
-	input := []Aggregates{&dto.VarianceElement{6, 12 * value, 0}, &dto.VarianceElement{6, 0, 0}}
+	input := []Aggregates{&dto.AverageElement{6, 12 * value}, &dto.AverageElement{6, 0}}
 
 	actual := AverageAggregation(input)
 

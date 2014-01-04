@@ -79,7 +79,6 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	responses := parseResults(GatherAllResponses(availableNodes, responseChan), t.AggregationType)
 	TaskManager.DelChan <- t.Id
 	log.Fine("Got %d responses", len(responses))
-	log.Finest(responses)
 	aggregate := reduce.GetAggregator(t.AggregationType)
 	responseToClient := aggregate(responses)
 
@@ -91,6 +90,8 @@ func parseResults(results []*dto.Result, aggregationType int32) []reduce.Aggrega
 	switch aggregationType {
 	case common.AGGREGATION_ADD:
 		return parseResultsToValues(results)
+	case common.AGGREGATION_AVERAGE:
+		return parseResultsToAverage(results)
 	default:
 		return parseResultsToElements(results)
 	}
@@ -125,6 +126,44 @@ func parseResultsToValues(results []*dto.Result) []reduce.Aggregates {
 		length := len(result.Data) / elementSize
 		for j := 0; j < length; j++ {
 			var e dto.Value
+			err := e.Decode(result.Data[j*elementSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			values = append(values, &e)
+		}
+	}
+	return values
+}
+
+func parseResultsToAverage(results []*dto.Result) []reduce.Aggregates {
+	elementSize := (&dto.AverageElement{}).Size()
+	resultsCount := len(results)
+	values := make([]reduce.Aggregates, 0, resultsCount)
+	for _, result := range results {
+		length := len(result.Data) / elementSize
+		for j := 0; j < length; j++ {
+			var e dto.AverageElement
+			err := e.Decode(result.Data[j*elementSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			values = append(values, &e)
+		}
+	}
+	return values
+}
+
+func parseResultsToVariance(results []*dto.Result) []reduce.Aggregates {
+	elementSize := (&dto.VarianceElement{}).Size()
+	resultsCount := len(results)
+	values := make([]reduce.Aggregates, 0, resultsCount)
+	for _, result := range results {
+		length := len(result.Data) / elementSize
+		for j := 0; j < length; j++ {
+			var e dto.VarianceElement
 			err := e.Decode(result.Data[j*elementSize:])
 			if err != nil {
 				log.Error("Problem with parsing data", err)

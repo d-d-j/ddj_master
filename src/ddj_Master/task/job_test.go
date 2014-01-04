@@ -88,6 +88,31 @@ func Test_ParseResultsToElements_Should_Return_All_Elements_From_Input(t *testin
 	}
 }
 
+func Test_ParseResultsToVariance_Should_Return_All_Elements_From_Input(t *testing.T) {
+	// PREPARE DATA FOR TEST
+	expected := dto.Dtos{
+		&dto.VarianceElement{1, 0.33, 0.21}, &dto.VarianceElement{4, 0.66, 0}, &dto.VarianceElement{7, 0.99, 1.2},
+	}
+	data, err := expected.Encode()
+	if err != nil {
+		t.Error("Error occurred", err)
+	}
+	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
+	actual := parseResultsToVariance([]*dto.Result{result, result, result, result})
+	// ASSERTIONS
+
+	expected = append(expected, expected...)
+	expected = append(expected, expected...)
+
+	if len(actual) != len(expected) {
+		t.Error("Wrong data returned. Expected ", len(expected), " values", " but got ", len(actual))
+	}
+
+	for index, elem := range actual {
+		AssertEqual(expected[index], elem.(*dto.VarianceElement), t)
+	}
+}
+
 func Test_ParseResultsToInfos_Should_Return_Empty_Slice_For_Nil_Imput(t *testing.T) {
 	actual := parseResultsToInfos(nil)
 	if len(actual) != 0 {

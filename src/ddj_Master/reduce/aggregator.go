@@ -14,10 +14,11 @@ var aggregations map[int32]Aggregator
 
 func Initialize() {
 	aggregations = map[int32]Aggregator{
-		common.AGGREGATION_NONE: NonAggregation,
-		common.AGGREGATION_MAX:  MaxAggregation,
-		common.AGGREGATION_MIN:  MinAggregation,
-		common.AGGREGATION_ADD:  AddAggregation,
+		common.AGGREGATION_NONE:    NonAggregation,
+		common.AGGREGATION_MAX:     MaxAggregation,
+		common.AGGREGATION_MIN:     MinAggregation,
+		common.AGGREGATION_ADD:     AddAggregation,
+		common.AGGREGATION_AVERAGE: AverageAggregation,
 	}
 }
 
@@ -103,8 +104,8 @@ func AverageAggregation(input []Aggregates) dto.Dtos {
 	)
 
 	for _, variance := range input {
-		v := variance.(*dto.VarianceElement)
-		average += v.Mean
+		v := variance.(*dto.AverageElement)
+		average += v.Sum
 		count += v.Count
 	}
 
