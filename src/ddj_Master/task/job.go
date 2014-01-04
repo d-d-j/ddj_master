@@ -78,8 +78,14 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 
 	responses := parseResultsToElements(GatherAllResponses(availableNodes, responseChan))
 	TaskManager.DelChan <- t.Id
+
+	responsesInterface := make([]reduce.Aggregates, len(responses))
+	for i, v := range responses {
+		responsesInterface[i] = v
+	}
+
 	aggregate := reduce.GetAggregator(t.AggregationType)
-	responseToClient := aggregate(responses)
+	responseToClient := aggregate(responsesInterface)
 
 	req.Response <- dto.NewRestResponse("", t.Id, responseToClient)
 	return true

@@ -6,7 +6,9 @@ import (
 	"sort"
 )
 
-type Aggregator func([]*dto.Element) dto.Dtos
+type Aggregator func([]Aggregates) dto.Dtos
+
+type Aggregates interface{}
 
 var aggregations map[int32]Aggregator
 
@@ -27,11 +29,12 @@ func GetAggregator(aggregationType int32) Aggregator {
 	return aggregator
 }
 
-func NonAggregation(input []*dto.Element) dto.Dtos {
+func NonAggregation(input []Aggregates) dto.Dtos {
 
 	output := make([]dto.Dto, 0, len(input))
 	for _, element := range input {
-		output = append(output, element)
+		e := element.(*dto.Element)
+		output = append(output, e)
 	}
 
 	sort.Sort(dto.ByTime(output))
@@ -39,39 +42,41 @@ func NonAggregation(input []*dto.Element) dto.Dtos {
 	return output
 }
 
-func MaxAggregation(input []*dto.Element) dto.Dtos {
+func MaxAggregation(input []Aggregates) dto.Dtos {
 
 	if len(input) < 1 {
 		return dto.Dtos{}
 	}
-	max := input[0].Value
+	max := input[0].(*dto.Element).Value
 
 	for _, element := range input {
-		if !element.Value.Less(max) {
-			max = element.Value
+		e := element.(*dto.Element)
+		if !e.Value.Less(max) {
+			max = e.Value
 		}
 	}
 
 	return dto.Dtos{&max}
 }
 
-func MinAggregation(input []*dto.Element) dto.Dtos {
+func MinAggregation(input []Aggregates) dto.Dtos {
 
 	if len(input) < 1 {
 		return dto.Dtos{}
 	}
-	min := input[0].Value
+	min := input[0].(*dto.Element).Value
 
 	for _, element := range input {
-		if element.Value.Less(min) {
-			min = element.Value
+		e := element.(*dto.Element)
+		if e.Value.Less(min) {
+			min = e.Value
 		}
 	}
 
 	return dto.Dtos{&min}
 }
 
-func AddAggregation(input []*dto.Element) dto.Dtos {
+func AddAggregation(input []Aggregates) dto.Dtos {
 
 	if len(input) < 1 {
 		return dto.Dtos{}
@@ -79,7 +84,8 @@ func AddAggregation(input []*dto.Element) dto.Dtos {
 	sum := dto.Value(0.0)
 
 	for _, element := range input {
-		sum += element.Value
+		e := element.(*dto.Element)
+		sum += e.Value
 	}
 
 	return dto.Dtos{&sum}

@@ -211,16 +211,22 @@ func Benchmark_Select_All_Min(b *testing.B) {
 func Benchmark_Select_Sum(b *testing.B) {
 
 	SetUp(b)
-
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", 0, 1), b)
+	from := 0
+	to := 0
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/sum", from, to), b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
 		b.FailNow()
 	}
 
-	if response.Data[0].String() != expected[0].Value.String() {
-		b.Error("Got ", response.Data, " when expected ", expected[0].Value)
+	exp := dto.Value(0.0)
+	for i := from; i < to; i++ {
+		exp += expected[i].Value
+	}
+
+	if response.Data[0] != exp {
+		b.Error("Got ", response.Data, " when expected ", exp)
 	}
 }
 
