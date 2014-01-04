@@ -76,14 +76,24 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 		return false
 	}
 
-	responses := parseResultsToElements(GatherAllResponses(availableNodes, responseChan))
+	responses := parseResults(GatherAllResponses(availableNodes, responseChan), t.AggregationType)
 	TaskManager.DelChan <- t.Id
-
+	log.Fine("Got %d responses", len(responses))
+	log.Finest(responses)
 	aggregate := reduce.GetAggregator(t.AggregationType)
 	responseToClient := aggregate(responses)
 
 	req.Response <- dto.NewRestResponse("", t.Id, responseToClient)
 	return true
+}
+
+func parseResults(results []*dto.Result, aggregationType int32) []reduce.Aggregates {
+	switch aggregationType {
+	case common.AGGREGATION_ADD:
+		return parseResultsToValues(results)
+	default:
+		return parseResultsToElements(results)
+	}
 }
 
 func parseResultsToElements(results []*dto.Result) []reduce.Aggregates {
@@ -110,7 +120,7 @@ func parseResultsToValues(results []*dto.Result) []reduce.Aggregates {
 	elementSize := (dto.Value(0)).Size()
 	resultsCount := len(results)
 	values := make([]reduce.Aggregates, 0, resultsCount)
-
+	log.Fine("Parsing %d results", resultsCount)
 	for _, result := range results {
 		length := len(result.Data) / elementSize
 		for j := 0; j < length; j++ {

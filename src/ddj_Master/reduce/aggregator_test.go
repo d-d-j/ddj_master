@@ -181,7 +181,7 @@ func Test_AddAggregation_Should_Return_Same_Value_As_Input_If_There_Was_Only_One
 	var value dto.Value
 	value = 0.33
 	expected := []*dto.Value{&value}
-	input := []Aggregates{dto.NewElement(1, 2, 0, 0.33)}
+	input := []Aggregates{&value}
 
 	actual := AddAggregation(input)
 	AssertValuesEqual(expected, actual, t)
@@ -191,28 +191,13 @@ func Test_AddAggregation_Should_Return_Sum_of_Slice_If_There_Was_Only_One_Slice_
 
 	var value dto.Value
 	value = 0.99
-	expected := []*dto.Value{&value}
-	input := []Aggregates{dto.NewElement(1, 4, 2, 0.33), dto.NewElement(1, 2, 1, 0.33), dto.NewElement(1, 0, 0, 0.33)}
+	exp := 3 * value
+	expected := []*dto.Value{&exp}
+	input := []Aggregates{&value, &value, &value}
 
 	actual := AddAggregation(input)
 
 	AssertValuesEqual(expected, actual, t)
-}
-
-func Test_AddAggregation_Should_Return_Sum_Of_Elements_From_All_Input_Slices(t *testing.T) {
-
-	var value dto.Value
-	value = 0.6
-	expected := []*dto.Value{&value}
-	input := []Aggregates{
-		dto.NewElement(1, 4, 2, 0.01), dto.NewElement(1, 2, 1, 0.03), dto.NewElement(1, 0, 0, 0.04),
-		dto.NewElement(1, 4, 2, 0.02), dto.NewElement(1, 2, 1, 0.0), dto.NewElement(1, 0, 0, 0.5),
-	}
-
-	actual := AddAggregation(input)
-
-	AssertValuesEqual(expected, actual, t)
-
 }
 
 func AssertElementsEqual(expected []Aggregates, actual dto.Dtos, t *testing.T) {

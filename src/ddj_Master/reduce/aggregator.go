@@ -83,9 +83,9 @@ func AddAggregation(input []Aggregates) dto.Dtos {
 	}
 	sum := dto.Value(0.0)
 
-	for _, element := range input {
-		e := element.(*dto.Element)
-		sum += e.Value
+	for _, value := range input {
+		v := *(value.(*dto.Value))
+		sum += v
 	}
 
 	return dto.Dtos{&sum}
