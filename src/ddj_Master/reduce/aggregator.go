@@ -90,3 +90,25 @@ func AddAggregation(input []Aggregates) dto.Dtos {
 
 	return dto.Dtos{&sum}
 }
+
+func AverageAggregation(input []Aggregates) dto.Dtos {
+
+	if len(input) < 1 {
+		return dto.Dtos{}
+	}
+
+	var (
+		average dto.Value
+		count   int32
+	)
+
+	for _, variance := range input {
+		v := variance.(*dto.VarianceElement)
+		average += v.Mean
+		count += v.Count
+	}
+
+	average /= dto.Value(count)
+
+	return dto.Dtos{&average}
+}

@@ -200,6 +200,41 @@ func Test_AddAggregation_Should_Return_Sum_of_Slice_If_There_Was_Only_One_Slice_
 	AssertValuesEqual(expected, actual, t)
 }
 
+func Test_AverageAggregation_Should_Panic_When_Input_Containse_nil(t *testing.T) {
+	input := make([]Aggregates, 5)
+	defer ExpectedPanic(t)
+	AverageAggregation(input)
+}
+
+func Test_AverageAggregation_Should_Return_Empty_Slice_When_Input_Is_Nil_Or_Empty(t *testing.T) {
+	actual := AverageAggregation(nil)
+	if len(actual) != 0 {
+		t.Error("Expected empty slice but got ", actual)
+	}
+}
+
+func Test_AverageAggregation_Should_Return_Same_Value_As_Input_If_There_Was_Only_One_Element_In_Input_Slice(t *testing.T) {
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []Aggregates{&dto.VarianceElement{1, 1 * value, 0}}
+
+	actual := AverageAggregation(input)
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_AverageAggregation_Should_Return_Avg_of_Slice(t *testing.T) {
+
+	var value dto.Value
+	value = 0.33
+	expected := []*dto.Value{&value}
+	input := []Aggregates{&dto.VarianceElement{6, 12 * value, 0}, &dto.VarianceElement{6, 0, 0}}
+
+	actual := AverageAggregation(input)
+
+	AssertValuesEqual(expected, actual, t)
+}
+
 func AssertElementsEqual(expected []Aggregates, actual dto.Dtos, t *testing.T) {
 	if len(expected) != len(actual) {
 		t.Error("Wrong dimension. Expected ", len(expected), " but got ", len(actual))
