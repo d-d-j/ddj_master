@@ -27,7 +27,8 @@ const (
 	NUMBER_OF_METRICS          int = 4
 	INSERTED_DATA              int = 1000
 	// TODO: use cfg values instead of hardcoded port
-	HOST string = "http://localhost:8888/data"
+	HOST string  = "http://localhost:8888/data"
+	eps  float64 = 0.001
 )
 
 var (
@@ -179,16 +180,17 @@ func SelectAggr(query string, b *testing.B) RestForAggregation {
 func Benchmark_Select_All_Max(b *testing.B) {
 
 	SetUp(b)
-
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/max", 0, INSERTED_DATA), b)
+	from := 10
+	to := 100
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/max", from, to), b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
 		b.FailNow()
 	}
 
-	if response.Data[0].String() != expected[INSERTED_DATA-1].Value.String() {
-		b.Error("Got ", response.Data, " when expected ", expected[INSERTED_DATA-1].Value)
+	if response.Data[0].String() != expected[to].Value.String() {
+		b.Error("Got ", response.Data, " when expected ", expected[to].Value)
 	}
 }
 
@@ -211,16 +213,45 @@ func Benchmark_Select_All_Min(b *testing.B) {
 func Benchmark_Select_Sum(b *testing.B) {
 
 	SetUp(b)
-
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", 0, 1), b)
+	from := 10
+	to := 100
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/sum", from, to), b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
 		b.FailNow()
 	}
 
-	if response.Data[0].String() != expected[0].Value.String() {
-		b.Error("Got ", response.Data, " when expected ", expected[0].Value)
+	exp := dto.Value(0.0)
+	for i := from; i <= to; i++ {
+		exp += expected[i].Value
+	}
+
+	if math.Abs(float64(response.Data[0]-exp)) > eps {
+		b.Error("Got ", response.Data, " when expected ", exp)
+	}
+}
+
+func Benchmark_Select_Avg(b *testing.B) {
+
+	SetUp(b)
+	from := 10
+	to := 100
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/avg", from, to), b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	exp := dto.Value(0.0)
+	for i := from; i <= to; i++ {
+		exp += expected[i].Value
+	}
+	exp /= dto.Value(to - from + 1)
+
+	if math.Abs(float64(response.Data[0]-exp)) > eps {
+		b.Error("Got ", response.Data, " when expected ", exp)
 	}
 }
 

@@ -97,6 +97,7 @@ func (n *Node) readerRoutine() {
 
 		log.Fine("Response header: %s", r.Header.String())
 		if r.DataSize == 0 {
+			log.Finest("No additional data for %d", r.TaskId)
 			r.Data = make([]byte, 0)
 		} else {
 			log.Finest("Reading response data %d bytes for task %d", r.DataSize, r.TaskId)

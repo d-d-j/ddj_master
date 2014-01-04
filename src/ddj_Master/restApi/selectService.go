@@ -67,6 +67,10 @@ func prepareAggregationType(aggregation string) (int32, error) {
 		return common.AGGREGATION_MAX, nil
 	case "min":
 		return common.AGGREGATION_MIN, nil
+	case "avg":
+		return common.AGGREGATION_AVERAGE, nil
+	case "std":
+		return common.AGGREGATION_STDDEVIATION, nil
 	default:
 		return common.TASK_ERROR, fmt.Errorf("Unknown aggregation type")
 	}
