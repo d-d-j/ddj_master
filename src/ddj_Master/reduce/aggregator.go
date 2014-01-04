@@ -14,11 +14,12 @@ var aggregations map[int32]Aggregator
 
 func Initialize() {
 	aggregations = map[int32]Aggregator{
-		common.AGGREGATION_NONE:    NonAggregation,
-		common.AGGREGATION_MAX:     MaxAggregation,
-		common.AGGREGATION_MIN:     MinAggregation,
-		common.AGGREGATION_ADD:     AddAggregation,
-		common.AGGREGATION_AVERAGE: AverageAggregation,
+		common.AGGREGATION_NONE:         NonAggregation,
+		common.AGGREGATION_MAX:          MaxAggregation,
+		common.AGGREGATION_MIN:          MinAggregation,
+		common.AGGREGATION_ADD:          AddAggregation,
+		common.AGGREGATION_AVERAGE:      AverageAggregation,
+		common.AGGREGATION_STDDEVIATION: StandartdDeviation,
 	}
 }
 
@@ -112,4 +113,8 @@ func AverageAggregation(input []Aggregates) dto.Dtos {
 	average /= dto.Value(count)
 
 	return dto.Dtos{&average}
+}
+
+func StandartdDeviation(input []Aggregates) dto.Dtos {
+	panic("Not implemented")
 }
