@@ -143,7 +143,7 @@ func Test_ParseResultsToInfos_Should_Return_One_Element_When_Called_With_One_In_
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
-	result := dto.NewResult(0, 1, common.TASK_INFO, int32(expected.Size()), data)
+	result := dto.NewResult(0, 0, common.TASK_INFO, int32(expected.Size()), data)
 	actual := parseResultsToInfos([]*dto.Result{result})
 	for _, elem := range actual {
 		AssertEqual(expected, elem, t)
@@ -160,7 +160,7 @@ func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Single_Input(t *te
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
-	result := dto.NewResult(0, 1, common.TASK_INFO, int32(expected.Size()), data)
+	result := dto.NewResult(0, 0, common.TASK_INFO, int32(expected.Size()), data)
 	actual := parseResultsToInfos([]*dto.Result{result})
 	// ASSERTIONS
 
@@ -182,7 +182,7 @@ func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Input(t *testing.T
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
-	result := dto.NewResult(0, 1, common.TASK_INFO, int32(expected.Size()), data)
+	result := dto.NewResult(0, 0, common.TASK_INFO, int32(expected.Size()), data)
 	actual := parseResultsToInfos([]*dto.Result{result, result, result, result})
 	// ASSERTIONS
 
