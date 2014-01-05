@@ -221,6 +221,7 @@ func parseResultsToInfos(results []*dto.Result) []*dto.Info {
 				log.Error("Problem with parsing data", err)
 				continue
 			}
+			e.NodeId = results[i].NodeId
 			elements = append(elements, &e)
 		}
 	}
