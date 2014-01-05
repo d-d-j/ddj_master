@@ -45,6 +45,8 @@ func (this *LoadBalancer) update(newInfos []*dto.Info) {
 	bestNodeId := this.chooseTheBestNode(newInfos)
 
 	this.CurrentInsertNodeId = int32(bestNodeId)
+
+	log.Info("Insert Node Id is now %d", this.CurrentInsertNodeId)
 }
 
 func (this *LoadBalancer) chooseTheBestNode(nodeInfos []*dto.Info) int {
@@ -57,7 +59,7 @@ func (this *LoadBalancer) chooseTheBestNode(nodeInfos []*dto.Info) int {
 		if rank > bestRank {
 			bestNodeId = int(node.Id)
 			bestRank = rank
-			log.Debug(bestRank, node.Id)
+			log.Debug("calculated best rank: %d,  node id: %d", bestRank, node.Id)
 		}
 	}
 
@@ -80,6 +82,7 @@ func (this *LoadBalancer) calculateNodeRank(node *Node, nodeInfos []*dto.Info) i
 		nodeRank += gpuRank
 	}
 
+	log.Debug("calculated rank: %d, for node: %d, changed deviceId to %d", nodeRank, node.Id, node.PreferredDeviceId)
 	return int(nodeRank)
 }
 
