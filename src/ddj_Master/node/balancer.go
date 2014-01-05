@@ -46,7 +46,7 @@ func (this *LoadBalancer) update(newInfos []*dto.Info) {
 
 	this.CurrentInsertNodeId = int32(bestNodeId)
 
-	log.Info("Insert Node Id is now %d", this.CurrentInsertNodeId)
+	log.Info("Insert Node Id is now: %d GPUId: %d", this.CurrentInsertNodeId, this.nodes[this.CurrentInsertNodeId].PreferredDeviceId)
 }
 
 func (this *LoadBalancer) chooseTheBestNode(nodeInfos []*dto.Info) int {
