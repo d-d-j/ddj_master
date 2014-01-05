@@ -4,6 +4,7 @@ import (
 	"ddj_Master/dto"
 	"encoding/json"
 	"fmt"
+	. "github.com/ahmetalpbalkan/go-linq"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -177,11 +178,12 @@ func SelectAggr(query string, b *testing.B) RestForAggregation {
 	return response
 }
 
-func Benchmark_Select_All_Max(b *testing.B) {
+func Benchmark_Select_Max(b *testing.B) {
 
 	SetUp(b)
-	from := 10
-	to := 100
+
+	from := int64(0)
+	to := int64(b.N % INSERTED_DATA)
 	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/max", from, to), b)
 
 	if len(response.Data) < 1 {
@@ -189,32 +191,57 @@ func Benchmark_Select_All_Max(b *testing.B) {
 		b.FailNow()
 	}
 
-	if response.Data[0].String() != expected[to].Value.String() {
-		b.Error("Got ", response.Data, " when expected ", expected[to].Value)
+	exp, err := From(expected).Where(
+		func(element T) (bool, error) {
+			elem := element.(dto.Element).Time
+			return elem <= to && elem >= from, nil
+		}).Select(Value).MaxFloat64()
+
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
+	}
+
+	if math.Abs(float64(response.Data[0])-exp) > eps {
+		b.Error("Got ", response.Data, " when expected ", exp)
 	}
 }
 
-func Benchmark_Select_All_Min(b *testing.B) {
+func Benchmark_Select_Min(b *testing.B) {
 
 	SetUp(b)
 
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", 0, INSERTED_DATA), b)
+	from := int64(0)
+	to := int64(b.N % INSERTED_DATA)
+
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", from, to), b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
 		b.FailNow()
 	}
 
-	if response.Data[0].String() != expected[0].Value.String() {
-		b.Error("Got ", response.Data, " when expected ", expected[0].Value)
+	exp, err := From(expected).Where(
+		func(element T) (bool, error) {
+			elem := element.(dto.Element).Time
+			return elem <= to && elem >= from, nil
+		}).Select(Value).MinFloat64()
+
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
+	}
+
+	if math.Abs(float64(response.Data[0])-exp) > eps {
+		b.Error("Got ", response.Data, " when expected ", exp)
 	}
 }
 
 func Benchmark_Select_Sum(b *testing.B) {
 
 	SetUp(b)
-	from := 10
-	to := 100
+	from := int64(0)
+	to := int64(b.N % INSERTED_DATA)
 	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/sum", from, to), b)
 
 	if len(response.Data) < 1 {
@@ -222,12 +249,18 @@ func Benchmark_Select_Sum(b *testing.B) {
 		b.FailNow()
 	}
 
-	exp := dto.Value(0.0)
-	for i := from; i <= to; i++ {
-		exp += expected[i].Value
+	exp, err := From(expected).Where(
+		func(element T) (bool, error) {
+			elem := element.(dto.Element).Time
+			return elem <= to && elem >= from, nil
+		}).Select(Value).Sum()
+
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
 	}
 
-	if math.Abs(float64(response.Data[0]-exp)) > eps {
+	if math.Abs(float64(response.Data[0])-exp) > eps {
 		b.Error("Got ", response.Data, " when expected ", exp)
 	}
 }
@@ -235,8 +268,8 @@ func Benchmark_Select_Sum(b *testing.B) {
 func Benchmark_Select_Avg(b *testing.B) {
 
 	SetUp(b)
-	from := 10
-	to := 100
+	from := int64(0)
+	to := int64(b.N % INSERTED_DATA)
 	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/avg", from, to), b)
 
 	if len(response.Data) < 1 {
@@ -244,13 +277,18 @@ func Benchmark_Select_Avg(b *testing.B) {
 		b.FailNow()
 	}
 
-	exp := dto.Value(0.0)
-	for i := from; i <= to; i++ {
-		exp += expected[i].Value
-	}
-	exp /= dto.Value(to - from + 1)
+	exp, err := From(expected).Where(
+		func(element T) (bool, error) {
+			elem := element.(dto.Element).Time
+			return elem <= to && elem >= from, nil
+		}).Select(Value).Average()
 
-	if math.Abs(float64(response.Data[0]-exp)) > eps {
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
+	}
+
+	if math.Abs(float64(response.Data[0])-exp) > eps {
 		b.Error("Got ", response.Data, " when expected ", exp)
 	}
 }
@@ -300,4 +338,8 @@ func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {
 			b.Error("Expected ", expectedValues[index], " but got ", element)
 		}
 	}
+}
+
+func Value(element T) (T, error) {
+	return float64(element.(dto.Element).Value), nil
 }
