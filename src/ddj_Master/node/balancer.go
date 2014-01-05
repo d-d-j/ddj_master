@@ -78,8 +78,8 @@ func (this *LoadBalancer) calculateNodeRank(node *Node, nodeInfos []*dto.Info) i
 		if gpuRank > bestGpuRank {
 			bestGpuRank = gpuRank
 			node.PreferredDeviceId = info.GpuId
+			nodeRank = gpuRank
 		}
-		nodeRank += gpuRank
 	}
 
 	log.Debug("calculated rank: %d, for node: %d, changed deviceId to %d", nodeRank, node.Id, node.PreferredDeviceId)

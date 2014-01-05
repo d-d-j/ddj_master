@@ -88,8 +88,8 @@ func Test_Update_With_Two_Nodes_Two_GPUs_Each_Cause_Changing_Node(t *testing.T) 
 	lb.CurrentInsertNodeId = -1
 	nodes[1].PreferredDeviceId = -1
 	nodes[2].PreferredDeviceId = -1
-	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{0, 1, 1, 1, 14}}, &dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1}},
-		&dto.Info{2, dto.MemoryInfo{0, 1, 1, 1, 10}}, &dto.Info{2, dto.MemoryInfo{1, 1, 1, 1, 11}}}
+	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{0, 1, 1, 1, 10}}, &dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1}},
+		&dto.Info{2, dto.MemoryInfo{0, 1, 1, 1, 11}}, &dto.Info{2, dto.MemoryInfo{1, 1, 1, 1, 14}}}
 
 	lb.update(info)
 	if lb.CurrentInsertNodeId != 2 {
@@ -122,7 +122,7 @@ func Test_CalculateNodeRank(t *testing.T) {
 		&dto.Info{2, dto.MemoryInfo{0, 1, 1, 1, 10}}, &dto.Info{2, dto.MemoryInfo{1, 1, 1, 1, 11}}}
 
 
-	ranks := []int{15, 21}
+	ranks := []int{14, 11}
 
 	for id, node := range nodes {
 		rank := lb.calculateNodeRank(node, info)
