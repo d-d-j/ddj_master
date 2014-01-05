@@ -51,12 +51,12 @@ func (this *LoadBalancer) update(newInfos []*dto.Info) {
 
 func (this *LoadBalancer) chooseTheBestNode(nodeInfos []*dto.Info) int {
 	bestNodeId := common.CONST_UNINITIALIZED
-	bestRank := common.CONST_INT_MIN_VALUE
+	bestRank := common.CONST_UINT64_MAX_VALUE
 
 	for _, node := range this.nodes {
 		rank := this.calculateNodeRank(node, nodeInfos)
 
-		if rank > bestRank {
+		if rank < bestRank {
 			bestNodeId = int(node.Id)
 			bestRank = rank
 			log.Debug("calculated best rank: %d,  node id: %d", bestRank, node.Id)
@@ -66,16 +66,16 @@ func (this *LoadBalancer) chooseTheBestNode(nodeInfos []*dto.Info) int {
 	return bestNodeId
 }
 
-func (this *LoadBalancer) calculateNodeRank(node *Node, nodeInfos []*dto.Info) int {
-	nodeRank := int32(0)
-	bestGpuRank := int32(0)
+func (this *LoadBalancer) calculateNodeRank(node *Node, nodeInfos []*dto.Info) uint64 {
+	nodeRank := uint64(0)
+	bestGpuRank := common.CONST_UINT64_MAX_VALUE;
 	for _, info := range nodeInfos {
 		if info.NodeId != node.Id {
 			continue
 		}
-		gpuRank := info.MemoryInfo.GpuMemoryFree
+		gpuRank := info.MemoryInfo.DBMemoryFree
 
-		if gpuRank > bestGpuRank {
+		if gpuRank < bestGpuRank {
 			bestGpuRank = gpuRank
 			node.PreferredDeviceId = info.GpuId
 			nodeRank = gpuRank
@@ -83,7 +83,7 @@ func (this *LoadBalancer) calculateNodeRank(node *Node, nodeInfos []*dto.Info) i
 	}
 
 	log.Debug("calculated rank: %d, for node: %d, changed deviceId to %d", nodeRank, node.Id, node.PreferredDeviceId)
-	return int(nodeRank)
+	return nodeRank
 }
 
 func (this *LoadBalancer) IsUnitialized() bool {
