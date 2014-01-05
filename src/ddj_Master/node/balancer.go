@@ -46,6 +46,8 @@ func (this *LoadBalancer) update(newInfos []*dto.Info) {
 
 	this.CurrentInsertNodeId = int32(bestNodeId)
 
+	if (this.CurrentInsertNodeId == common.CONST_UNINITIALIZED) {	return	}
+
 	log.Info("Insert Node Id is now: %d GPUId: %d", this.CurrentInsertNodeId, this.nodes[this.CurrentInsertNodeId].PreferredDeviceId)
 }
 
