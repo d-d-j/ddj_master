@@ -138,7 +138,7 @@ func Test_ParseResultsToInfos_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *
 
 func Test_ParseResultsToInfos_Should_Return_One_Element_When_Called_With_One_In_Slice(t *testing.T) {
 	// PREPARE DATA FOR TEST
-	expected := &dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1}}
+	expected := &dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1, 1}}
 	data, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
@@ -153,9 +153,8 @@ func Test_ParseResultsToInfos_Should_Return_One_Element_When_Called_With_One_In_
 func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Single_Input(t *testing.T) {
 	// PREPARE DATA FOR TEST
 	expected := dto.Dtos{
-
-		&dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1}}, &dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1}},
-		&dto.Info{0, dto.MemoryInfo{2, 1, 2, 1, 1}}, &dto.Info{0, dto.MemoryInfo{3, 1, 3, 1, 1}}}
+		&dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1, 1}}, &dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1, 1}},
+		&dto.Info{0, dto.MemoryInfo{2, 1, 2, 1, 1, 1}}, &dto.Info{0, dto.MemoryInfo{3, 1, 3, 1, 1, 1}}}
 	data, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
@@ -176,7 +175,7 @@ func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Single_Input(t *te
 func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Input(t *testing.T) {
 	// PREPARE DATA FOR TEST
 	expected := dto.Dtos{
-		&dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1}}, &dto.Info{0, dto.MemoryInfo{3, 2, 1, 1, 1}},
+		&dto.Info{0, dto.MemoryInfo{1, 1, 1, 1, 1, 1}}, &dto.Info{0, dto.MemoryInfo{3, 2, 1, 1, 1, 1}},
 	}
 	data, err := expected.Encode()
 	if err != nil {
