@@ -278,7 +278,7 @@ func Benchmark_Select_Std(b *testing.B) {
 		v := float64(expected[i].Value)
 		μ += (mean - v) * (mean - v)
 	}
-	σ := dto.Value(math.Sqrt(μ) / float64(to-from))
+	σ := dto.Value(math.Sqrt(μ / float64(to-from)))
 
 	if math.Abs(float64(response.Data[0]-σ)) > eps {
 		b.Error("Got ", response.Data, " when expected ", σ)

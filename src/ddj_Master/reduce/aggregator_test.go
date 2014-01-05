@@ -251,7 +251,7 @@ func Test_StandardDeviation_Should_Return_StdDev_of_Slice(t *testing.T) {
 func Test_StandardDeviation_Should_Return_StdDev_of_Slice_2(t *testing.T) {
 	//http://en.wikipedia.org/wiki/Standard_deviation#Basic_examples
 	var value dto.Value
-	value = dto.Value(2)
+	value = dto.Value(2.138089935)
 	expected := []*dto.Value{&value}
 	input := []Aggregates{&dto.VarianceElement{1, 2, 0}, &dto.VarianceElement{3, 4, 0}, &dto.VarianceElement{2, 5, 0}, &dto.VarianceElement{1, 7, 0}, &dto.VarianceElement{1, 9, 0}}
 

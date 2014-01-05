@@ -129,27 +129,20 @@ func StandartdDeviation(input []Aggregates) dto.Dtos {
 		data[index] = variance.(*dto.VarianceElement)
 	}
 
-	for length > 1 {
-		index := 0
-		for i := 1; i < length; i += 2 {
+	x := data[0]
+	for i := 1; i < length; i++ {
+		y := data[i]
 
-			x := data[i-1]
-			y := data[i]
+		n := dto.Value(x.Count + y.Count)
+		delta := y.Mean - x.Mean
+		delta2 := delta * delta
+		mean := x.Mean + delta*dto.Value(y.Count)/n
+		M2 := x.M2 + y.M2
+		M2 += delta2 * dto.Value(x.Count*y.Count) / n
 
-			n := dto.Value(x.Count + y.Count)
-			delta := y.Mean - x.Mean
-			delta2 := delta * delta
-			mean := x.Mean + delta*dto.Value(y.Count)/n
-			M2 := x.M2 + y.M2
-			M2 += delta2 * dto.Value(x.Count*y.Count) / n
-
-			data[index] = &dto.VarianceElement{int32(n), mean, M2}
-			index++
-		}
-		if length%2 == 1 {
-			data[index] = data[length-1]
-		}
-		length--
+		x.Count = x.Count + y.Count
+		x.Mean = mean
+		x.M2 = M2
 	}
 
 	σ := dto.Value(math.Sqrt(float64(data[0].M2 / dto.Value(data[0].Count-1))))
