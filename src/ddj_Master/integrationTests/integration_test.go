@@ -323,6 +323,36 @@ func Benchmark_Select_Std(b *testing.B) {
 	}
 }
 
+func Benchmark_Select_Var(b *testing.B) {
+
+	SetUp(b)
+	from := 10
+	to := 100
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/var", from, to), b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	var mean float64
+	for i := from; i <= to; i++ {
+		mean += float64(expected[i].Value)
+	}
+	mean /= float64(to - from + 1)
+
+	var μ float64
+	for i := from; i <= to; i++ {
+		v := float64(expected[i].Value)
+		μ += (mean - v) * (mean - v)
+	}
+	σ := dto.Value(μ / float64(to-from))
+
+	if math.Abs(float64(response.Data[0]-σ)) > eps {
+		b.Error("Got ", response.Data, " when expected ", σ)
+	}
+}
+
 func Benchmark_Select_Int(b *testing.B) {
 
 	SetUp(b)

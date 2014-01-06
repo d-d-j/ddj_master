@@ -1,7 +1,7 @@
 package reduce
 
 import (
-	"ddj_Master/common"
+	. "ddj_Master/common"
 	"ddj_Master/dto"
 	"math"
 	"sort"
@@ -15,13 +15,14 @@ var aggregations map[int32]Aggregator
 
 func Initialize() {
 	aggregations = map[int32]Aggregator{
-		common.AGGREGATION_NONE:         NonAggregation,
-		common.AGGREGATION_MAX:          MaxAggregation,
-		common.AGGREGATION_MIN:          MinAggregation,
-		common.AGGREGATION_ADD:          AddAggregation,
-		common.AGGREGATION_AVERAGE:      AverageAggregation,
-		common.AGGREGATION_STDDEVIATION: StandartdDeviation,
-		common.AGGREGATION_INTEGRAL:     Integral,
+		AGGREGATION_NONE:         NonAggregation,
+		AGGREGATION_MAX:          MaxAggregation,
+		AGGREGATION_MIN:          MinAggregation,
+		AGGREGATION_ADD:          AddAggregation,
+		AGGREGATION_AVERAGE:      AverageAggregation,
+		AGGREGATION_VARIANCE:     Variance,
+		AGGREGATION_STDDEVIATION: StandartdDeviation,
+		AGGREGATION_INTEGRAL:     Integral,
 	}
 }
 
@@ -130,7 +131,36 @@ func StandartdDeviation(input []Aggregates) dto.Dtos {
 		data[index] = variance.(*dto.VarianceElement)
 	}
 
-	x := data[0]
+	σ := dto.Value(math.Sqrt(variance(data)))
+
+	return dto.Dtos{&σ}
+}
+
+func Variance(input []Aggregates) dto.Dtos {
+
+	length := len(input)
+	if length < 1 {
+		return dto.Dtos{}
+	}
+
+	data := make([]*dto.VarianceElement, length)
+
+	for index, variance := range input {
+		data[index] = variance.(*dto.VarianceElement)
+	}
+
+	σ := dto.Value(variance(data))
+
+	return dto.Dtos{&σ}
+}
+
+func variance(data []*dto.VarianceElement) float64 {
+
+	length := len(data)
+
+	var x dto.VarianceElement
+	x = *data[0]
+
 	for i := 1; i < length; i++ {
 		y := data[i]
 
@@ -146,9 +176,7 @@ func StandartdDeviation(input []Aggregates) dto.Dtos {
 		x.M2 = M2
 	}
 
-	σ := dto.Value(math.Sqrt(float64(data[0].M2 / dto.Value(data[0].Count-1))))
-
-	return dto.Dtos{&σ}
+	return float64(x.M2 / dto.Value(x.Count-1))
 }
 
 func Integral(input []Aggregates) dto.Dtos {

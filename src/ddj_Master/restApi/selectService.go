@@ -71,6 +71,8 @@ func prepareAggregationType(aggregation string) (int32, error) {
 		return common.AGGREGATION_AVERAGE, nil
 	case "std":
 		return common.AGGREGATION_STDDEVIATION, nil
+	case "var":
+		return common.AGGREGATION_VARIANCE, nil
 	case "int":
 		return common.AGGREGATION_INTEGRAL, nil
 	default:
