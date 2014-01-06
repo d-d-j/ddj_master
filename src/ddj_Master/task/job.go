@@ -182,7 +182,7 @@ func parseResultsToVariance(results []*dto.Result) []reduce.Aggregates {
 }
 
 func parseResultsToIntegralElements(results []*dto.Result) []reduce.Aggregates {
-	elementSize := (&dto.IntegralElement{}).Size()
+	elementSize := dto.IntegralElement{}.Size()
 	resultsCount := len(results)
 	values := make([]reduce.Aggregates, 0, resultsCount)
 	for _, result := range results {

@@ -528,8 +528,8 @@ func Benchmark_Select_Int(b *testing.B) {
 
 	if math.Abs(float64(response.Data[0]-integral)) > eps {
 		b.Error("Got ", response.Data, " when expected ", integral)
+		b.Log(queryString)
 	}
-	b.Log(queryString)
 }
 
 func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {

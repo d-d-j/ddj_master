@@ -30,12 +30,15 @@ func (this *IntegralElement) String() string {
 }
 
 func (this *IntegralElement) Encode() ([]byte, error) {
+	//Only for tests
 	buf := new(bytes.Buffer)
 
-	err := binary.Write(buf, binary.LittleEndian, this)
-	if err != nil {
-		return nil, err
-	}
+	binary.Write(buf, binary.LittleEndian, this.Integral)
+	binary.Write(buf, binary.LittleEndian, this.LeftValue)
+	binary.Write(buf, binary.LittleEndian, this.LeftTime)
+	binary.Write(buf, binary.LittleEndian, this.RightValue)
+	binary.Write(buf, binary.LittleEndian, this.RightValue)
+	binary.Write(buf, binary.LittleEndian, this.RightTime)
 
 	return buf.Bytes(), nil
 }
@@ -43,10 +46,16 @@ func (this *IntegralElement) Encode() ([]byte, error) {
 func (this *IntegralElement) Decode(buf []byte) error {
 
 	buffer := bytes.NewBuffer(buf)
-	return binary.Read(buffer, binary.LittleEndian, this)
+	err := binary.Read(buffer, binary.LittleEndian, this)
+	if err != nil {
+		return err
+	}
+	buffer = bytes.NewBuffer(buf[24:])
+	return binary.Read(buffer, binary.LittleEndian, &(this.RightTime))
+
 }
 
-func (this *IntegralElement) Size() int {
+func (this IntegralElement) Size() int {
 
-	return binary.Size(this)
+	return binary.Size(this) + 4
 }

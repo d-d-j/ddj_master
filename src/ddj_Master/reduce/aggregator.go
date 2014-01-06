@@ -1,6 +1,7 @@
 package reduce
 
 import (
+	log "code.google.com/p/log4go"
 	. "ddj_Master/common"
 	"ddj_Master/dto"
 	"math"
@@ -193,6 +194,7 @@ func Integral(input []Aggregates) dto.Dtos {
 
 	for index, variance := range input {
 		data[index] = variance.(*dto.IntegralElement)
+		log.Warn(data[index])
 	}
 
 	sort.Sort(dto.ByLeftTime(data))
