@@ -29,7 +29,7 @@ func Test_Update_With_Nil_Entry_Cause_Balancer_Reset(t *testing.T) {
 
 func Test_Update_With_No_Nodes_Cause_Balancer_Reset(t *testing.T) {
 	nodes := make(map[int32]*Node)
-	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1, 1}}}
+	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{GpuId: 1, MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal:  1, GpuMemoryFree: 1, DBMemoryFree: 2}}}
 	actual := NewLoadBalancer(nodes)
 	expected := NewLoadBalancer(nil)
 	actual.update(info)
@@ -44,7 +44,7 @@ func Test_Update_With_One_Node_With_One_GPU_Node_And_GPU_Are_Set(t *testing.T) {
 	lb := NewLoadBalancer(nodes)
 	lb.CurrentInsertNodeId = 0
 	nodes[1].PreferredDeviceId = 0
-	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1, 1}}}
+	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{GpuId: 1, MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal:  1, GpuMemoryFree: 1, DBMemoryFree: 2}}}
 
 
 	lb.update(info)
@@ -65,7 +65,7 @@ func Test_Update_With_One_Node_With_Two_GPUs_Cause_Changing_GPU(t *testing.T) {
 	lb := NewLoadBalancer(nodes)
 	lb.CurrentInsertNodeId = -1
 	nodes[1].PreferredDeviceId = -1
-	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{0, 1, 1, 1, 1, 112}}, &dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 12, 22222222222222}}}
+	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{GpuId: 0, MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal:  1, GpuMemoryFree: 1, DBMemoryFree: 112}}, &dto.Info{1, dto.MemoryInfo{GpuId: 1, MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal:  1, GpuMemoryFree: 1, DBMemoryFree: 22222222}}}
 
 	lb.update(info)
 	if lb.CurrentInsertNodeId != 1 {
@@ -87,9 +87,8 @@ func Test_Update_With_Two_Nodes_Two_GPUs_Each_Cause_Changing_Node(t *testing.T) 
 	lb := NewLoadBalancer(nodes)
 	lb.CurrentInsertNodeId = -1
 	nodes[1].PreferredDeviceId = -1
-	nodes[2].PreferredDeviceId = -1
-	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{0, 1, 1, 1, 10, 1112312312}}, &dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1, 11231}},
-		&dto.Info{2, dto.MemoryInfo{0, 1, 1, 1, 11, 12}}, &dto.Info{2, dto.MemoryInfo{1, 1, 1, 1, 14, 112222222}}}
+	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{GpuId:0, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 10, DBMemoryFree:  1112312312}}, &dto.Info{1, dto.MemoryInfo{ GpuId:1, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree: 11231}},
+		&dto.Info{2, dto.MemoryInfo{GpuId:0, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   11, GpuMemoryFree: 1, DBMemoryFree: 12}}, &dto.Info{2, dto.MemoryInfo{GpuId:1, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal: 14, GpuMemoryFree: 1, DBMemoryFree:112222222}}}
 
 	lb.update(info)
 	if lb.CurrentInsertNodeId != 2 {
@@ -118,8 +117,8 @@ func Test_CalculateNodeRank(t *testing.T) {
 
 	nodes[1].PreferredDeviceId = -1
 	nodes[2].PreferredDeviceId = -1
-	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{0, 1, 1, 1, 14, 1123123123}}, &dto.Info{1, dto.MemoryInfo{1, 1, 1, 1, 1, 4545531}},
-		&dto.Info{2, dto.MemoryInfo{0, 1, 1, 1, 10, 34534534}}, &dto.Info{2, dto.MemoryInfo{1, 1, 1, 1, 11, 435}}}
+	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{GpuId:0, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 14, DBMemoryFree:  1123123123}}, &dto.Info{1, dto.MemoryInfo{GpuId:1, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 14, DBMemoryFree: 4545531}},
+		&dto.Info{2, dto.MemoryInfo{GpuId:0, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 10, DBMemoryFree:  34534534}}, &dto.Info{2, dto.MemoryInfo{GpuId:1, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 11, DBMemoryFree: 435}}}
 
 
 	ranks := []uint64{4545531, 435}

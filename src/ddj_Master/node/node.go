@@ -40,7 +40,7 @@ func (n *Node) StartWork(balancerChannel chan<- []*dto.Info) {
 		go n.readerRoutine()
 		go n.senderRoutine()
 	}
-	balancerChannel <- []*dto.Info{&dto.Info{n.Id, dto.MemoryInfo{n.GpuIds[0], 1, 1, 1, 1, 1}}}
+	balancerChannel <- []*dto.Info{&dto.Info{NodeId: n.Id, MemoryInfo: dto.MemoryInfo{GpuId: n.GpuIds[0], MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal:  1,GpuMemoryFree: 1, DBMemoryFree: 1}}}
 	log.Debug("Node %d READY", n.Id)
 }
 
