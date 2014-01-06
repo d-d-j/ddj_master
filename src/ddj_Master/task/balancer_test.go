@@ -15,7 +15,7 @@ func Test_Update_Called_10_Times_Will_Fire_All_10_Workers(t *testing.T) {
 	pool := NewWorkersPool(int32(SIZE), 1, done, nil)
 	balancer.pool = pool
 	requestChan := make(chan dto.RestRequest)
-	go balancer.Balance(requestChan)
+	go balancer.Balance(requestChan, 1000)
 	go func() {
 		for i := 0; i < SIZE*TIMES; i++ {
 			go func() {
