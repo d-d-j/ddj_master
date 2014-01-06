@@ -526,9 +526,8 @@ func Benchmark_Select_Int(b *testing.B) {
 		b.FailNow()
 	}
 
-	integral := exp[0].(dto.Element).Value
+	integral := dto.Value(0.0)
 	for i := 1; i < len(exp); i++ {
-		integral += exp[i].(dto.Element).Value
 		integral += (exp[i].(dto.Element).Value + exp[i-1].(dto.Element).Value) * dto.Value(exp[i].(dto.Element).Time-exp[i-1].(dto.Element).Time) / 2
 	}
 
