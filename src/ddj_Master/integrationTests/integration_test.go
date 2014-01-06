@@ -278,7 +278,7 @@ func ElementInRange(element dto.Element, from, to int64, tags []int32, metrics [
 			break
 		}
 	}
-	inTime = element.Time < to && element.Time >= from
+	inTime = element.Time <= to && element.Time >= from
 
 	return inTime && inTag && inMetric, nil
 }
