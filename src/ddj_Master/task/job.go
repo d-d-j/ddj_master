@@ -177,6 +177,25 @@ func parseResultsToVariance(results []*dto.Result) []reduce.Aggregates {
 	return values
 }
 
+func parseResultsToIntegralElements(results []*dto.Result) []reduce.Aggregates {
+	elementSize := (&dto.IntegralElement{}).Size()
+	resultsCount := len(results)
+	values := make([]reduce.Aggregates, 0, resultsCount)
+	for _, result := range results {
+		length := len(result.Data) / elementSize
+		for j := 0; j < length; j++ {
+			var e dto.IntegralElement
+			err := e.Decode(result.Data[j*elementSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			values = append(values, &e)
+		}
+	}
+	return values
+}
+
 func (w *TaskWorker) Info(req dto.RestRequest) bool {
 	log.Debug(w, " is processing [info] task")
 	// TODO: Handle errors better
