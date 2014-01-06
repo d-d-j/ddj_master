@@ -50,7 +50,7 @@ func main() {
 	log.Info("Initialize task manager")
 	go task.TaskManager.Manage()
 	taskBal := task.NewBalancer(cfg.Constants.WorkersCount, cfg.Constants.JobForWorkerCount, nodeBal)
-	go taskBal.Balance(chanReq)
+	go taskBal.Balance(chanReq, cfg.Balancer.Timeout)
 
 	// Initialize node listener
 	log.Info("Initialize node listener")

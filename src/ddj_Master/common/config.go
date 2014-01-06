@@ -18,6 +18,7 @@ type Config struct {
 		CpuNumber         int
 	}
 	Balancer struct {
+		Timeout		 int32
 	    WeightGPUMem int32
 		WeightCPUMem int32
 	}

@@ -29,10 +29,12 @@ func NewBalancer(workersCount int32, jobForWorkerCount int32, loadBal *node.Load
 	return b
 }
 
-func (b *Balancer) Balance(work <-chan dto.RestRequest) {
+func (b *Balancer) Balance(work <-chan dto.RestRequest, timeoutSeconds int32) {
 	log.Info("Task manager balancer started")
 	index := 0
-	timeout := time.After(1*time.Second)
+
+	timeoutDuration := time.Duration(timeoutSeconds)*time.Second
+	timeout := time.After(timeoutDuration)
 
 	for {
 		select {
@@ -46,7 +48,7 @@ func (b *Balancer) Balance(work <-chan dto.RestRequest) {
 			case <-timeout:
 				b.dispatch(dto.RestRequest{Type: common.TASK_INFO, Data: new(dto.EmptyElement), Response: nil}, index)
 				index = (index + 1)%b.pool.Len()
-				timeout = time.After(1*time.Second)
+				timeout = time.After(timeoutDuration)
 			}
 		}
 	}

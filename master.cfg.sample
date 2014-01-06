@@ -4,6 +4,7 @@ workersCount = 10000
 jobForWorkerCount = 5000
 cpuNumber = 8
 [Balancer]
+Timeout = 5                 #Time between nodeInfo requests [s]
 weightCPUMem = 1
 weightGPUMem = 1
 [Logging]
