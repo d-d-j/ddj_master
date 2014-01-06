@@ -260,6 +260,17 @@ func Test_StandardDeviation_Should_Return_StdDev_of_Slice_2(t *testing.T) {
 	AssertValuesEqual(expected, actual, t)
 }
 
+func Test_StandardDeviation_Should_Return_0_For_One_Element_And_Count_1(t *testing.T) {
+	var value dto.Value
+	value = dto.Value(0.0)
+	expected := []*dto.Value{&value}
+	input := []Aggregates{&dto.VarianceElement{1, 5, 0}}
+
+	actual := StandartdDeviation(input)
+
+	AssertValuesEqual(expected, actual, t)
+}
+
 func Test_Integral_Should_Return_Integral_of_Slice(t *testing.T) {
 
 	var value dto.Value

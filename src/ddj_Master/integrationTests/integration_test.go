@@ -7,6 +7,7 @@ import (
 	. "github.com/ahmetalpbalkan/go-linq"
 	"io/ioutil"
 	"math"
+	"math/rand"
 	"net/http"
 	"strings"
 	"testing"
@@ -36,12 +37,14 @@ var (
 	insert_completed bool
 	data             []string
 	expected         []dto.Element
+	random           *rand.Rand
 )
 
 func SetUp(b *testing.B) {
 
+	random = rand.New(rand.NewSource(99))
+
 	if insert_completed != true {
-		client := &http.Client{}
 		data = make([]string, INSERTED_DATA)
 		expected = make([]dto.Element, INSERTED_DATA)
 		for i := 0; i < INSERTED_DATA; i++ {
@@ -51,6 +54,7 @@ func SetUp(b *testing.B) {
 			expected[i] = e
 		}
 
+		client := &http.Client{}
 		for i := 0; i < INSERTED_DATA; i++ {
 
 			req, err := http.NewRequest("POST", HOST, strings.NewReader(data[i]))
@@ -74,8 +78,6 @@ func SetUp(b *testing.B) {
 		Flush(b)
 	}
 }
-
-//TODO: Add more select test for filters and aggregations
 
 func Benchmark_Select_First_Value(b *testing.B) {
 
@@ -158,10 +160,12 @@ func SelectAggr(query string, b *testing.B) RestForAggregation {
 	defer req.Body.Close()
 	if err != nil {
 		b.Log("Error occurred: ", err)
+		b.Log(query)
 	}
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		b.Log("Error occurred: ", err)
+		b.Log(query)
 		b.FailNow()
 	}
 
@@ -172,49 +176,136 @@ func SelectAggr(query string, b *testing.B) RestForAggregation {
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		b.Error("Error occurred: ", err)
+		b.Log(query)
 		b.FailNow()
 	}
 
 	return response
 }
 
-func Benchmark_Select_Max(b *testing.B) {
-
-	SetUp(b)
-
-	from := int64(0)
-	to := int64(b.N % INSERTED_DATA)
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/max", from, to), b)
-
-	if len(response.Data) < 1 {
-		b.Log("Nothing returned")
-		b.FailNow()
-	}
-
-	exp, err := From(expected).Where(
-		func(element T) (bool, error) {
-			elem := element.(dto.Element).Time
-			return elem <= to && elem >= from, nil
-		}).Select(Value).MaxFloat64()
-
-	if err != nil {
-		b.Error("Error: ", err)
-		b.FailNow()
-	}
-
-	if math.Abs(float64(response.Data[0])-exp) > eps {
-		b.Error("Got ", response.Data, " when expected ", exp)
-	}
-}
-
 func Benchmark_Select_Min(b *testing.B) {
 
 	SetUp(b)
 
-	from := int64(0)
-	to := int64(b.N % INSERTED_DATA)
+	t := random.Intn(INSERTED_DATA) + 1
+	f := random.Intn(t - 1)
 
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/min", from, to), b)
+	from := expected[f].Time
+	to := expected[t].Time
+	metrics := make([]int32, 0, NUMBER_OF_METRICS)
+	for metric := 0; metric <= NUMBER_OF_METRICS; metric++ {
+		tags := make([]int32, 0, NUMBER_OF_TAGS_PER_METRICS)
+		for tag := 0; tag <= NUMBER_OF_TAGS_PER_METRICS; tag++ {
+			Select_Min(b, from, to, tags, metrics)
+			tags = append(tags, int32(tag))
+		}
+		metrics = append(metrics, int32(metric))
+	}
+}
+
+func Benchmark_Select_Max(b *testing.B) {
+
+	SetUp(b)
+
+	t := random.Intn(INSERTED_DATA) + 1
+	f := random.Intn(t - 1)
+
+	from := expected[f].Time
+	to := expected[t].Time
+	metrics := make([]int32, 0, NUMBER_OF_METRICS)
+	for metric := 0; metric <= NUMBER_OF_METRICS; metric++ {
+		tags := make([]int32, 0, NUMBER_OF_TAGS_PER_METRICS)
+		for tag := 0; tag <= NUMBER_OF_TAGS_PER_METRICS; tag++ {
+			Select_Max(b, from, to, tags, metrics)
+			tags = append(tags, int32(tag))
+		}
+		metrics = append(metrics, int32(metric))
+	}
+}
+
+func Benchmark_Select_Sum(b *testing.B) {
+
+	SetUp(b)
+
+	t := random.Intn(INSERTED_DATA) + 1
+	f := random.Intn(t - 1)
+
+	from := expected[f].Time
+	to := expected[t].Time
+	metrics := make([]int32, 0, NUMBER_OF_METRICS)
+	for metric := 0; metric <= NUMBER_OF_METRICS; metric++ {
+		tags := make([]int32, 0, NUMBER_OF_TAGS_PER_METRICS)
+		for tag := 0; tag <= NUMBER_OF_TAGS_PER_METRICS; tag++ {
+			Select_Sum(b, from, to, tags, metrics)
+			tags = append(tags, int32(tag))
+		}
+		metrics = append(metrics, int32(metric))
+	}
+}
+
+func Benchmark_Select_Avg(b *testing.B) {
+
+	SetUp(b)
+
+	t := random.Intn(INSERTED_DATA) + 1
+	f := random.Intn(t - 1)
+
+	from := expected[f].Time
+	to := expected[t].Time
+	metrics := make([]int32, 0, NUMBER_OF_METRICS)
+	for metric := 0; metric <= NUMBER_OF_METRICS; metric++ {
+		tags := make([]int32, 0, NUMBER_OF_TAGS_PER_METRICS)
+		for tag := 0; tag <= NUMBER_OF_TAGS_PER_METRICS; tag++ {
+			Select_Avg(b, from, to, tags, metrics)
+			tags = append(tags, int32(tag))
+		}
+		metrics = append(metrics, int32(metric))
+	}
+}
+
+func ElementInRange(element dto.Element, from, to int64, tags []int32, metrics []int32) (bool, error) {
+	var inMetric, inTag, inTime bool
+	inMetric = (len(metrics) == 0)
+	for _, metric := range metrics {
+		if element.Metric == metric {
+			inMetric = true
+			break
+		}
+	}
+	inTag = len(tags) == 0
+	for _, tag := range tags {
+		if element.Tag == tag {
+			inTag = true
+			break
+		}
+	}
+	inTime = element.Time < to && element.Time >= from
+
+	return inTime && inTag && inMetric, nil
+}
+
+func prepareTagsOrMetrics(input []int32) string {
+	var str string
+	str = ""
+	for _, x := range input {
+		str += fmt.Sprintf("%d,", x)
+	}
+	if len(input) == 0 {
+		str = "all"
+	} else {
+		str = strings.TrimSuffix(str, ",")
+	}
+	return str
+}
+
+func Select_Min(b *testing.B, from, to int64, tags []int32, metrics []int32) {
+
+	metricsStr := prepareTagsOrMetrics(metrics)
+	tagsStr := prepareTagsOrMetrics(tags)
+	queryString := fmt.Sprintf("/metric/%s/tag/%s/time/%d-%d/aggregation/min",
+		metricsStr, tagsStr, from, to)
+
+	response := SelectAggr(queryString, b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
@@ -222,9 +313,9 @@ func Benchmark_Select_Min(b *testing.B) {
 	}
 
 	exp, err := From(expected).Where(
-		func(element T) (bool, error) {
-			elem := element.(dto.Element).Time
-			return elem <= to && elem >= from, nil
+		func(e T) (bool, error) {
+			element := e.(dto.Element)
+			return ElementInRange(element, from, to, tags, metrics)
 		}).Select(Value).MinFloat64()
 
 	if err != nil {
@@ -234,15 +325,18 @@ func Benchmark_Select_Min(b *testing.B) {
 
 	if math.Abs(float64(response.Data[0])-exp) > eps {
 		b.Error("Got ", response.Data, " when expected ", exp)
+		b.Log(queryString)
 	}
 }
 
-func Benchmark_Select_Sum(b *testing.B) {
+func Select_Max(b *testing.B, from, to int64, tags []int32, metrics []int32) {
 
-	SetUp(b)
-	from := int64(0)
-	to := int64(b.N % INSERTED_DATA)
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/sum", from, to), b)
+	metricsStr := prepareTagsOrMetrics(metrics)
+	tagsStr := prepareTagsOrMetrics(tags)
+	queryString := fmt.Sprintf("/metric/%s/tag/%s/time/%d-%d/aggregation/max",
+		metricsStr, tagsStr, from, to)
+
+	response := SelectAggr(queryString, b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
@@ -250,9 +344,40 @@ func Benchmark_Select_Sum(b *testing.B) {
 	}
 
 	exp, err := From(expected).Where(
-		func(element T) (bool, error) {
-			elem := element.(dto.Element).Time
-			return elem <= to && elem >= from, nil
+		func(e T) (bool, error) {
+			element := e.(dto.Element)
+			return ElementInRange(element, from, to, tags, metrics)
+		}).Select(Value).MaxFloat64()
+
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
+	}
+
+	if math.Abs(float64(response.Data[0])-exp) > eps {
+		b.Error("Got ", response.Data, " when expected ", exp)
+		b.Log(queryString)
+	}
+}
+
+func Select_Sum(b *testing.B, from, to int64, tags []int32, metrics []int32) {
+
+	metricsStr := prepareTagsOrMetrics(metrics)
+	tagsStr := prepareTagsOrMetrics(tags)
+	queryString := fmt.Sprintf("/metric/%s/tag/%s/time/%d-%d/aggregation/sum",
+		metricsStr, tagsStr, from, to)
+
+	response := SelectAggr(queryString, b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	exp, err := From(expected).Where(
+		func(e T) (bool, error) {
+			element := e.(dto.Element)
+			return ElementInRange(element, from, to, tags, metrics)
 		}).Select(Value).Sum()
 
 	if err != nil {
@@ -262,15 +387,18 @@ func Benchmark_Select_Sum(b *testing.B) {
 
 	if math.Abs(float64(response.Data[0])-exp) > eps {
 		b.Error("Got ", response.Data, " when expected ", exp)
+		b.Log(queryString)
 	}
 }
 
-func Benchmark_Select_Avg(b *testing.B) {
+func Select_Avg(b *testing.B, from, to int64, tags []int32, metrics []int32) {
 
-	SetUp(b)
-	from := int64(0)
-	to := int64(b.N % INSERTED_DATA)
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/avg", from, to), b)
+	metricsStr := prepareTagsOrMetrics(metrics)
+	tagsStr := prepareTagsOrMetrics(tags)
+	queryString := fmt.Sprintf("/metric/%s/tag/%s/time/%d-%d/aggregation/avg",
+		metricsStr, tagsStr, from, to)
+
+	response := SelectAggr(queryString, b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
@@ -278,6 +406,36 @@ func Benchmark_Select_Avg(b *testing.B) {
 	}
 
 	exp, err := From(expected).Where(
+		func(e T) (bool, error) {
+			element := e.(dto.Element)
+			return ElementInRange(element, from, to, tags, metrics)
+		}).Select(Value).Average()
+
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
+	}
+
+	if math.Abs(float64(response.Data[0])-exp) > eps {
+		b.Error("Got ", response.Data, " when expected ", exp)
+		b.Log(queryString)
+	}
+}
+
+func Benchmark_Select_Std(b *testing.B) {
+
+	SetUp(b)
+	from := expected[0].Time
+	to := expected[b.N%INSERTED_DATA].Time
+	queryString := fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/std", from, to)
+	response := SelectAggr(queryString, b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	mean, err := From(expected).Where(
 		func(element T) (bool, error) {
 			elem := element.(dto.Element).Time
 			return elem <= to && elem >= from, nil
@@ -288,92 +446,97 @@ func Benchmark_Select_Avg(b *testing.B) {
 		b.FailNow()
 	}
 
-	if math.Abs(float64(response.Data[0])-exp) > eps {
-		b.Error("Got ", response.Data, " when expected ", exp)
-	}
-}
-
-func Benchmark_Select_Std(b *testing.B) {
-
-	SetUp(b)
-	from := 10
-	to := 100
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/std", from, to), b)
-
-	if len(response.Data) < 1 {
-		b.Log("Nothing returned")
-		b.FailNow()
-	}
-
-	var mean float64
-	for i := from; i <= to; i++ {
-		mean += float64(expected[i].Value)
-	}
-	mean /= float64(to - from + 1)
-
 	var μ float64
 	for i := from; i <= to; i++ {
 		v := float64(expected[i].Value)
 		μ += (mean - v) * (mean - v)
 	}
 	σ := dto.Value(math.Sqrt(μ / float64(to-from)))
+	if to-from == 1 {
+		σ = 0.0
+	}
 
 	if math.Abs(float64(response.Data[0]-σ)) > eps {
 		b.Error("Got ", response.Data, " when expected ", σ)
+		b.Log(queryString)
 	}
 }
 
 func Benchmark_Select_Var(b *testing.B) {
 
 	SetUp(b)
-	from := 10
-	to := 100
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/var", from, to), b)
+	from := expected[0].Time
+	to := expected[b.N%INSERTED_DATA].Time
+	queryString := fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/var", from, to)
+	response := SelectAggr(queryString, b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
 		b.FailNow()
 	}
 
-	var mean float64
-	for i := from; i <= to; i++ {
-		mean += float64(expected[i].Value)
+	mean, err := From(expected).Where(
+		func(element T) (bool, error) {
+			elem := element.(dto.Element).Time
+			return elem <= to && elem >= from, nil
+		}).Select(Value).Average()
+
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
 	}
-	mean /= float64(to - from + 1)
 
 	var μ float64
-	for i := from; i <= to; i++ {
+	for i := from; i < to; i++ {
 		v := float64(expected[i].Value)
 		μ += (mean - v) * (mean - v)
 	}
 	σ := dto.Value(μ / float64(to-from))
-
+	if len(expected[from:to]) <= 1 {
+		σ = 0
+	}
 	if math.Abs(float64(response.Data[0]-σ)) > eps {
 		b.Error("Got ", response.Data, " when expected ", σ)
+		b.Log(queryString)
 	}
 }
 
 func Benchmark_Select_Int(b *testing.B) {
 
 	SetUp(b)
-	from := 10
-	to := 100
-	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/int", from, to), b)
+	from := expected[0].Time
+	to := expected[b.N%INSERTED_DATA].Time
+	tag := 0
+	metric := 0
+	queryString := fmt.Sprintf("/metric/%d/tag/%d/time/%d-%d/aggregation/int", metric, tag, from, to)
+	response := SelectAggr(queryString, b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
 		b.FailNow()
 	}
 
-	integral := expected[from].Value
-	for i := from + 1; i <= to; i++ {
-		integral += expected[i].Value
-		integral += (expected[i].Value + expected[i-1].Value) * dto.Value(expected[i].Time-expected[i-1].Time) / 2
+	exp, err := From(expected).Where(
+		func(e T) (bool, error) {
+			element := e.(dto.Element)
+			return ElementInRange(element, from, to, []int32{0}, []int32{0})
+		}).Results()
+
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
+	}
+
+	integral := exp[0].(dto.Element).Value
+	for i := 1; i < len(exp); i++ {
+		integral += exp[i].(dto.Element).Value
+		integral += (exp[i].(dto.Element).Value + exp[i-1].(dto.Element).Value) * dto.Value(exp[i].(dto.Element).Time-exp[i-1].(dto.Element).Time) / 2
 	}
 
 	if math.Abs(float64(response.Data[0]-integral)) > eps {
 		b.Error("Got ", response.Data, " when expected ", integral)
 	}
+	b.Log(queryString)
 }
 
 func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {

@@ -157,7 +157,9 @@ func Variance(input []Aggregates) dto.Dtos {
 func variance(data []*dto.VarianceElement) float64 {
 
 	length := len(data)
-
+	if length == 1 && data[0].Count <= 1 {
+		return 0.0
+	}
 	var x dto.VarianceElement
 	x = *data[0]
 
