@@ -425,7 +425,7 @@ func Benchmark_Select_Std(b *testing.B) {
 
 	SetUp(b)
 	from := expected[0].Time
-	to := expected[b.N%INSERTED_DATA].Time
+	to := expected[b.N%INSERTED_DATA].Time + 1
 	queryString := fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/std", from, to)
 	response := SelectAggr(queryString, b)
 
@@ -451,9 +451,6 @@ func Benchmark_Select_Std(b *testing.B) {
 		μ += (mean - v) * (mean - v)
 	}
 	σ := dto.Value(math.Sqrt(μ / float64(to-from)))
-	if to-from == 1 {
-		σ = 0.0
-	}
 
 	if math.Abs(float64(response.Data[0]-σ)) > eps {
 		b.Error("Got ", response.Data, " when expected ", σ)
@@ -465,7 +462,7 @@ func Benchmark_Select_Var(b *testing.B) {
 
 	SetUp(b)
 	from := expected[0].Time
-	to := expected[b.N%INSERTED_DATA].Time
+	to := expected[b.N%INSERTED_DATA].Time + 1
 	queryString := fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/var", from, to)
 	response := SelectAggr(queryString, b)
 
@@ -486,14 +483,12 @@ func Benchmark_Select_Var(b *testing.B) {
 	}
 
 	var μ float64
-	for i := from; i < to; i++ {
+	for i := from; i <= to; i++ {
 		v := float64(expected[i].Value)
 		μ += (mean - v) * (mean - v)
 	}
 	σ := dto.Value(μ / float64(to-from))
-	if len(expected[from:to]) <= 1 {
-		σ = 0
-	}
+
 	if math.Abs(float64(response.Data[0]-σ)) > eps {
 		b.Error("Got ", response.Data, " when expected ", σ)
 		b.Log(queryString)
