@@ -27,10 +27,10 @@ type RestForAggregation struct {
 const (
 	NUMBER_OF_TAGS_PER_METRICS int = 4
 	NUMBER_OF_METRICS          int = 4
-	INSERTED_DATA              int = 10000
+	INSERTED_DATA              int = 1000
 	// TODO: use cfg values instead of hardcoded port
 	HOST string  = "http://localhost:8888/data"
-	eps  float64 = 0.001
+	eps  float64 = 0.01
 )
 
 var (
