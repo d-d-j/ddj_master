@@ -88,6 +88,49 @@ func Test_ParseResultsToElements_Should_Return_All_Elements_From_Input(t *testin
 	}
 }
 
+func Test_ParseResultsToIntegralElements_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *testing.T) {
+	data := []byte{}
+	result := dto.NewResult(0, 1, common.TASK_SELECT, 0, data)
+	actual := parseResultsToIntegralElements([]*dto.Result{result, result, result})
+	if len(actual) != 0 {
+		t.Error("Expected empty slice but got ", actual)
+	}
+}
+
+func Test_ParseResultsToIntegralElements_Should_Return_One_Element_When_Called_With_One_In_Slice(t *testing.T) {
+	// PREPARE DATA FOR TEST
+	expected := &dto.IntegralElement{0.5, 0.1, 1, 0.2, 2}
+	data, err := expected.Encode()
+	if err != nil {
+		t.Error("Error occurred", err)
+	}
+	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
+	actual := parseResultsToIntegralElements([]*dto.Result{result})
+	for _, elem := range actual {
+		AssertEqual(expected, elem.(*dto.IntegralElement), t)
+	}
+}
+
+func Test_ParseResultsToIntegralElements_Should_Return_All_IntegralElements_From_Single_Input(t *testing.T) {
+	// PREPARE DATA FOR TEST
+	expected := dto.Dtos{&dto.IntegralElement{0.5, 0.1, 1, 0.2, 2}, &dto.IntegralElement{0.5, 0.1, 3, 0.2, 4}, &dto.IntegralElement{0.5, 0.1, 6, 0.2, 5}}
+	data, err := expected.Encode()
+	if err != nil {
+		t.Error("Error occurred", err)
+	}
+	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
+	actual := parseResultsToIntegralElements([]*dto.Result{result})
+	// ASSERTIONS
+
+	if len(actual) != 3 {
+		t.Error("Wrong data returned. Expected ", len(expected), " values")
+	}
+
+	for index, elem := range actual {
+		AssertEqual(expected[index], elem.(*dto.IntegralElement), t)
+	}
+}
+
 func Test_ParseResultsToVariance_Should_Return_All_Elements_From_Input(t *testing.T) {
 	// PREPARE DATA FOR TEST
 	expected := dto.Dtos{

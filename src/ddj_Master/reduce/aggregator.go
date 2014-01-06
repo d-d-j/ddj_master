@@ -9,7 +9,7 @@ import (
 
 type Aggregator func([]Aggregates) dto.Dtos
 
-type Aggregates interface{}
+type Aggregates dto.Dto
 
 var aggregations map[int32]Aggregator
 
@@ -21,6 +21,7 @@ func Initialize() {
 		common.AGGREGATION_ADD:          AddAggregation,
 		common.AGGREGATION_AVERAGE:      AverageAggregation,
 		common.AGGREGATION_STDDEVIATION: StandartdDeviation,
+		common.AGGREGATION_INTEGRAL:     Integral,
 	}
 }
 
@@ -148,4 +149,31 @@ func StandartdDeviation(input []Aggregates) dto.Dtos {
 	σ := dto.Value(math.Sqrt(float64(data[0].M2 / dto.Value(data[0].Count-1))))
 
 	return dto.Dtos{&σ}
+}
+
+func Integral(input []Aggregates) dto.Dtos {
+
+	var integral dto.Value
+	length := len(input)
+	if length < 1 {
+		return dto.Dtos{&integral}
+	}
+
+	data := make([]*dto.IntegralElement, length)
+
+	for index, variance := range input {
+		data[index] = variance.(*dto.IntegralElement)
+	}
+
+	sort.Sort(dto.ByLeftTime(data))
+
+	integral = data[0].Integral
+	for i := 1; i < length; i++ {
+		x := data[i-1]
+		y := data[i]
+		integral += y.Integral
+		integral += (x.RightValue + y.LeftValue) * dto.Value(y.LeftTime-x.RightTime) / 2
+	}
+
+	return dto.Dtos{&integral}
 }

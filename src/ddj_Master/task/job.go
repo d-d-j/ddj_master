@@ -94,6 +94,8 @@ func parseResults(results []*dto.Result, aggregationType int32) []reduce.Aggrega
 		return parseResultsToAverage(results)
 	case common.AGGREGATION_STDDEVIATION:
 		return parseResultsToVariance(results)
+	case common.AGGREGATION_INTEGRAL:
+		return parseResultsToIntegralElements(results)
 	default:
 		return parseResultsToElements(results)
 	}
@@ -166,6 +168,25 @@ func parseResultsToVariance(results []*dto.Result) []reduce.Aggregates {
 		length := len(result.Data) / elementSize
 		for j := 0; j < length; j++ {
 			var e dto.VarianceElement
+			err := e.Decode(result.Data[j*elementSize:])
+			if err != nil {
+				log.Error("Problem with parsing data", err)
+				continue
+			}
+			values = append(values, &e)
+		}
+	}
+	return values
+}
+
+func parseResultsToIntegralElements(results []*dto.Result) []reduce.Aggregates {
+	elementSize := (&dto.IntegralElement{}).Size()
+	resultsCount := len(results)
+	values := make([]reduce.Aggregates, 0, resultsCount)
+	for _, result := range results {
+		length := len(result.Data) / elementSize
+		for j := 0; j < length; j++ {
+			var e dto.IntegralElement
 			err := e.Decode(result.Data[j*elementSize:])
 			if err != nil {
 				log.Error("Problem with parsing data", err)

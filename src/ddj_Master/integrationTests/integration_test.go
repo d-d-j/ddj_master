@@ -323,6 +323,29 @@ func Benchmark_Select_Std(b *testing.B) {
 	}
 }
 
+func Benchmark_Select_Int(b *testing.B) {
+
+	SetUp(b)
+	from := 10
+	to := 100
+	response := SelectAggr(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/int", from, to), b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	integral := expected[from].Value
+	for i := from + 1; i <= to; i++ {
+		integral += expected[i].Value
+		integral += (expected[i].Value + expected[i-1].Value) * dto.Value(expected[i].Time-expected[i-1].Time) / 2
+	}
+
+	if math.Abs(float64(response.Data[0]-integral)) > eps {
+		b.Error("Got ", response.Data, " when expected ", integral)
+	}
+}
+
 func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")

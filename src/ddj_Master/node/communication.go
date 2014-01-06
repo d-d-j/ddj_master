@@ -62,4 +62,5 @@ func (c *Communication) write(buffer []byte) bool {
 // Closes a connection
 func (c *Communication) close() {
 	c.connection.Close()
+	close(c.Outgoing)
 }

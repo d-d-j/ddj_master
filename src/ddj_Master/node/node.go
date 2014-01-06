@@ -141,8 +141,8 @@ func (n *Node) senderRoutine() {
 			n.write(buffer)
 		case <-n.stop:
 			log.Info("Node #%d stopped", n.Id)
-			n.close()
 			NodeManager.DelChan <- n.Id
+			n.close()
 			break
 		}
 	}
