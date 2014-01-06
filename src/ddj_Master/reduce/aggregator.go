@@ -9,7 +9,7 @@ import (
 
 type Aggregator func([]Aggregates) dto.Dtos
 
-type Aggregates interface{}
+type Aggregates dto.Dto
 
 var aggregations map[int32]Aggregator
 
