@@ -16,6 +16,14 @@ type IntegralElement struct {
 	RightTime  int64
 }
 
+type ByLeftTime []*IntegralElement
+
+func (this ByLeftTime) Len() int      { return len(this) }
+func (this ByLeftTime) Swap(i, j int) { this[i], this[j] = this[j], this[i] }
+func (this ByLeftTime) Less(i, j int) bool {
+	return this[i].LeftTime < this[j].LeftTime
+}
+
 func (this *IntegralElement) String() string {
 	return fmt.Sprintf("Value: %f Left: [Value: %f Time: %d] Right: [Value: %f Time: %d]",
 		this.Integral, this.LeftValue, this.LeftTime, this.RightValue, this.RightTime)

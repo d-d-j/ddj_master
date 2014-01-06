@@ -8,7 +8,7 @@ import (
 )
 
 func Test_Initialize(t *testing.T) {
-	expected := 6
+	expected := 7
 	Initialize()
 	actual := len(aggregations)
 	if actual != expected {
@@ -256,6 +256,18 @@ func Test_StandardDeviation_Should_Return_StdDev_of_Slice_2(t *testing.T) {
 	input := []Aggregates{&dto.VarianceElement{1, 2, 0}, &dto.VarianceElement{3, 4, 0}, &dto.VarianceElement{2, 5, 0}, &dto.VarianceElement{1, 7, 0}, &dto.VarianceElement{1, 9, 0}}
 
 	actual := StandartdDeviation(input)
+
+	AssertValuesEqual(expected, actual, t)
+}
+
+func Test_Integral_Should_Return_Integral_of_Slice(t *testing.T) {
+
+	var value dto.Value
+	value = dto.Value(2.2)
+	expected := []*dto.Value{&value}
+	input := []Aggregates{&dto.IntegralElement{0.5, 0.2, 1, 0.1, 2}, &dto.IntegralElement{0.5, 0.0, 10, 0.2, 20}, &dto.IntegralElement{0.5, 0.1, 3, 0.2, 4}}
+
+	actual := Integral(input)
 
 	AssertValuesEqual(expected, actual, t)
 }

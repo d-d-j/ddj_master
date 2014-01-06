@@ -94,6 +94,8 @@ func parseResults(results []*dto.Result, aggregationType int32) []reduce.Aggrega
 		return parseResultsToAverage(results)
 	case common.AGGREGATION_STDDEVIATION:
 		return parseResultsToVariance(results)
+	case common.AGGREGATION_INTEGRAL:
+		return parseResultsToIntegralElements(results)
 	default:
 		return parseResultsToElements(results)
 	}
