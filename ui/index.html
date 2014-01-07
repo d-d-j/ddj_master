@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<link rel="stylesheet" href="vendor/css/bootstrap.css">
+<link rel="stylesheet" href="vendor/css/bootstrap-theme.css">
+<body>
+
+<div class="page-header text-center">
+    <h1>DDJ Time Series DB</h1>
+</div>
+<div class="container">
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="form-group">
+                <label class="control-label" for="url-input">Url</label>
+                <input id="url-input" class="form-control " value="http://localhost:8888"/>
+            </div>
+            <legend>Data to POST</legend>
+
+            <div class="form-group">
+                <textarea id="request-body">
+
+                </textarea>
+            </div>
+
+        </div>
+        <div class="col-md-6">
+            <div id="chart"></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="vendor/js/jquery-1.10.1.min.js"></script>
+<script type="text/javascript" src="vendor/js/highcharts.js"></script>
+<script type="text/javascript" src="scripts.js"></script>
+</body>
+</html>
