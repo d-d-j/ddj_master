@@ -1,7 +1,6 @@
 package reduce
 
 import (
-	log "code.google.com/p/log4go"
 	. "ddj_Master/common"
 	"ddj_Master/dto"
 	"math"
@@ -194,7 +193,6 @@ func Integral(input []Aggregates) dto.Dtos {
 
 	for index, variance := range input {
 		data[index] = variance.(*dto.IntegralElement)
-		log.Warn(data[index])
 	}
 
 	sort.Sort(dto.ByLeftTime(data))
@@ -208,4 +206,22 @@ func Integral(input []Aggregates) dto.Dtos {
 	}
 
 	return dto.Dtos{&integral}
+}
+
+func Histogram(input []Aggregates) dto.Dtos {
+
+	if len(input) < 1 {
+		return dto.Dtos{}
+	}
+
+	length := len(input[0].(*dto.Histogram).Data)
+	histogram := dto.Histogram{make([]int32, length)}
+
+	for _, h := range input {
+		for index, value := range h.(*dto.Histogram).Data {
+			histogram.Data[index] += value
+		}
+	}
+
+	return dto.Dtos{&histogram}
 }

@@ -283,6 +283,19 @@ func Test_Integral_Should_Return_Integral_of_Slice(t *testing.T) {
 	AssertValuesEqual(expected, actual, t)
 }
 
+func Test_Histogram_Should_Return_Sum_Of_All_Histograms(t *testing.T) {
+
+	histogram := dto.Histogram{[]int32{0, 1, 1, 5, 7, 2}}
+	expected := dto.Histogram{[]int32{0, 3, 3, 15, 21, 6}}
+	input := []Aggregates{&histogram, &histogram, &histogram}
+
+	actual := Histogram(input)
+
+	if expected.String() != actual[0].String() {
+		t.Error("Expected: ", expected, " but got: ", actual)
+	}
+}
+
 func AssertElementsEqual(expected []Aggregates, actual dto.Dtos, t *testing.T) {
 	if len(expected) != len(actual) {
 		t.Error("Wrong dimension. Expected ", len(expected), " but got ", len(actual))
