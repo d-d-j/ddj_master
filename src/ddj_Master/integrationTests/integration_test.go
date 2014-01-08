@@ -47,7 +47,7 @@ func SetUp(b *testing.B) {
 		data = make([]string, INSERTED_DATA)
 		expected = make([]dto.Element, INSERTED_DATA)
 		for i := 0; i < INSERTED_DATA; i++ {
-			value := dto.Value(math.Log(float64(i + 1)))
+			value := dto.Value(1.0) //dto.Value(math.Log(float64(i + 1)))
 			e := *dto.NewElement(int32(i%NUMBER_OF_TAGS_PER_METRICS), int32(i%NUMBER_OF_METRICS), int64(i), value)
 			data[i] = fmt.Sprintf("{\"tag\":%d, \"metric\":%d, \"time\":%d, \"value\":%f}", e.Metric, e.Tag, e.Time, value)
 			expected[i] = e
@@ -93,16 +93,16 @@ func Benchmark_Select_Ten_Inserted_Values_From_All_Tags_And_Metrics(b *testing.B
 
 	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/none", INSERTED_DATA-10, INSERTED_DATA), b)
 
-	Assert(response, expected[INSERTED_DATA-10:INSERTED_DATA], b)
+	Assert(response, expected[INSERTED_DATA-10:INSERTED_DATA-1], b)
 }
 
 func Benchmark_Select_All(b *testing.B) {
 
 	SetUp(b)
 
-	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/none", 0, INSERTED_DATA), b)
+	response := Select(fmt.Sprintf("/metric/all/tag/all/time/all/aggregation/none"), b)
 
-	Assert(response, expected[:INSERTED_DATA], b)
+	Assert(response, expected, b)
 }
 
 func Flush(b *testing.B) {
@@ -262,6 +262,26 @@ func Benchmark_Select_Avg(b *testing.B) {
 	}
 }
 
+func Benchmark_Select_Histogram(b *testing.B) {
+
+	SetUp(b)
+
+	t := random.Intn(INSERTED_DATA) + 1
+	f := random.Intn(t - 1)
+
+	from := expected[f].Time
+	to := expected[t].Time
+	metrics := make([]int32, 0, NUMBER_OF_METRICS)
+	for metric := 0; metric <= NUMBER_OF_METRICS; metric++ {
+		tags := make([]int32, 0, NUMBER_OF_TAGS_PER_METRICS)
+		for tag := 0; tag <= NUMBER_OF_TAGS_PER_METRICS; tag++ {
+			Select_Histogram_With_One_Bucket(b, from, to, tags, metrics)
+			tags = append(tags, int32(tag))
+		}
+		metrics = append(metrics, int32(metric))
+	}
+}
+
 func ElementInRange(element dto.Element, from, to int64, tags []int32, metrics []int32) (bool, error) {
 	var inMetric, inTag, inTime bool
 	inMetric = (len(metrics) == 0)
@@ -295,6 +315,37 @@ func prepareTagsOrMetrics(input []int32) string {
 		str = strings.TrimSuffix(str, ",")
 	}
 	return str
+}
+
+func Select_Histogram_With_One_Bucket(b *testing.B, from, to int64, tags []int32, metrics []int32) {
+
+	metricsStr := prepareTagsOrMetrics(metrics)
+	tagsStr := prepareTagsOrMetrics(tags)
+	queryString := fmt.Sprintf("/metric/%s/tag/%s/time/%d-%d/aggregation/histogramByTime/from/%d/to/%d/buckets/1",
+		metricsStr, tagsStr, from, to, from, to)
+
+	response := SelectAggr(queryString, b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	exp, err := From(expected).Where(
+		func(e T) (bool, error) {
+			element := e.(dto.Element)
+			return ElementInRange(element, from, to, tags, metrics)
+		}).Count()
+
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
+	}
+
+	if len(response.Data) != 1 || int(response.Data[0]) != exp {
+		b.Error("Got ", response.Data, " when expected ", exp)
+		b.Log(queryString)
+	}
 }
 
 func Select_Min(b *testing.B, from, to int64, tags []int32, metrics []int32) {
