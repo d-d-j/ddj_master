@@ -47,7 +47,7 @@ func (serv SelectService) HistogramByValueQuery(metrics, tags, times string, fro
 			[]byte("The request could not be understood by the server due to malformed syntax. You SHOULD NOT repeat the request without modifications."))
 		return dto.RestResponse{}
 	}
-	query.AggregationType = common.AGGREGATION_HISTOGRAM_BY_TIME
+	query.AggregationType = common.AGGREGATION_HISTOGRAM_BY_VALUE
 	query.AdditionalData = dto.HistogramValueData{Min: from, Max: to, BucketCount: buckets}
 	log.Fine("Query: ", &query)
 	restRequestChannel <- dto.RestRequest{Type: common.TASK_SELECT, Data: &query, Response: responseChan}
