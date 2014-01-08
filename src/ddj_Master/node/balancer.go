@@ -67,6 +67,7 @@ func (this *LoadBalancer) removeDeadNodes(newInfos []*dto.Info) {
 		}
 	}
 	for nodeId,_ := range nodesToRemove {
+		NodeManager.DelChan <- nodeId
 		delete(this.nodes, nodeId)
 	}
 }
