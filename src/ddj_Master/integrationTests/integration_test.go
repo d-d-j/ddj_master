@@ -87,13 +87,35 @@ func Benchmark_Select_First_Value(b *testing.B) {
 	Assert(response, expected, b)
 }
 
-func Benchmark_Select_Ten_Inserted_Values_From_All_Tags_And_Metrics(b *testing.B) {
+func Benchmark_Select_Values_From_All_Tags_And_Metrics(b *testing.B) {
 
 	SetUp(b)
 
-	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/none", INSERTED_DATA-10, INSERTED_DATA), b)
+	t := random.Intn(INSERTED_DATA) + 1
+	f := random.Intn(t - 1)
 
-	Assert(response, expected[INSERTED_DATA-10:INSERTED_DATA-1], b)
+	from := expected[f].Time
+	to := expected[t].Time
+
+	exp, err := From(expected).Where(
+		func(e T) (bool, error) {
+			element := e.(dto.Element)
+			return ElementInRange(element, from, to, nil, nil)
+		}).Results()
+
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
+	}
+
+	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/none", from, to), b)
+
+	expectedElements := make([]dto.Element, 0, len(exp))
+	for _, e := range exp {
+		expectedElements = append(expectedElements, e.(dto.Element))
+	}
+
+	Assert(response, expectedElements, b)
 }
 
 func Benchmark_Select_All(b *testing.B) {
