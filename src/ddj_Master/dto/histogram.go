@@ -28,6 +28,9 @@ func (this *Histogram) Encode() ([]byte, error) {
 
 func (this *Histogram) Decode(buf []byte) error {
 	length := len(buf) / 4
+	if length < 1 {
+		return fmt.Errorf("Empty buffer. ")
+	}
 	buffer := bytes.NewBuffer(buf)
 	newHistogram := make([]int32, length)
 	for i := 0; i < length; i++ {

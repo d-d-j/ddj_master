@@ -126,5 +126,16 @@ func parseResultsToIntegralElements(results []*dto.Result) []reduce.Aggregates {
 }
 
 func parseResultsToHistograms(results []*dto.Result) []reduce.Aggregates {
-	panic("Not implemented")
+	resultsCount := len(results)
+	histograms := make([]reduce.Aggregates, 0, resultsCount)
+	for _, result := range results {
+		var e dto.Histogram
+		err := e.Decode(result.Data)
+		if err != nil {
+			log.Error("Problem with parsing data", err)
+			continue
+		}
+		histograms = append(histograms, &e)
+	}
+	return histograms
 }
