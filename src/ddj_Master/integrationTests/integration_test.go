@@ -47,7 +47,7 @@ func SetUp(b *testing.B) {
 		data = make([]string, INSERTED_DATA)
 		expected = make([]dto.Element, INSERTED_DATA)
 		for i := 0; i < INSERTED_DATA; i++ {
-			value := dto.Value(1.0) //dto.Value(math.Log(float64(i + 1)))
+			value := dto.Value(i) //dto.Value(math.Log(float64(i + 1)))
 			e := *dto.NewElement(int32(i%NUMBER_OF_TAGS_PER_METRICS), int32(i%NUMBER_OF_METRICS), int64(i), value)
 			data[i] = fmt.Sprintf("{\"tag\":%d, \"metric\":%d, \"time\":%d, \"value\":%f}", e.Metric, e.Tag, e.Time, value)
 			expected[i] = e
