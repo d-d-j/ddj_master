@@ -8,7 +8,7 @@ import (
 )
 
 func Test_Initialize(t *testing.T) {
-	expected := 8
+	expected := 10
 	Initialize()
 	actual := len(aggregations)
 	if actual != expected {

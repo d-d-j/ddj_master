@@ -15,14 +15,16 @@ var aggregations map[int32]Aggregator
 
 func Initialize() {
 	aggregations = map[int32]Aggregator{
-		AGGREGATION_NONE:         NonAggregation,
-		AGGREGATION_MAX:          MaxAggregation,
-		AGGREGATION_MIN:          MinAggregation,
-		AGGREGATION_ADD:          AddAggregation,
-		AGGREGATION_AVERAGE:      AverageAggregation,
-		AGGREGATION_VARIANCE:     Variance,
-		AGGREGATION_STDDEVIATION: StandartdDeviation,
-		AGGREGATION_INTEGRAL:     Integral,
+		AGGREGATION_NONE:               NonAggregation,
+		AGGREGATION_MAX:                MaxAggregation,
+		AGGREGATION_MIN:                MinAggregation,
+		AGGREGATION_ADD:                AddAggregation,
+		AGGREGATION_AVERAGE:            AverageAggregation,
+		AGGREGATION_VARIANCE:           Variance,
+		AGGREGATION_STDDEVIATION:       StandartdDeviation,
+		AGGREGATION_INTEGRAL:           Integral,
+		AGGREGATION_HISTOGRAM_BY_TIME:  Histogram,
+		AGGREGATION_HISTOGRAM_BY_VALUE: Histogram,
 	}
 }
 

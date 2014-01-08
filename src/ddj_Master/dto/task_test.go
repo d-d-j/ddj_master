@@ -7,7 +7,7 @@ import (
 
 func Test_NewTask_Should_Fill_AggregationType_When_Query_Is_Provided_As_Data(t *testing.T) {
 	expected := common.AGGREGATION_ADD
-	query := &Query{1, []int32{1}, 2, []int32{0, 1}, 4, []int64{5, 7, 11, 21}, expected}
+	query := &Query{1, []int32{1}, 2, []int32{0, 1}, 4, []int64{5, 7, 11, 21}, expected, nil}
 	request := RestRequest{common.TASK_SELECT, query, nil}
 	actual := NewTask(1, request, nil).AggregationType
 

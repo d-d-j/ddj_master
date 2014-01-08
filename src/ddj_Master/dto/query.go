@@ -15,6 +15,7 @@ type Query struct {
 	TimeSpansCount  int32
 	TimeSpans       []int64
 	AggregationType int32
+	AdditionalData  AggregationData
 }
 
 func (q *Query) String() string {
@@ -69,6 +70,16 @@ func (q *Query) Encode() ([]byte, error) {
 	err = binary.Write(buf, binary.LittleEndian, q.AggregationType)
 	if err != nil {
 		return nil, err
+	}
+	if q.AdditionalData != nil {
+		additionalData, err := q.AdditionalData.Encode()
+		if err != nil {
+			return nil, err
+		}
+		err = binary.Write(buf, binary.LittleEndian, additionalData)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return buf.Bytes(), nil

@@ -5,6 +5,14 @@ import (
 	"testing"
 )
 
+func Test_StartService(t *testing.T) {
+	var server = Server{Port: ":6666"}
+	chanReq := server.StartApi()
+	if chanReq == nil {
+		t.Error("Nil channel")
+	}
+}
+
 func Test_Preapare_Query_For_Valid_Arguments(t *testing.T) {
 	metrics := "1,2,3"
 	tags := "4,5,6,7"

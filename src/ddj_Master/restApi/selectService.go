@@ -12,8 +12,10 @@ import (
 
 //Service Definition
 type SelectService struct {
-	gorest.RestService `root:"/" consumes:"application/json" produces:"application/json"`
-	selectQuery        gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/{times:string}/aggregation/{aggr:string}" output:"RestResponse"`
+	gorest.RestService    `root:"/" consumes:"application/json" produces:"application/json"`
+	selectQuery           gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/{times:string}/aggregation/{aggr:string}" output:"RestResponse"`
+	histogramByValueQuery gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/{times:string}/aggregation/histogramByValue/from/{from:float32}/to/{to:float32}/buckets/{buckets:int32}" output:"RestResponse"`
+	histogramByTimeQuery  gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/{times:string}/aggregation/histogramByTime/from/{from:int64}/to/{to:int64}/buckets/{buckets:int32}" output:"RestResponse"`
 }
 
 func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) dto.RestResponse {
@@ -34,7 +36,63 @@ func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) dto.Res
 	return *response
 }
 
+func (serv SelectService) HistogramByValueQuery(metrics, tags, times string, from, to float32, buckets int32) dto.RestResponse {
+	log.Finest("Selecting Histogram")
+	serv.setHeader()
+	responseChan := make(chan *dto.RestResponse)
+	query, err := prepareQueryWithoutAggregationType(metrics, tags, times)
+	if err != nil {
+		log.Error("Return HTTP 400")
+		serv.ResponseBuilder().SetResponseCode(400).WriteAndOveride(
+			[]byte("The request could not be understood by the server due to malformed syntax. You SHOULD NOT repeat the request without modifications."))
+		return dto.RestResponse{}
+	}
+	query.AggregationType = common.AGGREGATION_HISTOGRAM_BY_TIME
+	query.AdditionalData = dto.HistogramValueData{Min: from, Max: to, BucketCount: buckets}
+	log.Fine("Query: ", &query)
+	restRequestChannel <- dto.RestRequest{Type: common.TASK_SELECT, Data: &query, Response: responseChan}
+	response := <-responseChan
+	serv.setSelectHeaderErrors(response)
+	return *response
+}
+
+func (serv SelectService) HistogramByTimeQuery(metrics, tags, times string, from, to int64, buckets int32) dto.RestResponse {
+	log.Finest("Selecting Histogram")
+	serv.setHeader()
+	responseChan := make(chan *dto.RestResponse)
+	query, err := prepareQueryWithoutAggregationType(metrics, tags, times)
+	if err != nil {
+		log.Error("Return HTTP 400")
+		serv.ResponseBuilder().SetResponseCode(400).WriteAndOveride(
+			[]byte("The request could not be understood by the server due to malformed syntax. You SHOULD NOT repeat the request without modifications."))
+		return dto.RestResponse{}
+	}
+	query.AggregationType = common.AGGREGATION_HISTOGRAM_BY_TIME
+	query.AdditionalData = dto.HistogramTimeData{Min: from, Max: to, BucketCount: buckets}
+	log.Fine("Query: ", &query)
+	restRequestChannel <- dto.RestRequest{Type: common.TASK_SELECT, Data: &query, Response: responseChan}
+	response := <-responseChan
+	serv.setSelectHeaderErrors(response)
+	return *response
+}
+
 func prepareQuery(metrics, tags, times, aggr string) (dto.Query, error) {
+
+	query, err := prepareQueryWithoutAggregationType(metrics, tags, times)
+	if err != nil {
+		return dto.Query{}, err
+	}
+
+	aggregation, err := prepareAggregationType(aggr)
+	if err != nil {
+		return dto.Query{}, err
+	}
+
+	query.AggregationType = aggregation
+	return query, nil
+}
+
+func prepareQueryWithoutAggregationType(metrics, tags, times string) (dto.Query, error) {
 
 	metricsArr, err := prepareTagsOrMetrics(metrics)
 	if err != nil {
@@ -49,12 +107,7 @@ func prepareQuery(metrics, tags, times, aggr string) (dto.Query, error) {
 		return dto.Query{}, err
 	}
 
-	aggregation, err := prepareAggregationType(aggr)
-	if err != nil {
-		return dto.Query{}, err
-	}
-
-	return dto.Query{MetricsCount: int32(len(metricsArr)), Metrics: metricsArr, TagsCount: int32(len(tagsArr)), Tags: tagsArr, TimeSpansCount: int32(len(timesArr) / 2), TimeSpans: timesArr, AggregationType: aggregation}, nil
+	return dto.Query{MetricsCount: int32(len(metricsArr)), Metrics: metricsArr, TagsCount: int32(len(tagsArr)), Tags: tagsArr, TimeSpansCount: int32(len(timesArr) / 2), TimeSpans: timesArr}, nil
 }
 
 func prepareAggregationType(aggregation string) (int32, error) {
