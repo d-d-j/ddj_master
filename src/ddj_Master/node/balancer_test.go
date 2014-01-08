@@ -139,7 +139,7 @@ func Test_CalculateNodeRank(t *testing.T) {
 	}
 }
 
-func Test_RemoveDeadNodes(t *testing.T) {
+func Test_RemoveDeadNodes_OneDeadNode(t *testing.T) {
 
 	nodes := make(map[int32]*Node)
 	nodes[1] = NewNode(1, nil, nil)
