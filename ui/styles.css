@@ -2,3 +2,9 @@
     height: 200px;
     resize: none;
 }
+
+#query-result {
+    height: 200px;
+    overflow-y: auto;
+    border: 1px solid;
+}

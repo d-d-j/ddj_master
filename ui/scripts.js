@@ -11,10 +11,8 @@ var elementToJSONString = function (element) {
     });
 };
 
-var sendRequestsToServer = function (dataToSend) {
+var sendElementToServer = function (dataToSend) {
     dataToSend.forEach(function (dataElement) {
-
-        console.log(JSON.stringify(dataElement));
         $.ajax($("#url").val() + "/data", {
             contentType: "application/json",
             dataType: "json",
@@ -30,12 +28,31 @@ var sendRequestsToServer = function (dataToSend) {
 };
 
 
-$('.start-upload[data-filename]').click(function (e) {
-    console.log("click", $(this));
-    jQuery.get("/data/" + $(this)[0].dataset["filename"], function (data) {
-        var objects = $.csv.toObjects(data);
-        sendRequestsToServer(objects);
-    });
+$('#query-button').click(function (e) {
+    $.ajax($("#url").val() + $('#query-input').val(), {
+        contentType: "application/json",
+        type: "GET",
+        success: function (data) {
+            console.log(data.Data[0]);
+         $('#query-result').html(JSON.stringify(data.Data));
+//         $('#query-result').html("dupa");
+        },
+        error: function () {
+            console.log("error");
+        }
+    })
+});
+
+$('#start-upload').click(function (e) {
+    var file = $('#file-input')[0].files[0];
+
+    var reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = function(event){
+        var csv = event.target.result;
+        var data = $.csv.toObjects(csv);
+        sendElementToServer(data);
+    };
 });
 
 
