@@ -181,7 +181,7 @@ func Test_ParseResultsToInfos_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *
 
 func Test_ParseResultsToInfos_Should_Return_One_Element_When_Called_With_One_In_Slice(t *testing.T) {
 	// PREPARE DATA FOR TEST
-	expected := &dto.Info{0, dto.MemoryInfo{GpuId:1, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}}
+	expected := &dto.Info{0, dto.MemoryInfo{GpuId: 1, MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}}
 	data, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
@@ -196,8 +196,8 @@ func Test_ParseResultsToInfos_Should_Return_One_Element_When_Called_With_One_In_
 func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Single_Input(t *testing.T) {
 	// PREPARE DATA FOR TEST
 	expected := dto.Dtos{
-		&dto.Info{0, dto.MemoryInfo{GpuId:0, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}}, &dto.Info{0, dto.MemoryInfo{GpuId:0, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}},
-		&dto.Info{0, dto.MemoryInfo{GpuId:2, MemoryTotal:  1, MemoryFree:  2, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}}, &dto.Info{0, dto.MemoryInfo{GpuId:3, MemoryTotal:  1, MemoryFree:  3, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}}}
+		&dto.Info{0, dto.MemoryInfo{GpuId: 0, MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}}, &dto.Info{0, dto.MemoryInfo{GpuId: 0, MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}},
+		&dto.Info{0, dto.MemoryInfo{GpuId: 2, MemoryTotal: 1, MemoryFree: 2, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}}, &dto.Info{0, dto.MemoryInfo{GpuId: 3, MemoryTotal: 1, MemoryFree: 3, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}}}
 	data, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
@@ -218,7 +218,8 @@ func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Single_Input(t *te
 func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Input(t *testing.T) {
 	// PREPARE DATA FOR TEST
 	expected := dto.Dtos{
-		&dto.Info{0, dto.MemoryInfo{GpuId:2, MemoryTotal:  1, MemoryFree:  2, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}}, &dto.Info{0, dto.MemoryInfo{GpuId:3, MemoryTotal:  2, MemoryFree:  2, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}},
+		&dto.Info{0, dto.MemoryInfo{GpuId: 2, MemoryTotal: 1, MemoryFree: 2, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}},
+		&dto.Info{0, dto.MemoryInfo{GpuId: 3, MemoryTotal: 2, MemoryFree: 2, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}},
 	}
 	data, err := expected.Encode()
 	if err != nil {
@@ -226,10 +227,50 @@ func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Input(t *testing.T
 	}
 	result := dto.NewResult(0, 0, common.TASK_INFO, int32(expected.Size()), data)
 	actual := parseResultsToInfos([]*dto.Result{result, result, result, result})
+	expected = append(expected, expected...)
+	expected = append(expected, expected...)
+
 	// ASSERTIONS
 
+	if len(actual) != len(expected) {
+		t.Error("Wrong data returned. Expected ", len(expected), " values", " but got ", len(actual))
+	}
+
+	for index, elem := range actual {
+		AssertEqual(expected[index], elem, t)
+	}
+}
+
+func Test_ParseResultsToHistograms_Should_Return_Empty_Slice_For_Empty_Imput(t *testing.T) {
+	actual := parseResultsToHistograms(nil)
+	if len(actual) != 0 {
+		t.Error("Expected empty slice but got ", actual)
+	}
+}
+
+func Test_ParseResultsToHistograms_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *testing.T) {
+	data := []byte{}
+	result := dto.NewResult(0, 1, common.TASK_INFO, 0, data)
+	actual := parseResultsToHistograms([]*dto.Result{result, result, result})
+	if len(actual) != 0 {
+		t.Error("Expected empty slice but got ", actual)
+	}
+}
+
+func Test_ParseResultsToHistograms_Should_Return_All_Elements_From_Input(t *testing.T) {
+	// PREPARE DATA FOR TEST
+	expected := dto.Dtos{
+		&dto.Histogram{[]int32{0, 3, 1, 5, 7, 2}},
+	}
+	data, err := expected.Encode()
+	if err != nil {
+		t.Error("Error occurred", err)
+	}
+	result := dto.NewResult(0, 0, common.TASK_INFO, int32(expected.Size()), data)
+	actual := parseResultsToHistograms([]*dto.Result{result, result, result, result})
 	expected = append(expected, expected...)
 	expected = append(expected, expected...)
+	// ASSERTIONS
 
 	if len(actual) != len(expected) {
 		t.Error("Wrong data returned. Expected ", len(expected), " values", " but got ", len(actual))

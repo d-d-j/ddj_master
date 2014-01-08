@@ -1,7 +1,6 @@
 package reduce
 
 import (
-	log "code.google.com/p/log4go"
 	. "ddj_Master/common"
 	"ddj_Master/dto"
 	"math"
@@ -16,14 +15,16 @@ var aggregations map[int32]Aggregator
 
 func Initialize() {
 	aggregations = map[int32]Aggregator{
-		AGGREGATION_NONE:         NonAggregation,
-		AGGREGATION_MAX:          MaxAggregation,
-		AGGREGATION_MIN:          MinAggregation,
-		AGGREGATION_ADD:          AddAggregation,
-		AGGREGATION_AVERAGE:      AverageAggregation,
-		AGGREGATION_VARIANCE:     Variance,
-		AGGREGATION_STDDEVIATION: StandartdDeviation,
-		AGGREGATION_INTEGRAL:     Integral,
+		AGGREGATION_NONE:               NonAggregation,
+		AGGREGATION_MAX:                MaxAggregation,
+		AGGREGATION_MIN:                MinAggregation,
+		AGGREGATION_ADD:                AddAggregation,
+		AGGREGATION_AVERAGE:            AverageAggregation,
+		AGGREGATION_VARIANCE:           Variance,
+		AGGREGATION_STDDEVIATION:       StandartdDeviation,
+		AGGREGATION_INTEGRAL:           Integral,
+		AGGREGATION_HISTOGRAM_BY_TIME:  Histogram,
+		AGGREGATION_HISTOGRAM_BY_VALUE: Histogram,
 	}
 }
 
@@ -194,7 +195,6 @@ func Integral(input []Aggregates) dto.Dtos {
 
 	for index, variance := range input {
 		data[index] = variance.(*dto.IntegralElement)
-		log.Warn(data[index])
 	}
 
 	sort.Sort(dto.ByLeftTime(data))
@@ -208,4 +208,22 @@ func Integral(input []Aggregates) dto.Dtos {
 	}
 
 	return dto.Dtos{&integral}
+}
+
+func Histogram(input []Aggregates) dto.Dtos {
+
+	if len(input) < 1 {
+		return dto.Dtos{}
+	}
+
+	length := len(input[0].(*dto.Histogram).Data)
+	histogram := dto.Histogram{make([]int32, length)}
+
+	for _, h := range input {
+		for index, value := range h.(*dto.Histogram).Data {
+			histogram.Data[index] += value
+		}
+	}
+
+	return dto.Dtos{&histogram}
 }
