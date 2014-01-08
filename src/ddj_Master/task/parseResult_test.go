@@ -181,7 +181,7 @@ func Test_ParseResultsToInfos_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *
 
 func Test_ParseResultsToInfos_Should_Return_One_Element_When_Called_With_One_In_Slice(t *testing.T) {
 	// PREPARE DATA FOR TEST
-	expected := &dto.Info{0, dto.MemoryInfo{GpuId:1, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}}
+	expected := &dto.Info{0, dto.MemoryInfo{GpuId: 1, MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}}
 	data, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
@@ -196,8 +196,8 @@ func Test_ParseResultsToInfos_Should_Return_One_Element_When_Called_With_One_In_
 func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Single_Input(t *testing.T) {
 	// PREPARE DATA FOR TEST
 	expected := dto.Dtos{
-		&dto.Info{0, dto.MemoryInfo{GpuId:0, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}}, &dto.Info{0, dto.MemoryInfo{GpuId:0, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}},
-		&dto.Info{0, dto.MemoryInfo{GpuId:2, MemoryTotal:  1, MemoryFree:  2, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}}, &dto.Info{0, dto.MemoryInfo{GpuId:3, MemoryTotal:  1, MemoryFree:  3, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}}}
+		&dto.Info{0, dto.MemoryInfo{GpuId: 0, MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}}, &dto.Info{0, dto.MemoryInfo{GpuId: 0, MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}},
+		&dto.Info{0, dto.MemoryInfo{GpuId: 2, MemoryTotal: 1, MemoryFree: 2, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}}, &dto.Info{0, dto.MemoryInfo{GpuId: 3, MemoryTotal: 1, MemoryFree: 3, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}}}
 	data, err := expected.Encode()
 	if err != nil {
 		t.Error("Error occurred", err)
@@ -218,7 +218,7 @@ func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Single_Input(t *te
 func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Input(t *testing.T) {
 	// PREPARE DATA FOR TEST
 	expected := dto.Dtos{
-		&dto.Info{0, dto.MemoryInfo{GpuId:2, MemoryTotal:  1, MemoryFree:  2, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}}, &dto.Info{0, dto.MemoryInfo{GpuId:3, MemoryTotal:  2, MemoryFree:  2, GpuMemoryTotal:   1, GpuMemoryFree: 1, DBMemoryFree:  1}},
+		&dto.Info{0, dto.MemoryInfo{GpuId: 2, MemoryTotal: 1, MemoryFree: 2, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}}, &dto.Info{0, dto.MemoryInfo{GpuId: 3, MemoryTotal: 2, MemoryFree: 2, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}},
 	}
 	data, err := expected.Encode()
 	if err != nil {
