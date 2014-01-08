@@ -2,12 +2,39 @@ $(document).ready(function () {
     $('#request-params').val("{\n\"tag\":1,\n\"metric\":2,\n\"time\":1383501407,\n\"value\":0.5\n}");
 });
 
-$('.start-upload[data-filename]').click(function(e) {
+var elementToJSONString = function (element) {
+    return JSON.stringify({
+        "tag": parseInt(element.tag, 10),
+        "metric": parseInt(element.metric, 10),
+        "time": parseInt(element.time, 10),
+        "value": parseFloat(element.value)
+    });
+};
+
+var sendRequestsToServer = function (dataToSend) {
+    dataToSend.forEach(function (dataElement) {
+
+        console.log(JSON.stringify(dataElement));
+        $.ajax($("#url").val() + "/data", {
+            contentType: "application/json",
+            dataType: "json",
+            data: elementToJSONString(dataElement),
+            type: "POST",
+            success: function () {
+
+            },
+            error: function () {
+            }
+        })
+    })
+};
+
+
+$('.start-upload[data-filename]').click(function (e) {
     console.log("click", $(this));
     jQuery.get("/data/" + $(this)[0].dataset["filename"], function (data) {
-        console.log("get");
-        var result = $.csv.toObjects(data);
-        console.log(result[0].time);
+        var objects = $.csv.toObjects(data);
+        sendRequestsToServer(objects);
     });
 });
 
