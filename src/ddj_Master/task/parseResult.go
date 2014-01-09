@@ -151,9 +151,9 @@ func parseResultsToHistograms(results []*dto.Result, bucketCount int) []reduce.A
 	return histograms
 }
 
-func parseResultsToInterpolateElement(results []*dto.Result, bucketCount int) []reduce.Aggregates {
+func parseResultsToInterpolateElement(results []*dto.Result, samplesCount int) []reduce.Aggregates {
 
-	histograms := make([]reduce.Aggregates, 0, len(results)*bucketCount)
+	histograms := make([]reduce.Aggregates, 0, len(results)*samplesCount)
 
 	for _, result := range results {
 
@@ -164,9 +164,9 @@ func parseResultsToInterpolateElement(results []*dto.Result, bucketCount int) []
 			continue
 		}
 
-		for index := 0; index < len(combinedInterpolateElementFromOneNodeButAllGpus.Data); index += bucketCount {
+		for index := 0; index < len(combinedInterpolateElementFromOneNodeButAllGpus.Data); index += samplesCount {
 			var histogramForOneGpu dto.InterpolateElement
-			histogramForOneGpu.Data = combinedInterpolateElementFromOneNodeButAllGpus.Data[index : index+bucketCount]
+			histogramForOneGpu.Data = combinedInterpolateElementFromOneNodeButAllGpus.Data[index : index+samplesCount]
 			histograms = append(histograms, &histogramForOneGpu)
 		}
 	}

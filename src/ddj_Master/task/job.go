@@ -201,8 +201,6 @@ func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.
 			log.Error("Timeout! Got %d/%d responses", i, numResponses)
 			break
 		}
-
-		log.Finest("Got task result [%d/%d] - %s", i+1, numResponses, responses[i])
 	}
 
 	return responses
