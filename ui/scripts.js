@@ -64,7 +64,7 @@ $(document).ready(function () {
         for (var i = 0; i < numBuckets; i++) {
             var begin = Math.round((parseFloat(timeFrom) + parseFloat(i*bucketSize)) * 100)/100;
             var end = Math.round((parseFloat(timeFrom) + parseFloat(((i+1)*bucketSize))) * 100) / 100;
-            buckets.push('[ ' + String(begin) + ',' + String(end) + ']');
+            buckets.push('[ ' + String(begin) + ', ' + String(end) + ']');
         }
 
 
@@ -170,7 +170,7 @@ var drawHistogram = function (series, bins, divId, title) {
                 rotation: -90,
                 y: 40,
                 style: {
-                    fontSize: '8px',
+                    fontSize: '12px',
                     fontWeight: 'normal',
                     color: '#333'
                 }

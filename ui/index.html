@@ -20,7 +20,7 @@
                 <input id="url" class="form-control " value="http://localhost:8888"/>
             </div>
         </div>
-        <div class="col-md-5">
+        <div class="col-md-6">
             <legend>Data to POST</legend>
             <div class="row">
                 <div class="col-md-2">
@@ -41,11 +41,11 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-5">
+        <div class="col-md-6">
 
         </div>
-        <div class="col-md-5">
-            <legend>Predefined Data Sets</legend>
+        <div class="col-md-6">
+            <legend>CSV Data Sets</legend>
 
             <button class="btn btn-default btn-file">Choose File<input accept=".csv" type="file" id="file-input"/>
             </button>
@@ -54,7 +54,7 @@
             </button>
 
         </div>
-        <div class="col-md-5">
+        <div class="col-md-6">
             <div id="data-to-upload"></div>
         </div>
 
@@ -64,14 +64,14 @@
         <div class="col-md-12">
             <legend>Queries</legend>
         </div>
-        <div class="col-md-5">
+        <div class="col-md-6">
             <div class="form-group">
                 <input id="query-input" class="form-control" type="text"
                        value="/data/metric/all/tag/all/time/0-100000000/aggregation/none"/>
                 <button id="query-button" class="btn btn-info">Execute Query</button>
             </div>
         </div>
-        <div class="col-md-5">
+        <div class="col-md-6">
             <div id="query-result" cols="30" rows="10"></div>
         </div>
     </div>
@@ -80,15 +80,15 @@
         <div class="col-md-12">
             <legend>Histogram</legend>
         </div>
-        <div class="col-md-5">
-            <input id="tags" value="all"/>
-            <input id="metrics" value="all"/>
-            <input id="time-from" value="1"/>
-            <input id="time-to" value="180"/>
-            <input id="buckets" value="10"/>
+        <div class="col-md-6">
+            <label for="tags">Tags:</label><input id="tags" value="all"/>
+            <label for="metrics">Metrics:</label><input id="metrics" value="all"/>
+            <label for="time-from">Time From:</label><input id="time-from" value="1"/>
+            <label for="time-to">Time To:</label><input id="time-to" value="180"/>
+            <label for="buckets">Number Buckets:</label><input id="buckets" value="10"/>
             <button id="value-histogram-button" class="btn btn-info">Show Histogram</button>
         </div>
-        <div class="col-md-5">
+        <div class="col-md-6">
             <div id="chart"></div>
         </div>
     </div>
