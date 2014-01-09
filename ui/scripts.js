@@ -53,8 +53,9 @@ $(document).ready(function () {
         var timeFrom = $('#time-from').val();
         var timeTo = $('#time-to').val();
         var numBuckets = $('#buckets').val();
+        var histogramOption = $('#histogram-option').val();
 //        http://localhost:8888/data/metric/all/tag/all/time/194-317/aggregation/histogramByTime/from/194/to/317/buckets/1
-        var queryUrl = "/data/metric/" + metrics + "/tag/" + tags + "/time/all/aggregation/histogramByTime/from/" + timeFrom + "/to/" + timeTo + "/buckets/" + numBuckets;
+        var queryUrl = "/data/metric/" + metrics + "/tag/" + tags + "/time/all/aggregation/histogramBy" + histogramOption + "/from/" + timeFrom + "/to/" + timeTo + "/buckets/" + numBuckets;
 
         var bucketSize = (parseFloat(timeTo) - parseFloat(timeFrom)) / parseFloat(numBuckets);
         console.log("bucketsize", bucketSize);
@@ -80,11 +81,6 @@ $(document).ready(function () {
                 var chart = drawHistogram(data.responseJSON.Data[0].Data, buckets, 'chart', 'zajebisty histogram');
             }
         })
-
-//        var chart = drawHistogram([3, 2, 1, 6, 10, 5, 13, 9, 14, 21, 23, 66, 47, 14, 5, 2],
-//            ['> 48.00 =< 51.81', '> 51.81 =< 54.63', '> 54.63 =< 57.44', '> 57.44 =< 60.25', '> 60.25 =< 63.06', '> 63.06 =< 65.88', '> 65.88 =< 68.69', '> 68.69 =< 71.50', '> 71.50 =< 74.31',
-//                '> 74.31 =< 77.13', '> 77.13 =< 79.94', '> 79.94 =< 82.75', '> 82.75 =< 85.56', '> 85.56 =< 88.38', '> 88.38 =< 91.19', '> 91.19 =< 94.00'],
-//            'chart', 'zajebisty histogram');
     });
 });
 
@@ -108,6 +104,7 @@ var sendElementsToServer = function (dataToSend) {
 
             },
             error: function () {
+
             }
         })
     })

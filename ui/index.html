@@ -24,19 +24,15 @@
             <legend>Data to POST</legend>
             <div class="row">
                 <div class="col-md-2">
-
                     <div class="form-group">
                         <textarea id="post-data">
-
                         </textarea>
                         <button id="post-button" class="btn btn-info">POST</button>
-
                     </div>
                 </div>
+                <div class="clearfix"></div>
                 <div class="col-md-2">
-
                     <div id="post-result">
-
                     </div>
                 </div>
             </div>
@@ -81,22 +77,31 @@
             <legend>Histogram</legend>
         </div>
         <div class="col-md-6">
-            <label for="tags">Tags:</label><input id="tags" value="all"/>
-            <label for="metrics">Metrics:</label><input id="metrics" value="all"/>
-            <label for="time-from">Time From:</label><input id="time-from" value="1"/>
-            <label for="time-to">Time To:</label><input id="time-to" value="180"/>
-            <label for="buckets">Number Buckets:</label><input id="buckets" value="10"/>
-            <button id="value-histogram-button" class="btn btn-info">Show Histogram</button>
-        </div>
-        <div class="col-md-6">
-            <div id="chart"></div>
+
+                <select class="form-control" name="histogram-option" id="histogram-option">
+                    <option>Time</option>
+                    <option>Value</option>
+                </select>
+
+
+                    <div class="form-group"><label for="tags">Tags:</label><input id="tags" value="all"/></div>
+                    <div class="form-group"><label for="metrics">Metrics:</label><input id="metrics" value="all"/></div>
+                    <div class="form-group"><label for="time-from">From:</label><input id="time-from" value="1"/></div>
+                    <div class="form-group"><label for="time-to"> To:</label><input id="time-to" value="180"/></div>
+                    <div class="form-group"><label for="buckets">Number Buckets:</label><input id="buckets" value="10"/>
+                    </div>
+                    <button id="value-histogram-button" class="btn btn-info">Show Histogram</button>
+
+
+            <div class="col-md-6">
+                <div id="chart"></div>
+            </div>
         </div>
     </div>
-</div>
 
-<script type="text/javascript" src="vendor/js/jquery-1.10.1.min.js"></script>
-<script type="text/javascript" src="vendor/js/jquery.csv-0.71.js"></script>
-<script type="text/javascript" src="vendor/js/highcharts.js"></script>
-<script type="text/javascript" src="scripts.js"></script>
+    <script type="text/javascript" src="vendor/js/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="vendor/js/jquery.csv-0.71.js"></script>
+    <script type="text/javascript" src="vendor/js/highcharts.js"></script>
+    <script type="text/javascript" src="scripts.js"></script>
 </body>
 </html>
