@@ -25,6 +25,7 @@ func Initialize() {
 		AGGREGATION_INTEGRAL:           Integral,
 		AGGREGATION_HISTOGRAM_BY_TIME:  Histogram,
 		AGGREGATION_HISTOGRAM_BY_VALUE: Histogram,
+		AGGREGATION_SERIES_SUM:         SeriesSum,
 	}
 }
 
@@ -226,4 +227,22 @@ func Histogram(input []Aggregates) dto.Dtos {
 	}
 
 	return dto.Dtos{&histogram}
+}
+
+func SeriesSum(input []Aggregates) dto.Dtos {
+
+	if len(input) < 1 {
+		return dto.Dtos{}
+	}
+
+	length := len(input[0].(*dto.InterpolateElement).Data)
+	seriesSum := dto.InterpolateElement{make([]dto.Value, length)}
+
+	for _, h := range input {
+		for index, value := range h.(*dto.InterpolateElement).Data {
+			seriesSum.Data[index] += value
+		}
+	}
+
+	return dto.Dtos{&seriesSum}
 }
