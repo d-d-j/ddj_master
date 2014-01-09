@@ -20,14 +20,15 @@ $(document).ready(function () {
     });
 
     $('#query-button').click(function (e) {
+        $('#query-result').html(" ");
         $.ajax($("#url").val() + $('#query-input').val(), {
             contentType: "application/json",
             type: "GET",
             success: function (data) {
-                $('#query-result').html(JSON.stringify(data.Data));
+                $('#query-result').html(syntaxHighlight(JSON.stringify(data.Data, undefined, 4)));
             },
             error: function (data) {
-                $('#query-result').html(data.status + " " + data.statusText);
+                $('#query-result').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
             }
         })
     });
@@ -37,12 +38,16 @@ $(document).ready(function () {
     });
 
     $('#post-button').click(function (e) {
+        $('#post-result').html(" ");
         $.ajax($("#url").val() + '/data', {
             contentType: "application/json",
             data: $('#post-data').val(),
             type: "POST",
-            complete: function (data) {
-                $('#post-result').html(data.status + " " + data.statusText);
+            success: function (data) {
+                $('#post-result').html('Response: <span class="success-result">' + data + '</span>');
+            },
+            error: function (data) {
+                $('#post-result').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
             }
         })
     });
@@ -58,27 +63,28 @@ $(document).ready(function () {
         var queryUrl = "/data/metric/" + metrics + "/tag/" + tags + "/time/all/aggregation/histogramBy" + histogramOption + "/from/" + timeFrom + "/to/" + timeTo + "/buckets/" + numBuckets;
 
         var bucketSize = (parseFloat(timeTo) - parseFloat(timeFrom)) / parseFloat(numBuckets);
-        console.log("bucketsize", bucketSize);
 
         var buckets = [];
 
         for (var i = 0; i < numBuckets; i++) {
-            var begin = Math.round((parseFloat(timeFrom) + parseFloat(i*bucketSize)) * 100)/100;
-            var end = Math.round((parseFloat(timeFrom) + parseFloat(((i+1)*bucketSize))) * 100) / 100;
-            buckets.push('[ ' + String(begin) + ', ' + String(end) + ']');
+            var begin = Math.round((parseFloat(timeFrom) + parseFloat(i * bucketSize)) * 100) / 100;
+            var end = Math.round((parseFloat(timeFrom) + parseFloat(((i + 1) * bucketSize))) * 100) / 100;
+            buckets.push('[ ' + String(begin) + ', ' + String(end) + ')');
         }
-
-
-        console.log(queryUrl);
-
         $.ajax($("#url").val() + queryUrl, {
             contentType: "application/json",
             type: "GET",
-            complete: function (data) {
-                console.log(data.status + " " + data.statusText);
-                console.log( buckets);
-                console.log( data);
-                var chart = drawHistogram(data.responseJSON.Data[0].Data, buckets, 'chart', 'zajebisty histogram');
+            success: function (data) {
+                console.log(data.Data.length);
+                if (data.Data.length > 0) {
+                    var chart = drawHistogram(data.Data[0].Data, buckets, 'chart', "histogram by " + histogramOption);
+                } else {
+                    $('#chart').html("No data to display");
+                }
+            },
+            error: function (data){
+                console.log("error", data);
+                $('#chart').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
             }
         })
     });
@@ -199,3 +205,21 @@ var drawHistogram = function (series, bins, divId, title) {
 };
 
 
+var syntaxHighlight = function (json) {
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        var cls = 'number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'key';
+            } else {
+                cls = 'string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'boolean';
+        } else if (/null/.test(match)) {
+            cls = 'null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}

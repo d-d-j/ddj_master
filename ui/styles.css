@@ -13,6 +13,7 @@
     position: relative;
     overflow: hidden;
 }
+
 .btn-file input[type=file] {
     position: absolute;
     top: 0;
@@ -26,4 +27,43 @@
     background: red;
     cursor: inherit;
     display: block;
+}
+
+#chart {
+    min-height: 400px;
+    margin-top: 50px;
+
+}
+
+.success-result {
+    color: green;
+}
+.error-result {
+    color: red;
+}
+
+pre {
+    outline: 1px solid #ccc;
+    padding: 5px;
+    margin: 5px;
+}
+
+.string {
+    color: green;
+}
+
+.number {
+    color: darkorange;
+}
+
+.boolean {
+    color: blue;
+}
+
+.null {
+    color: magenta;
+}
+
+.key {
+    color: red;
 }
