@@ -13,10 +13,10 @@ type InsertService struct {
 	gorest.RestService `root:"/" consumes:"application/json" produces:"application/json"`
 	insertData         gorest.EndPoint `method:"POST" path:"/data/" postdata:"ddj_Master.dto.Element"`
 	flushBuffer        gorest.EndPoint `method:"POST" path:"/data/flush" postdata:"string"`
-	getOptions         gorest.EndPoint `method:"OPTIONS" path:"/data"`
+	getOptions         gorest.EndPoint `method:"OPTIONS" path:"/data/{...:string}"`
 }
 
-func (serv InsertService) GetOptions() {
+func (serv InsertService) GetOptions(_ ...string) {
 	serv.setHeader()
 	log.Debug("Return available options")
 }
