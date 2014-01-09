@@ -141,10 +141,7 @@ func parseResultsToHistograms(results []*dto.Result, bucketCount int) []reduce.A
 
 		for index := 0; index < len(combinedHistogramFromOneNodeButAllGpus.Data); index += bucketCount {
 			var histogramForOneGpu dto.Histogram
-			histogramForOneGpu.Data = make([]int32, bucketCount)
-			for i := 0; i < bucketCount; i++ {
-				histogramForOneGpu.Data[i] = combinedHistogramFromOneNodeButAllGpus.Data[i+index]
-			}
+			histogramForOneGpu.Data = combinedHistogramFromOneNodeButAllGpus.Data[index : index+bucketCount]
 			histograms = append(histograms, &histogramForOneGpu)
 		}
 	}
