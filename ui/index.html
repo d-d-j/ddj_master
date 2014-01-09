@@ -73,7 +73,6 @@
         </div>
         <div class="col-md-5">
             <div id="query-result" cols="30" rows="10"></div>
-
         </div>
     </div>
 
@@ -82,7 +81,12 @@
             <legend>Histogram</legend>
         </div>
         <div class="col-md-5">
-            <button id="histogram-button" class="btn btn-info">test</button>
+            <input id="tags" value="all"/>
+            <input id="metrics" value="all"/>
+            <input id="time-from" value="1"/>
+            <input id="time-to" value="180"/>
+            <input id="buckets" value="10"/>
+            <button id="value-histogram-button" class="btn btn-info">Show Histogram</button>
         </div>
         <div class="col-md-5">
             <div id="chart"></div>

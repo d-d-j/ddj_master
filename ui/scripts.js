@@ -39,7 +39,6 @@ $(document).ready(function () {
     $('#post-button').click(function (e) {
         $.ajax($("#url").val() + '/data', {
             contentType: "application/json",
-            type: "GET",
             data: $('#post-data').val(),
             type: "POST",
             complete: function (data) {
@@ -48,11 +47,44 @@ $(document).ready(function () {
         })
     });
 
-    $('#histogram-button').click(function (e) {
-        var chart = drawHistogram([3, 2, 1, 6, 10, 5, 13, 9, 14, 21, 23, 66, 47, 14, 5, 2],
-            ['> 48.00 =< 51.81', '> 51.81 =< 54.63', '> 54.63 =< 57.44', '> 57.44 =< 60.25', '> 60.25 =< 63.06', '> 63.06 =< 65.88', '> 65.88 =< 68.69', '> 68.69 =< 71.50', '> 71.50 =< 74.31',
-            '> 74.31 =< 77.13', '> 77.13 =< 79.94', '> 79.94 =< 82.75', '> 82.75 =< 85.56', '> 85.56 =< 88.38', '> 88.38 =< 91.19', '> 91.19 =< 94.00'],
-            'chart', 'zajebisty histogram');
+    $('#value-histogram-button').click(function (e) {
+        var tags = $('#tags').val();
+        var metrics = $('#metrics').val();
+        var timeFrom = $('#time-from').val();
+        var timeTo = $('#time-to').val();
+        var numBuckets = $('#buckets').val();
+//        http://localhost:8888/data/metric/all/tag/all/time/194-317/aggregation/histogramByTime/from/194/to/317/buckets/1
+        var queryUrl = "/data/metric/" + metrics + "/tag/" + tags + "/time/all/aggregation/histogramByTime/from/" + timeFrom + "/to/" + timeTo + "/buckets/" + numBuckets;
+
+        var bucketSize = (parseFloat(timeTo) - parseFloat(timeFrom)) / parseFloat(numBuckets);
+        console.log("bucketsize", bucketSize);
+
+        var buckets = [];
+
+        for (var i = 0; i < numBuckets; i++) {
+            var begin = Math.round((parseFloat(timeFrom) + parseFloat(i*bucketSize)) * 100)/100;
+            var end = Math.round((parseFloat(timeFrom) + parseFloat(((i+1)*bucketSize))) * 100) / 100;
+            buckets.push('[ ' + String(begin) + ',' + String(end) + ']');
+        }
+
+
+        console.log(queryUrl);
+
+        $.ajax($("#url").val() + queryUrl, {
+            contentType: "application/json",
+            type: "GET",
+            complete: function (data) {
+                console.log(data.status + " " + data.statusText);
+                console.log( buckets);
+                console.log( data);
+                var chart = drawHistogram(data.responseJSON.Data[0].Data, buckets, 'chart', 'zajebisty histogram');
+            }
+        })
+
+//        var chart = drawHistogram([3, 2, 1, 6, 10, 5, 13, 9, 14, 21, 23, 66, 47, 14, 5, 2],
+//            ['> 48.00 =< 51.81', '> 51.81 =< 54.63', '> 54.63 =< 57.44', '> 57.44 =< 60.25', '> 60.25 =< 63.06', '> 63.06 =< 65.88', '> 65.88 =< 68.69', '> 68.69 =< 71.50', '> 71.50 =< 74.31',
+//                '> 74.31 =< 77.13', '> 77.13 =< 79.94', '> 79.94 =< 82.75', '> 82.75 =< 85.56', '> 85.56 =< 88.38', '> 88.38 =< 91.19', '> 91.19 =< 94.00'],
+//            'chart', 'zajebisty histogram');
     });
 });
 
