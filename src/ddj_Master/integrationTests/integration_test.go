@@ -86,10 +86,10 @@ func SetUp(b *testing.B) {
 func Benchmark_Select_First_Value(b *testing.B) {
 
 	SetUp(b)
+	queryString := "/metric/0/tag/0/time/0-1/aggregation/none"
+	response := Select(queryString, b)
 
-	response := Select("/metric/0/tag/0/time/0-1/aggregation/none", b)
-
-	Assert(response, expected, b)
+	Assert(response, expected, queryString, b)
 }
 
 func Benchmark_Select_Values_From_All_Tags_And_Metrics(b *testing.B) {
@@ -113,23 +113,25 @@ func Benchmark_Select_Values_From_All_Tags_And_Metrics(b *testing.B) {
 		b.FailNow()
 	}
 
-	response := Select(fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/none", from, to), b)
+	queryString := fmt.Sprintf("/metric/all/tag/all/time/%d-%d/aggregation/none", from, to)
+	response := Select(queryString, b)
 
 	expectedElements := make([]dto.Element, 0, len(exp))
 	for _, e := range exp {
 		expectedElements = append(expectedElements, e.(dto.Element))
 	}
 
-	Assert(response, expectedElements, b)
+	Assert(response, expectedElements, queryString, b)
 }
 
 func Benchmark_Select_All(b *testing.B) {
 
 	SetUp(b)
 
-	response := Select(fmt.Sprintf("/metric/all/tag/all/time/all/aggregation/none"), b)
+	queryString := fmt.Sprintf("/metric/all/tag/all/time/all/aggregation/none")
+	response := Select(queryString, b)
 
-	Assert(response, expected, b)
+	Assert(response, expected, queryString, b)
 }
 
 func Flush(b *testing.B) {
@@ -641,20 +643,27 @@ func Benchmark_Select_Int(b *testing.B) {
 	}
 }
 
-func Assert(response RestResponse, expectedValues []dto.Element, b *testing.B) {
+func Assert(response RestResponse, expectedValues []dto.Element, query string, b *testing.B) {
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
+		b.Log(query)
 		b.FailNow()
 	}
 	if len(response.Data) > len(expectedValues) {
 		b.Error("Too many values returned. Expected less or equal than ", len(expectedValues), " but got ", len(response.Data))
 		b.Log("Did you forget to restart server?")
+		b.Log(query)
 		b.FailNow()
 	}
+	ok := true
 	for index, element := range response.Data {
 		if expectedValues[index].String() != element.String() {
 			b.Error("Expected ", expectedValues[index], " but got ", element)
+			ok = false
 		}
+	}
+	if !ok {
+		b.Log(query)
 	}
 }
 
