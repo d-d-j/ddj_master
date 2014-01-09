@@ -3,6 +3,7 @@ ddj_Master
 master.cfg
 log.cfg
 
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
@@ -12,6 +13,7 @@ log.cfg
 # Folders
 _obj
 pkg
+ui/.idea/
 
 # Architecture specific extensions/prefixes
 *.[568vq]

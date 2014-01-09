@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<link rel="stylesheet" href="vendor/css/bootstrap.css">
+<link rel="stylesheet" href="vendor/css/bootstrap-theme.css">
+<link rel="stylesheet" href="styles.css">
+<body>
+
+<div class="page-header text-center">
+    <h1>DDJ Time Series DB</h1>
+</div>
+<div class="container">
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="control-label" for="url">Server Url</label>
+                <input id="url" class="form-control " value="http://localhost:8888"/>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <legend>Data to POST</legend>
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <textarea id="post-data">
+                        </textarea>
+                        <button id="post-button" class="btn btn-info">POST</button>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+                <div class="col-md-2">
+                    <div id="post-result">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+
+        </div>
+        <div class="col-md-6">
+            <legend>CSV Data Sets</legend>
+
+            <button class="btn btn-default btn-file">Choose File<input accept=".csv" type="file" id="file-input"/>
+            </button>
+            <button id="start-upload" class="btn btn-info">
+                UPLOAD
+            </button>
+
+        </div>
+        <div class="col-md-6">
+            <div id="data-to-upload"></div>
+        </div>
+
+    </div>
+    <div class="clearfix"></div>
+    <div class="row">
+        <div class="col-md-12">
+            <legend>Queries</legend>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <input id="query-input" class="form-control" type="text"
+                       value="/data/metric/all/tag/all/time/0-100000000/aggregation/none"/>
+                <button id="query-button" class="btn btn-info">Execute Query</button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="query-result" cols="30" rows="10"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <legend>Histogram</legend>
+        </div>
+        <div class="col-md-6">
+
+                <select class="form-control" name="histogram-option" id="histogram-option">
+                    <option>Time</option>
+                    <option>Value</option>
+                </select>
+
+
+                    <div class="form-group"><label for="tags">Tags:</label><input id="tags" value="all"/></div>
+                    <div class="form-group"><label for="metrics">Metrics:</label><input id="metrics" value="all"/></div>
+                    <div class="form-group"><label for="time-from">From:</label><input id="time-from" value="1"/></div>
+                    <div class="form-group"><label for="time-to"> To:</label><input id="time-to" value="180"/></div>
+                    <div class="form-group"><label for="buckets">Number Buckets:</label><input id="buckets" value="10"/>
+                    </div>
+                    <button id="value-histogram-button" class="btn btn-info">Show Histogram</button>
+
+
+            <div class="col-md-6">
+                <div id="chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="vendor/js/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="vendor/js/jquery.csv-0.71.js"></script>
+    <script type="text/javascript" src="vendor/js/highcharts.js"></script>
+    <script type="text/javascript" src="scripts.js"></script>
+</body>
+</html>
