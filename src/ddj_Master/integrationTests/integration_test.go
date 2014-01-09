@@ -380,7 +380,7 @@ func Select_Histogram_With_One_Bucket(b *testing.B, from, to int64, tags []int32
 	metricsStr := prepareTagsOrMetrics(metrics)
 	tagsStr := prepareTagsOrMetrics(tags)
 	queryString := fmt.Sprintf("/metric/%s/tag/%s/time/%d-%d/aggregation/histogramByTime/from/%d/to/%d/buckets/1",
-		metricsStr, tagsStr, from, to, from, to)
+		metricsStr, tagsStr, from, to, from, to+1)
 
 	response := SelectHistogram(queryString, b)
 
