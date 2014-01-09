@@ -120,10 +120,10 @@ func (w *TaskWorker) Info(req dto.RestRequest) bool {
 func parseResultsToInfos(results []*dto.Result) []*dto.Info {
 	infoSize := (&dto.MemoryInfo{}).Size()
 	resultsCount := len(results)
-	elements := make([]*dto.Info,0, resultsCount)
+	elements := make([]*dto.Info, 0, resultsCount)
 
 	for i := 0; i < resultsCount; i++ {
-		length := len(results[i].Data)/infoSize
+		length := len(results[i].Data) / infoSize
 		for j := 0; j < length; j++ {
 			var e dto.Info
 			err := e.MemoryInfo.Decode(results[i].Data[j*infoSize:])
@@ -188,20 +188,21 @@ func BroadcastTaskToAllNodes(t *dto.Task) bool {
 }
 
 func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.Result {
-	responses := make([]*dto.Result, numResponses)
+	responses := make([]*dto.Result, 0, numResponses)
 
-	timeoutDuration := time.Duration(5)*time.Second
+	timeoutDuration := time.Duration(5) * time.Second
 	timeout := time.After(timeoutDuration)
 	// WAIT FOR ALL RESPONSES
 	for i := 0; i < numResponses; i++ {
 		select {
 		case response := <-responseChan:
-			responses[i] = response
+			responses = append(responses, response)
 		case <-timeout:
-			continue
+			log.Error("Timeout! Got %d/%d responses", i, numResponses)
+			break
 		}
 
-		log.Finest("Got task result [%d/%d] - %s", i + 1, numResponses, responses[i])
+		log.Finest("Got task result [%d/%d] - %s", i+1, numResponses, responses[i])
 	}
 
 	return responses
