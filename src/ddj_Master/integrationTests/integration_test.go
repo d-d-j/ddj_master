@@ -23,6 +23,11 @@ type RestForAggregation struct {
 	TaskId int64
 	Data   []dto.Value
 }
+type RestForHistogram struct {
+	Error  string
+	TaskId int64
+	Data   []dto.Histogram
+}
 
 const (
 	NUMBER_OF_TAGS_PER_METRICS int = 4
@@ -204,6 +209,37 @@ func SelectAggr(query string, b *testing.B) RestForAggregation {
 	return response
 }
 
+func SelectHistogram(query string, b *testing.B) RestForHistogram {
+	b.ResetTimer()
+
+	selectUrl := fmt.Sprintf("%s/%s", HOST, query)
+	req, err := http.Get(selectUrl)
+	defer req.Body.Close()
+	if err != nil {
+		b.Log("Error occurred: ", err)
+		b.Log(query)
+	}
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		b.Log("Error occurred: ", err)
+		b.Log(query)
+		b.FailNow()
+	}
+
+	b.StopTimer()
+
+	response := RestForHistogram{}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		b.Error("Error occurred: ", err)
+		b.Log(query)
+		b.FailNow()
+	}
+
+	return response
+}
+
 func Benchmark_Select_Min(b *testing.B) {
 
 	SetUp(b)
@@ -346,7 +382,7 @@ func Select_Histogram_With_One_Bucket(b *testing.B, from, to int64, tags []int32
 	queryString := fmt.Sprintf("/metric/%s/tag/%s/time/%d-%d/aggregation/histogramByTime/from/%d/to/%d/buckets/1",
 		metricsStr, tagsStr, from, to, from, to)
 
-	response := SelectAggr(queryString, b)
+	response := SelectHistogram(queryString, b)
 
 	if len(response.Data) < 1 {
 		b.Log("Nothing returned")
@@ -364,7 +400,7 @@ func Select_Histogram_With_One_Bucket(b *testing.B, from, to int64, tags []int32
 		b.FailNow()
 	}
 
-	if len(response.Data) != 1 || int(response.Data[0]) != exp {
+	if len(response.Data[0].Data) != 1 || int(response.Data[0].Data[0]) != exp {
 		b.Error("Got ", response.Data, " when expected ", exp)
 		b.Log(queryString)
 	}
