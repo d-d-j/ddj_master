@@ -8,11 +8,12 @@
 <link rel="stylesheet" href="styles.css">
 <body>
 
-<div class="page-header text-center">
-    <h1>DDJ Time Series DB</h1>
-</div>
+
 <div class="container">
 
+    <div class="page-header text-center">
+        <h1>DDJ Time Series DB</h1>
+    </div>
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
@@ -23,17 +24,17 @@
         <div class="col-md-6">
             <legend>Data to POST</legend>
             <div class="row">
-                <div class="col-md-2">
-                    <div class="form-group">
-                        <textarea id="post-data">
-                        </textarea>
-                        <button id="post-button" class="btn btn-info">POST</button>
-                    </div>
+
+                <div class="form-group col-md-6">
+                    <textarea id="post-data">
+                    </textarea>
+                    <button id="post-button" class="btn btn-info">POST</button>
                 </div>
-                <div class="col-md-2">
-                    <div id="post-result">
-                    </div>
+
+
+                <div id="post-result" class="col-md-6">
                 </div>
+
             </div>
         </div>
         <div class="col-md-6">
@@ -44,6 +45,7 @@
             <button id="start-upload" class="btn btn-info">
                 UPLOAD
             </button>
+            <span id="upload-result"></span>
 
         </div>
         <div class="col-md-6">
@@ -105,6 +107,10 @@
         <div class="col-md-6">
             <div id="chart"></div>
         </div>
+    </div>
+
+    <div class="page-footer">
+
     </div>
 
     <script type="text/javascript" src="vendor/js/jquery-1.10.1.min.js"></script>

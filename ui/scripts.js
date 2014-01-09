@@ -34,7 +34,11 @@ $(document).ready(function () {
     });
 
     $('#start-upload').click(function (e) {
-        sendElementsToServer(uploadData.objectsToUpload);
+        if (uploadData != undefined && uploadData.objectsToUpload.length > 0) {
+            sendElementsToServer(uploadData.objectsToUpload);
+        } else {
+            $('#upload-result').html('<span class="error-result"> No data to upload </span>');
+        }
     });
 
     $('#post-button').click(function (e) {
@@ -82,7 +86,7 @@ $(document).ready(function () {
                     $('#chart').html("No data to display");
                 }
             },
-            error: function (data){
+            error: function (data) {
                 console.log("error", data);
                 $('#chart').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
             }
@@ -100,17 +104,20 @@ var elementToJSONString = function (element) {
 };
 
 var sendElementsToServer = function (dataToSend) {
+    $('#upload-result').html(" ");
     dataToSend.forEach(function (dataElement) {
         $.ajax($("#url").val() + "/data", {
             contentType: "application/json",
             dataType: "json",
             data: elementToJSONString(dataElement),
             type: "POST",
-            success: function () {
+            error: function (data) {
+                if (data.status === 202) {
+                    $('#upload-result').html('Response: <span class="success-result">' + data.status + " " + data.statusText + '</span>');
+                } else {
+                    $('#upload-result').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
 
-            },
-            error: function () {
-
+                }
             }
         })
     })
@@ -168,7 +175,6 @@ var drawHistogram = function (series, bins, divId, title) {
             }
         },
         xAxis: {
-            categories: bins,
             labels: {
                 rotation: -90,
                 y: 40,
