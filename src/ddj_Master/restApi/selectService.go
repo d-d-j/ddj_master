@@ -16,6 +16,7 @@ type SelectService struct {
 	selectQuery           gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/{times:string}/aggregation/{aggr:string}" output:"RestResponse"`
 	histogramByValueQuery gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/{times:string}/aggregation/histogramByValue/from/{from:float32}/to/{to:float32}/buckets/{buckets:int32}" output:"RestResponse"`
 	histogramByTimeQuery  gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/{times:string}/aggregation/histogramByTime/from/{from:int64}/to/{to:int64}/buckets/{buckets:int32}" output:"RestResponse"`
+	interpolateQuery      gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/from/{from:int64}/to/{to:int64}/aggregation/series/sum/samples/{samples:int32}" output:"RestResponse"`
 }
 
 func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) dto.RestResponse {
@@ -31,6 +32,27 @@ func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) dto.Res
 	}
 	log.Fine("Query: ", &data)
 	restRequestChannel <- dto.RestRequest{Type: common.TASK_SELECT, Data: &data, Response: responseChan}
+	response := <-responseChan
+	serv.setSelectHeaderErrors(response)
+	return *response
+}
+
+func (serv SelectService) InterpolateQuery(metrics, tags string, from, to int64, samples int32) dto.RestResponse {
+	log.Finest("Selecting Series")
+	serv.setHeader()
+	responseChan := make(chan *dto.RestResponse)
+	times := fmt.Sprintf("%d-%d", from, to)
+	query, err := prepareQueryWithoutAggregationType(metrics, tags, times)
+	if err != nil || query.MetricsCount == 0 || query.TagsCount == 0 {
+		log.Error("Return HTTP 400")
+		serv.ResponseBuilder().SetResponseCode(400).WriteAndOveride(
+			[]byte("The request could not be understood by the server due to malformed syntax. You SHOULD NOT repeat the request without modifications."))
+		return dto.RestResponse{}
+	}
+	query.AggregationType = common.AGGREGATION_SERIES_SUM
+	query.AdditionalData = dto.InterpolatedData(samples)
+	log.Fine("Query: ", &query)
+	restRequestChannel <- dto.RestRequest{Type: common.TASK_SELECT, Data: &query, Response: responseChan}
 	response := <-responseChan
 	serv.setSelectHeaderErrors(response)
 	return *response

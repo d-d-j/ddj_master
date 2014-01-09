@@ -23,6 +23,27 @@ type HistogramTimeData struct {
 	BucketCount int32
 }
 
+type InterpolatedData int32
+
+func (this InterpolatedData) Encode() ([]byte, error) {
+	buf := new(bytes.Buffer)
+
+	err := binary.Write(buf, binary.LittleEndian, this)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (this InterpolatedData) GetBucketCount() int32 {
+	return int32(this)
+}
+
+func (this InterpolatedData) Size() int {
+	return 4
+}
+
 func (this HistogramTimeData) Encode() ([]byte, error) {
 	buf := new(bytes.Buffer)
 

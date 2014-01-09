@@ -28,6 +28,11 @@ type RestForHistogram struct {
 	TaskId int64
 	Data   []dto.Histogram
 }
+type RestForSeries struct {
+	Error  string
+	TaskId int64
+	Data   []dto.InterpolateElement
+}
 
 const (
 	NUMBER_OF_TAGS_PER_METRICS int = 4
@@ -52,7 +57,7 @@ func SetUp(b *testing.B) {
 		data = make([]string, INSERTED_DATA)
 		expected = make([]dto.Element, INSERTED_DATA)
 		for i := 0; i < INSERTED_DATA; i++ {
-			value := dto.Value(i) //dto.Value(math.Log(float64(i + 1)))
+			value := dto.Value(1.0) //dto.Value(math.Log(float64(i + 1)))
 			e := *dto.NewElement(int32(i%NUMBER_OF_TAGS_PER_METRICS), int32(i%NUMBER_OF_METRICS), int64(i), value)
 			data[i] = fmt.Sprintf("{\"tag\":%d, \"metric\":%d, \"time\":%d, \"value\":%f}", e.Metric, e.Tag, e.Time, value)
 			expected[i] = e
@@ -242,6 +247,38 @@ func SelectHistogram(query string, b *testing.B) RestForHistogram {
 	return response
 }
 
+func SelectSeries(query string, b *testing.B) RestForSeries {
+	b.ResetTimer()
+
+	selectUrl := fmt.Sprintf("%s/%s", HOST, query)
+	req, err := http.Get(selectUrl)
+	if err != nil {
+		b.Log("Error occurred: ", err)
+		b.Log(query)
+		b.FailNow()
+	}
+	defer req.Body.Close()
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		b.Log("Error occurred: ", err)
+		b.Log(query)
+		b.FailNow()
+	}
+
+	b.StopTimer()
+
+	response := RestForSeries{}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		b.Error("Error occurred: ", err)
+		b.Log(query)
+		b.FailNow()
+	}
+
+	return response
+}
+
 func Benchmark_Select_Min(b *testing.B) {
 
 	SetUp(b)
@@ -322,7 +359,7 @@ func Benchmark_Select_Avg(b *testing.B) {
 	}
 }
 
-func Benchmark_Select_Histogram(b *testing.B) {
+func Benchmark_Select_Hist(b *testing.B) {
 
 	SetUp(b)
 
@@ -339,6 +376,26 @@ func Benchmark_Select_Histogram(b *testing.B) {
 			tags = append(tags, int32(tag))
 		}
 		metrics = append(metrics, int32(metric))
+	}
+}
+
+func Benchmark_Select_Series_Sum(b *testing.B) {
+
+	SetUp(b)
+
+	t := random.Intn(INSERTED_DATA) + 1
+	f := random.Intn(t - 1)
+
+	from := expected[f].Time
+	to := expected[t].Time
+	metrics := make([]int32, 0, NUMBER_OF_METRICS)
+	for metric := 0; metric <= NUMBER_OF_METRICS; metric++ {
+		metrics = append(metrics, int32(metric))
+		tags := make([]int32, 0, NUMBER_OF_TAGS_PER_METRICS)
+		for tag := 0; tag <= NUMBER_OF_TAGS_PER_METRICS; tag++ {
+			tags = append(tags, int32(tag))
+			Select_Series_Sum_With_One_Sample(b, from, to, tags, metrics)
+		}
 	}
 }
 
@@ -403,6 +460,37 @@ func Select_Histogram_With_One_Bucket(b *testing.B, from, to int64, tags []int32
 	}
 
 	if len(response.Data[0].Data) != 1 || int(response.Data[0].Data[0]) != exp {
+		b.Error("Got ", response.Data, " when expected ", exp)
+		b.Log(queryString)
+	}
+}
+
+func Select_Series_Sum_With_One_Sample(b *testing.B, from, to int64, tags []int32, metrics []int32) {
+
+	metricsStr := prepareTagsOrMetrics(metrics)
+	tagsStr := prepareTagsOrMetrics(tags)
+	queryString := fmt.Sprintf("/metric/%s/tag/%s/time/from/%d/to/%d/aggregation/series/sum/samples/1",
+		metricsStr, tagsStr, from, to)
+
+	response := SelectSeries(queryString, b)
+
+	if len(response.Data) < 1 {
+		b.Log("Nothing returned")
+		b.FailNow()
+	}
+
+	exp, err := From(expected).Where(
+		func(e T) (bool, error) {
+			element := e.(dto.Element)
+			return ElementInRange(element, from, to, tags, metrics)
+		}).Select(Value).Sum()
+
+	if err != nil {
+		b.Error("Error: ", err)
+		b.FailNow()
+	}
+
+	if len(response.Data[0].Data) != 1 || float64(response.Data[0].Data[0]) != exp {
 		b.Error("Got ", response.Data, " when expected ", exp)
 		b.Log(queryString)
 	}

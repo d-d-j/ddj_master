@@ -24,6 +24,8 @@ func parseResults(results []*dto.Result, query *dto.Query) []reduce.Aggregates {
 		return parseResultsToHistograms(results, int(query.AdditionalData.GetBucketCount()))
 	case common.AGGREGATION_HISTOGRAM_BY_VALUE:
 		return parseResultsToHistograms(results, int(query.AdditionalData.GetBucketCount()))
+	case common.AGGREGATION_SERIES_SUM:
+		return parseResultsToInterpolateElement(results, int(query.AdditionalData.GetBucketCount()))
 	default:
 		return parseResultsToElements(results)
 	}
@@ -142,6 +144,29 @@ func parseResultsToHistograms(results []*dto.Result, bucketCount int) []reduce.A
 		for index := 0; index < len(combinedHistogramFromOneNodeButAllGpus.Data); index += bucketCount {
 			var histogramForOneGpu dto.Histogram
 			histogramForOneGpu.Data = combinedHistogramFromOneNodeButAllGpus.Data[index : index+bucketCount]
+			histograms = append(histograms, &histogramForOneGpu)
+		}
+	}
+
+	return histograms
+}
+
+func parseResultsToInterpolateElement(results []*dto.Result, samplesCount int) []reduce.Aggregates {
+
+	histograms := make([]reduce.Aggregates, 0, len(results)*samplesCount)
+
+	for _, result := range results {
+
+		var combinedInterpolateElementFromOneNodeButAllGpus dto.InterpolateElement
+		err := combinedInterpolateElementFromOneNodeButAllGpus.Decode(result.Data)
+		if err != nil {
+			log.Error("Problem with parsing data", err)
+			continue
+		}
+
+		for index := 0; index < len(combinedInterpolateElementFromOneNodeButAllGpus.Data); index += samplesCount {
+			var histogramForOneGpu dto.InterpolateElement
+			histogramForOneGpu.Data = combinedInterpolateElementFromOneNodeButAllGpus.Data[index : index+samplesCount]
 			histograms = append(histograms, &histogramForOneGpu)
 		}
 	}
