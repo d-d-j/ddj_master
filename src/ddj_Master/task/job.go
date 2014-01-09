@@ -77,7 +77,7 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 		return false
 	}
 
-	responses := parseResults(GatherAllResponses(availableNodes, responseChan), t.AggregationType)
+	responses := parseResults(GatherAllResponses(availableNodes, responseChan), req.Data.(*dto.Query))
 	TaskManager.DelChan <- t.Id
 	log.Fine("Got %d responses", len(responses))
 	aggregate := reduce.GetAggregator(t.AggregationType)

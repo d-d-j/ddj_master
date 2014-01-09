@@ -8,6 +8,7 @@ import (
 type AggregationData interface {
 	Encoder
 	Size() int
+	GetBucketCount() int32
 }
 
 type HistogramValueData struct {
@@ -33,6 +34,10 @@ func (this HistogramTimeData) Encode() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (this HistogramTimeData) GetBucketCount() int32 {
+	return this.BucketCount
+}
+
 func (this HistogramTimeData) Size() int {
 	return binary.Size(this)
 }
@@ -46,6 +51,10 @@ func (this HistogramValueData) Encode() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (this HistogramValueData) GetBucketCount() int32 {
+	return this.BucketCount
 }
 
 func (this HistogramValueData) Size() int {

@@ -242,7 +242,7 @@ func Test_ParseResultsToInfos_Should_Return_All_Elements_From_Input(t *testing.T
 }
 
 func Test_ParseResultsToHistograms_Should_Return_Empty_Slice_For_Empty_Imput(t *testing.T) {
-	actual := parseResultsToHistograms(nil)
+	actual := parseResultsToHistograms(nil, 1)
 	if len(actual) != 0 {
 		t.Error("Expected empty slice but got ", actual)
 	}
@@ -250,8 +250,8 @@ func Test_ParseResultsToHistograms_Should_Return_Empty_Slice_For_Empty_Imput(t *
 
 func Test_ParseResultsToHistograms_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *testing.T) {
 	data := []byte{}
-	result := dto.NewResult(0, 1, common.TASK_INFO, 0, data)
-	actual := parseResultsToHistograms([]*dto.Result{result, result, result})
+	result := dto.NewResult(0, 1, common.TASK_SELECT, 0, data)
+	actual := parseResultsToHistograms([]*dto.Result{result, result, result}, 1)
 	if len(actual) != 0 {
 		t.Error("Expected empty slice but got ", actual)
 	}
@@ -266,10 +266,45 @@ func Test_ParseResultsToHistograms_Should_Return_All_Elements_From_Input(t *test
 	if err != nil {
 		t.Error("Error occurred", err)
 	}
-	result := dto.NewResult(0, 0, common.TASK_INFO, int32(expected.Size()), data)
-	actual := parseResultsToHistograms([]*dto.Result{result, result, result, result})
+	result := dto.NewResult(0, 0, common.TASK_SELECT, int32(expected.Size()), data)
+	actual := parseResultsToHistograms([]*dto.Result{result, result, result, result}, 6)
 	expected = append(expected, expected...)
 	expected = append(expected, expected...)
+	// ASSERTIONS
+
+	if len(actual) != len(expected) {
+		t.Error("Wrong data returned. Expected ", len(expected), " values", " but got ", len(actual))
+	}
+
+	for index, elem := range actual {
+		AssertEqual(expected[index], elem, t)
+	}
+}
+
+func Test_ParseResultsToHistograms_Should_Return_All_Elements_From_Input_Grouped_In_Buckets(t *testing.T) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			t.Error("Recovered ", r)
+		}
+	}()
+
+	// PREPARE DATA FOR TEST
+	expected := dto.Dtos{
+		&dto.Histogram{[]int32{0, 3, 1, 5, 7, 2}},
+	}
+	data, err := expected.Encode()
+	if err != nil {
+		t.Error("Error occurred", err)
+	}
+	result := dto.NewResult(0, 0, common.TASK_SELECT, int32(expected.Size()), data)
+	actual := parseResultsToHistograms([]*dto.Result{result, result, result, result}, 2)
+	expected = dto.Dtos{
+		&dto.Histogram{[]int32{0, 3}}, &dto.Histogram{[]int32{1, 5}}, &dto.Histogram{[]int32{7, 2}},
+		&dto.Histogram{[]int32{0, 3}}, &dto.Histogram{[]int32{1, 5}}, &dto.Histogram{[]int32{7, 2}},
+		&dto.Histogram{[]int32{0, 3}}, &dto.Histogram{[]int32{1, 5}}, &dto.Histogram{[]int32{7, 2}},
+		&dto.Histogram{[]int32{0, 3}}, &dto.Histogram{[]int32{1, 5}}, &dto.Histogram{[]int32{7, 2}},
+	}
 	// ASSERTIONS
 
 	if len(actual) != len(expected) {

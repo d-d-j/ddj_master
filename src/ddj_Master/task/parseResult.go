@@ -7,7 +7,8 @@ import (
 	"ddj_Master/reduce"
 )
 
-func parseResults(results []*dto.Result, aggregationType int32) []reduce.Aggregates {
+func parseResults(results []*dto.Result, query *dto.Query) []reduce.Aggregates {
+	aggregationType := query.AggregationType
 	switch aggregationType {
 	case common.AGGREGATION_ADD:
 		return parseResultsToValues(results)
@@ -20,9 +21,9 @@ func parseResults(results []*dto.Result, aggregationType int32) []reduce.Aggrega
 	case common.AGGREGATION_INTEGRAL:
 		return parseResultsToIntegralElements(results)
 	case common.AGGREGATION_HISTOGRAM_BY_TIME:
-		return parseResultsToHistograms(results)
+		return parseResultsToHistograms(results, int(query.AdditionalData.GetBucketCount()))
 	case common.AGGREGATION_HISTOGRAM_BY_VALUE:
-		return parseResultsToHistograms(results)
+		return parseResultsToHistograms(results, int(query.AdditionalData.GetBucketCount()))
 	default:
 		return parseResultsToElements(results)
 	}
@@ -125,17 +126,28 @@ func parseResultsToIntegralElements(results []*dto.Result) []reduce.Aggregates {
 	return values
 }
 
-func parseResultsToHistograms(results []*dto.Result) []reduce.Aggregates {
-	resultsCount := len(results)
-	histograms := make([]reduce.Aggregates, 0, resultsCount)
+func parseResultsToHistograms(results []*dto.Result, bucketCount int) []reduce.Aggregates {
+
+	histograms := make([]reduce.Aggregates, 0, len(results)*bucketCount)
+
 	for _, result := range results {
-		var e dto.Histogram
-		err := e.Decode(result.Data)
+
+		var combinedHistogramFromOneNodeButAllGpus dto.Histogram
+		err := combinedHistogramFromOneNodeButAllGpus.Decode(result.Data)
 		if err != nil {
 			log.Error("Problem with parsing data", err)
 			continue
 		}
-		histograms = append(histograms, &e)
+
+		for index := 0; index < len(combinedHistogramFromOneNodeButAllGpus.Data); index += bucketCount {
+			var histogramForOneGpu dto.Histogram
+			histogramForOneGpu.Data = make([]int32, bucketCount)
+			for i := 0; i < bucketCount; i++ {
+				histogramForOneGpu.Data[i] = combinedHistogramFromOneNodeButAllGpus.Data[i+index]
+			}
+			histograms = append(histograms, &histogramForOneGpu)
+		}
 	}
+
 	return histograms
 }
