@@ -1,0 +1,18 @@
+<logging>
+  <filter enabled="true">
+    <tag>stdout</tag>
+    <type>console</type>
+    <level>FINE</level>
+  </filter>
+  <filter enabled="true">
+    <tag>file</tag>
+    <type>file</type>
+    <level>ERROR</level>
+    <property name="filename">logs/master.log</property>
+    <property name="format">[%D %T] [%L] (%S) %M</property>
+    <property name="rotate">false</property>
+    <property name="maxsize">100M</property>
+    <property name="maxlines">0K</property>
+    <property name="daily">true</property>
+  </filter>
+</logging>
