@@ -21,45 +21,70 @@
             </div>
         </div>
         <div class="col-md-5">
-            <div class="clearfix"></div>
             <legend>Data to POST</legend>
+            <div class="row">
+                <div class="col-md-2">
 
+                    <div class="form-group">
+                        <textarea id="post-data">
 
-            <div class="form-group">
-                <textarea id="request-params">
+                        </textarea>
+                        <button id="post-button" class="btn btn-info">POST</button>
 
-                </textarea>
-                <button class="btn btn-info">POST</button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+
+                    <div id="post-result">
+
+                    </div>
+                </div>
             </div>
+        </div>
+        <div class="col-md-5">
 
         </div>
         <div class="col-md-5">
             <legend>Predefined Data Sets</legend>
-            <div class="row">
-                <input class="btn btn-info" type="file" id="file-input"/>
-                <button id="start-upload" class="btn btn-info">
-                    UPLOAD
-                </button>
-            </div>
+
+            <button class="btn btn-default btn-file">Choose File<input accept=".csv" type="file" id="file-input"/>
+            </button>
+            <button id="start-upload" class="btn btn-info">
+                UPLOAD
+            </button>
+
         </div>
+        <div class="col-md-5">
+            <div id="data-to-upload"></div>
+        </div>
+
     </div>
     <div class="clearfix"></div>
     <div class="row">
         <div class="col-md-12">
-            <legend>Data Presentation</legend>
+            <legend>Queries</legend>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-5">
             <div class="form-group">
-                <input id="query-input" type="text" value="/data/metric/all/tag/all/time/0-100000000/aggregation/none"/>
+                <input id="query-input" class="form-control" type="text"
+                       value="/data/metric/all/tag/all/time/0-100000000/aggregation/none"/>
                 <button id="query-button" class="btn btn-info">Execute Query</button>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-5">
             <div id="query-result" cols="30" rows="10"></div>
 
         </div>
+    </div>
 
-        <div class="col-md-6" style="display: none;">
+    <div class="row">
+        <div class="col-md-12">
+            <legend>Histogram</legend>
+        </div>
+        <div class="col-md-5">
+            <button id="histogram-button" class="btn btn-info">test</button>
+        </div>
+        <div class="col-md-5">
             <div id="chart"></div>
         </div>
     </div>
