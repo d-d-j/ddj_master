@@ -78,8 +78,8 @@
 
             <label>Histogram type: </label>
             <select class="form-control" name="histogram-option" id="histogram-option">
-                <option>Time</option>
                 <option>Value</option>
+                <option>Time</option>
             </select>
 
             <div class="clearfix"></div>
@@ -91,18 +91,16 @@
                                                                            value="all"/></div>
             <div class="form-group col-md-6"><label>From:</label><input class="form-control"
                                                                         id="histogram-time-from"
-                                                                        value="0"/></div>
+                                                                        value="-1"/></div>
             <div class="form-group col-md-6"><label>To:</label><input class="form-control" id="histogram-time-to"
-                                                                      value="180"/></div>
+                                                                      value="1"/></div>
             <div class="form-group col-md-6"><label>Number Buckets:</label><input class="form-control"
                                                                                   id="histogram-buckets"
                                                                                   value="10"/>
             </div>
             <div class="form-group col-md-6"><label> </label>
                 <button id="histogram-button" class="btn btn-info form-control">Show Histogram</button>
-
             </div>
-
         </div>
         <div class="col-md-6">
             <div id="histogram-chart"></div>
@@ -111,13 +109,9 @@
 
     <div class="row">
         <div class="col-md-12">
-            <legend>Series Aggregation</legend>
+            <legend>Sum Aggregation</legend>
         </div>
         <div id="series" class="col-md-6 form-inline">
-            <label>Series aggregation type: </label>
-            <select class="form-control" name="series-option" id="series-option">
-                <option>sum</option>
-            </select>
             <div class="clearfix"></div>
             <div class="form-group col-md-6"><label>Metric</label><input class="form-control" id="series-metric"
                                                                          value="0"/></div>
@@ -127,13 +121,12 @@
             <div class="form-group col-md-6"><label>Tag2</label><input class="form-control" id="series-tag2"
                                                                        value="1"/></div>
             <div class="form-group col-md-6"><label>From:</label><input class="form-control" id="series-time-from"
-
-                                                                        value="0"/></div>
+                                                                        value="100"/></div>
             <div class="form-group col-md-6"><label>To:</label><input class="form-control" id="series-time-to"
-                                                                       value="180"/></div>
+                                                                       value="250"/></div>
 
             <div class="form-group col-md-6"><label>Number of samples:</label><input class="form-control" id="series-num-samples"
-                                                                       value="180"/></div>
+                                                                       value="150"/></div>
 
             <div class="form-group col-md-6"><label> </label>
                 <button id="series-button" class="btn btn-info form-control">Show Plot</button>

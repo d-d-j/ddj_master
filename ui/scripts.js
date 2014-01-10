@@ -25,7 +25,7 @@ $(document).ready(function () {
             contentType: "application/json",
             type: "GET",
             success: function (data) {
-                $('#query-result').html(syntaxHighlight(JSON.stringify(data.Data, undefined, 4)));
+                $('#query-result').html(data.Data.length + '<br>' + syntaxHighlight(JSON.stringify(data.Data, undefined, 4)));
             },
             error: function (data) {
                 $('#query-result').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
@@ -35,6 +35,7 @@ $(document).ready(function () {
 
     $('#start-upload').click(function (e) {
         if (uploadData != undefined && uploadData.objectsToUpload.length > 0) {
+            console.log("upload", uploadData.objectsToUpload.length);
             sendElementsToServer(uploadData.objectsToUpload);
         } else {
             $('#upload-result').html('<span class="error-result"> No data to upload </span>');
@@ -98,7 +99,7 @@ $(document).ready(function () {
         var metric = $('#series-metric').val();
         var timeFrom = $('#series-time-from').val();
         var timeTo = $('#series-time-to').val();
-        var seriesOption = $('#series-option').val();
+        var seriesOption = 'sum';
         var numSamples = $('#series-num-samples').val();
         <!--/metric/%s/tag/%s/time/from/%d/to/%d/aggregation/series/sum/samples/1-->
         var queryUrl = "/data/metric/" + metric + "/tag/" + tag1 + ',' + tag2 + "/time" + "/from/" + timeFrom + "/to/" + timeTo + "/aggregation/series/" + seriesOption + "/samples/" + numSamples;
@@ -126,12 +127,12 @@ $(document).ready(function () {
 });
 
 var parseSeriesAggregationResultsToPoints = function (results, timeFrom, timeTo, samples) {
-    var gap = (timeTo - timeFrom) / samples;
+    var gap = (parseInt(timeTo) - parseInt(timeFrom)) / parseInt(samples);
 
 
     var points = [];
     for (var i = 0; i < results.length; i++) {
-        points.push([timeFrom + i * gap, results[i] ]);
+        points.push([parseInt(timeFrom) + parseInt(i * gap), results[i] ]);
     }
     return points;
 };
@@ -140,7 +141,7 @@ var parseElementsToPoints = function (elements) {
     var points = [];
 
     elements.forEach(function (element) {
-        points.push([element.Time, element.Value]);
+        points.push([parseInt(element.Time), parseFloat(element.Value)]);
     });
 
     return points;
@@ -157,8 +158,10 @@ var elementToJSONString = function (element) {
 
 var sendElementsToServer = function (dataToSend) {
     $('#upload-result').html(" ");
+    var promises = [];
     dataToSend.forEach(function (dataElement) {
-        $.ajax($("#url").val() + "/data", {
+
+        var promise = $.ajax($("#url").val() + "/data", {
             contentType: "application/json",
             dataType: "json",
             data: elementToJSONString(dataElement),
@@ -168,11 +171,20 @@ var sendElementsToServer = function (dataToSend) {
                     $('#upload-result').html('Response: <span class="success-result">' + data.status + " " + data.statusText + '</span>');
                 } else {
                     $('#upload-result').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
-
                 }
             }
-        })
-    })
+        });
+        promises.push(promise);
+
+    });
+
+    $.when.apply($, promises).always(function () {
+        $.ajax($("#url").val() + "/data/flush", {
+            contentType: "application/json",
+            type: "POST"
+        });
+    });
+
 };
 
 
@@ -264,7 +276,7 @@ var drawHistogram = function (series, bins, divId, title) {
 };
 
 var drawSeriesAggregation = function (series1, series2, aggregated, divId, title) {
-    console.log(series1);
+    console.log(series1, series2, aggregated);
     return new Highcharts.Chart({
         chart: {
             renderTo: divId,
