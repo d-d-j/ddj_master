@@ -190,7 +190,7 @@ func BroadcastTaskToAllNodes(t *dto.Task) bool {
 func GatherAllResponses(numResponses int, responseChan chan *dto.Result) []*dto.Result {
 	responses := make([]*dto.Result, 0, numResponses)
 
-	timeoutDuration := time.Duration(5) * time.Second
+	timeoutDuration := time.Duration(5000) * time.Second
 	timeout := time.After(timeoutDuration)
 	// WAIT FOR ALL RESPONSES
 	for i := 0; i < numResponses; i++ {
