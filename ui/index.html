@@ -74,48 +74,84 @@
         <div class="col-md-12">
             <legend>Histogram</legend>
         </div>
-        <div class="col-md-6 form-inline">
+        <div id="histogram" class="col-md-6 form-inline">
 
-            <label for="tags">Histogram type: </label>
+            <label>Histogram type: </label>
             <select class="form-control" name="histogram-option" id="histogram-option">
                 <option>Time</option>
                 <option>Value</option>
             </select>
 
             <div class="clearfix"></div>
-            <div class="form-group col-md-6"><label for="tags">Tags:</label><input class="form-control" id="tags"
-                                                                                   value="all"/>
+            <div class="form-group col-md-6"><label>Tags:</label><input class="form-control" id="histogram-tags"
+                                                                        value="all"/>
             </div>
-            <div class="form-group col-md-6"><label for="metrics">Metrics:</label><input class="form-control"
-                                                                                         id="metrics"
-                                                                                         value="all"/></div>
-            <div class="form-group col-md-6"><label for="time-from">From:</label><input class="form-control"
-                                                                                        id="time-from"
-                                                                                        value="0"/></div>
-            <div class="form-group col-md-6"><label for="time-to"> To:</label><input class="form-control" id="time-to"
-                                                                                     value="180"/></div>
-            <div class="form-group col-md-6"><label for="buckets">Number Buckets:</label><input class="form-control"
-                                                                                                id="buckets"
-                                                                                                value="10"/>
+            <div class="form-group col-md-6"><label>Metrics:</label><input class="form-control"
+                                                                           id="histogram-metrics"
+                                                                           value="all"/></div>
+            <div class="form-group col-md-6"><label>From:</label><input class="form-control"
+                                                                        id="histogram-time-from"
+                                                                        value="0"/></div>
+            <div class="form-group col-md-6"><label>To:</label><input class="form-control" id="histogram-time-to"
+                                                                      value="180"/></div>
+            <div class="form-group col-md-6"><label>Number Buckets:</label><input class="form-control"
+                                                                                  id="histogram-buckets"
+                                                                                  value="10"/>
             </div>
-            <div class="form-group col-md-6"><label for="buckets"> </label>
-                <button id="value-histogram-button" class="btn btn-info form-control">Show Histogram</button>
+            <div class="form-group col-md-6"><label> </label>
+                <button id="histogram-button" class="btn btn-info form-control">Show Histogram</button>
 
             </div>
 
         </div>
         <div class="col-md-6">
-            <div id="chart"></div>
+            <div id="histogram-chart"></div>
         </div>
     </div>
 
-    <div class="page-footer">
+    <div class="row">
+        <div class="col-md-12">
+            <legend>Series Aggregation</legend>
+        </div>
+        <div id="series" class="col-md-6 form-inline">
+            <label>Series aggregation type: </label>
+            <select class="form-control" name="series-option" id="series-option">
+                <option>sum</option>
+            </select>
+            <div class="clearfix"></div>
+            <div class="form-group col-md-6"><label>Metric</label><input class="form-control" id="series-metric"
+                                                                         value="0"/></div>
+            <div class="clearfix"></div>
+            <div class="form-group col-md-6"><label>Tag1</label><input class="form-control" id="series-tag1"
+                                                                       value="0"/></div>
+            <div class="form-group col-md-6"><label>Tag2</label><input class="form-control" id="series-tag2"
+                                                                       value="1"/></div>
+            <div class="form-group col-md-6"><label>From:</label><input class="form-control" id="series-time-from"
 
+                                                                        value="0"/></div>
+            <div class="form-group col-md-6"><label>To:</label><input class="form-control" id="series-time-to"
+                                                                       value="180"/></div>
+
+            <div class="form-group col-md-6"><label>Number of samples:</label><input class="form-control" id="series-num-samples"
+                                                                       value="180"/></div>
+
+            <div class="form-group col-md-6"><label> </label>
+                <button id="series-button" class="btn btn-info form-control">Show Plot</button>
+            </div>
+            <!--/metric/%s/tag/%s/time/from/%d/to/%d/aggregation/series/sum/samples/1-->
+        </div>
+        <div class="col-md-6">
+            <div id="series-chart"></div>
+        </div>
     </div>
 
-    <script type="text/javascript" src="vendor/js/jquery-1.10.1.min.js"></script>
-    <script type="text/javascript" src="vendor/js/jquery.csv-0.71.js"></script>
-    <script type="text/javascript" src="vendor/js/highcharts.js"></script>
-    <script type="text/javascript" src="scripts.js"></script>
+    <div class="page-footer"></div>
+
+</div>
+
+<script type="text/javascript" src="vendor/js/jquery-1.10.1.min.js"></script>
+<script type="text/javascript" src="vendor/js/jquery.csv-0.71.js"></script>
+<script type="text/javascript" src="vendor/js/highcharts.js"></script>
+<script type="text/javascript" src="scripts.js"></script>
 </body>
 </html>

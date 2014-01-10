@@ -56,12 +56,12 @@ $(document).ready(function () {
         })
     });
 
-    $('#value-histogram-button').click(function (e) {
-        var tags = $('#tags').val();
-        var metrics = $('#metrics').val();
-        var timeFrom = $('#time-from').val();
-        var timeTo = $('#time-to').val();
-        var numBuckets = $('#buckets').val();
+    $('#histogram-button').click(function (e) {
+        var tags = $('#histogram-tags').val();
+        var metrics = $('#histogram-metrics').val();
+        var timeFrom = $('#histogram-time-from').val();
+        var timeTo = $('#histogram-time-to').val();
+        var numBuckets = $('#histogram-buckets').val();
         var histogramOption = $('#histogram-option').val();
 //        http://localhost:8888/data/metric/all/tag/all/time/194-317/aggregation/histogramByTime/from/194/to/317/buckets/1
         var queryUrl = "/data/metric/" + metrics + "/tag/" + tags + "/time/all/aggregation/histogramBy" + histogramOption + "/from/" + timeFrom + "/to/" + timeTo + "/buckets/" + numBuckets;
@@ -81,18 +81,70 @@ $(document).ready(function () {
             success: function (data) {
                 console.log(data.Data.length);
                 if (data.Data.length > 0) {
-                    var chart = drawHistogram(data.Data[0].Data, buckets, 'chart', "histogram by " + histogramOption);
+                    var chart = drawHistogram(data.Data[0].Data, buckets, 'histogram-chart', "histogram by " + histogramOption);
                 } else {
-                    $('#chart').html("No data to display");
+                    $('#histogram-chart').html("No data to display");
                 }
             },
             error: function (data) {
-                console.log("error", data);
-                $('#chart').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
+                $('#histogram-chart').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
             }
         })
     });
+
+    $('#series-button').click(function (e) {
+        var tag1 = $('#series-tag1').val();
+        var tag2 = $('#series-tag2').val();
+        var metric = $('#series-metric').val();
+        var timeFrom = $('#series-time-from').val();
+        var timeTo = $('#series-time-to').val();
+        var seriesOption = $('#series-option').val();
+        var numSamples = $('#series-num-samples').val();
+        <!--/metric/%s/tag/%s/time/from/%d/to/%d/aggregation/series/sum/samples/1-->
+        var queryUrl = "/data/metric/" + metric + "/tag/" + tag1 + ',' + tag2 + "/time" + "/from/" + timeFrom + "/to/" + timeTo + "/aggregation/series/" + seriesOption + "/samples/" + numSamples;
+        var series1Url = "/data/metric/" + metric + "/tag/" + tag1 + "/time/" + timeFrom + "-" + timeTo + "/aggregation/none";
+        var series2Url = "/data/metric/" + metric + "/tag/" + tag2 + "/time/" + timeFrom + "-" + timeTo + "/aggregation/none";
+
+        $.when(
+                $.ajax($("#url").val() + queryUrl, {
+                    contentType: "application/json",
+                    type: "GET"
+                }), $.ajax($("#url").val() + series1Url, {
+                    contentType: "application/json",
+                    type: "GET"
+                }), $.ajax($("#url").val() + series2Url, {
+                    contentType: "application/json",
+                    type: "GET"
+                })
+            ).then(function (aggregatedData, series1Data, series2Data) {
+                drawSeriesAggregation(parseElementsToPoints(series1Data[0].Data), parseElementsToPoints(series2Data[0].Data),
+                    parseSeriesAggregationResultsToPoints(aggregatedData[0].Data[0].Data, timeFrom, timeTo, numSamples), 'series-chart', 'aggregation');
+
+            }, function () {
+            });
+    });
 });
+
+var parseSeriesAggregationResultsToPoints = function (results, timeFrom, timeTo, samples) {
+    var gap = (timeTo - timeFrom) / samples;
+
+
+    var points = [];
+    for (var i = 0; i < results.length; i++) {
+        points.push([timeFrom + i * gap, results[i] ]);
+    }
+    return points;
+};
+
+var parseElementsToPoints = function (elements) {
+    var points = [];
+
+    elements.forEach(function (element) {
+        points.push([element.Time, element.Value]);
+    });
+
+    return points;
+};
 
 var elementToJSONString = function (element) {
     return JSON.stringify({
@@ -175,6 +227,7 @@ var drawHistogram = function (series, bins, divId, title) {
             }
         },
         xAxis: {
+            categories: bins,
             labels: {
                 rotation: -90,
                 y: 40,
@@ -204,6 +257,88 @@ var drawHistogram = function (series, bins, divId, title) {
             {
                 name: 'Bins',
                 data: series
+            }
+        ]
+    });
+
+};
+
+var drawSeriesAggregation = function (series1, series2, aggregated, divId, title) {
+    console.log(series1);
+    return new Highcharts.Chart({
+        chart: {
+            renderTo: divId,
+            borderWidth: 0,
+            backgroundColor: '#eee',
+            borderWidth: 1,
+            borderColor: '#ccc',
+            plotBackgroundColor: '#fff',
+            plotBorderWidth: 1,
+            plotBorderColor: '#ccc'
+        },
+        credits: {enabled: false},
+        exporting: {enabled: false},
+        title: {text: title},
+        legend: {
+            //enabled:false
+        },
+        tooltip: {
+            borderWidth: 1,
+            formatter: function () {
+                return '<b>X:</b><br/> ' + this.x + '<br/>' +
+                    '<b>Y:</b> ' + this.y;
+            }
+        },
+        plotOptions: {
+
+            spline: {
+                shadow: false,
+                marker: {
+                    radius: 1
+                }
+            }
+        },
+        xAxis: {
+            labels: {
+                rotation: -90,
+                y: 40,
+                style: {
+                    fontSize: '12px',
+                    fontWeight: 'normal',
+                    color: '#333'
+                }
+            },
+            lineWidth: 0,
+            lineColor: '#999',
+            tickLength: 10,
+            tickColor: '#ccc'
+        },
+        yAxis: {
+            title: {text: ''},
+            //maxPadding:0,
+            gridLineColor: '#e9e9e9',
+            tickWidth: 1,
+            tickLength: 3,
+            tickColor: '#ccc',
+            lineColor: '#ccc',
+            tickInterval: 0.1
+            //endOnTick:false,
+        },
+        series: [
+            {
+                name: 'Series1',
+                type: 'spline',
+                data: series1
+            } ,
+            {
+                name: 'Series2',
+                type: 'spline',
+                data: series2
+            },
+            {
+                name: 'sum',
+                type: 'spline',
+                data: aggregated
             }
         ]
     });
