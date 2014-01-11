@@ -1,8 +1,8 @@
 package common
 
 //Aggregation Type
+//This constants represents available aggregations and could be safety send to node
 const (
-	// Values aggregation
 	AGGREGATION_NONE               int32 = 0
 	AGGREGATION_ADD                int32 = 1
 	AGGREGATION_MIN                int32 = 2

@@ -5,8 +5,10 @@ import (
 	"ddj_Master/node"
 )
 
+//This is type to handle pool of workers. It is used to implement thread pool pattern since each worker is independent gorutine
 type Pool []Worker
 
+//Constructor of worker Pool. Count of workers is specify by size
 func NewWorkersPool(size int32, jobsPerWorker int32, done chan Worker, loadBal *node.LoadBalancer) Pool {
 	pool := make(Pool, size)
 	idGen := common.NewTaskIdGenerator()
@@ -19,4 +21,5 @@ func NewWorkersPool(size int32, jobsPerWorker int32, done chan Worker, loadBal *
 	return pool
 }
 
+//Return size of Pool
 func (p Pool) Len() int { return len(p) }

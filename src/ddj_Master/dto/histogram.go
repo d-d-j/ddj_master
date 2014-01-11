@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+//This is structure that will be receive from node for histogram aggregation
 type Histogram struct {
 	Data []int32
 }
@@ -15,6 +16,7 @@ func (this Histogram) String() string {
 
 }
 
+//This method is used only for tests and to fulfill dto interface. It shouldn't be used
 func (this *Histogram) Encode() ([]byte, error) {
 	buf := new(bytes.Buffer)
 

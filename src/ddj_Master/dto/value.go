@@ -6,6 +6,8 @@ import (
 	"fmt"
 )
 
+//This is alias for type that is using to store data on node. It's representation could change over time so it should
+//be used instead of current type
 type Value float32
 
 func (v Value) String() string {

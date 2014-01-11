@@ -18,6 +18,7 @@ type TaskWorker struct {
 	balancer    *node.LoadBalancer
 }
 
+//This is interface that must be implement by worker in worker pool
 type Worker interface {
 	common.Int64Generator
 	Work()
@@ -30,6 +31,7 @@ type Worker interface {
 	getNodeForInsert() (*node.Node, error)
 }
 
+//Constructor for Worker. jobsPerWorker is actual size of buffer in request channel.
 func NewTaskWorker(idx int, jobsPerWorker int32, getNodeChan chan node.GetNodeRequest, done chan Worker, nodeBalancer *node.LoadBalancer, idGen common.Int64Generator) Worker {
 	w := new(TaskWorker)
 	w.index = idx
@@ -42,6 +44,7 @@ func NewTaskWorker(idx int, jobsPerWorker int32, getNodeChan chan node.GetNodeRe
 	return w
 }
 
+// This method will be called to start worker and it should be gorutine
 func (w *TaskWorker) Work() {
 	for {
 		req := <-w.reqChan // GET REQUEST
@@ -86,15 +89,19 @@ func (w *TaskWorker) String() string {
 	return fmt.Sprintf("Worker #%d (pending:%d)", w.index, w.pending)
 }
 
+//Return worker Id
 func (w *TaskWorker) Id() int { return w.index }
 
+//Increment pending jobs counter
 func (w *TaskWorker) IncrementPending() { w.pending++ }
 
+//Decrement pending jobs counter
 func (w *TaskWorker) DecrementPending() {
 	log.Finest(w, "Pending decrement")
 	w.pending--
 }
 
+//Return worker request channel
 func (w *TaskWorker) RequestChan() chan dto.RestRequest { return w.reqChan }
 
 func (w *TaskWorker) Done() {
@@ -102,4 +109,5 @@ func (w *TaskWorker) Done() {
 	w.done <- w
 }
 
+//Return worker Id
 func (w *TaskWorker) GetId() int64 { return w.idGenerator.GetId() }

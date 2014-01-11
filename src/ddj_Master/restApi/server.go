@@ -17,6 +17,7 @@ type Server struct {
 	Port string
 }
 
+//This method initialize  REST API
 func (sv Server) StartApi() <-chan dto.RestRequest {
 
 	insertService := InsertService{}

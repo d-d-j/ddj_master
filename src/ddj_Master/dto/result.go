@@ -1,14 +1,15 @@
 package dto
 
 import (
-	"fmt"
 	"ddj_Master/common"
+	"fmt"
 )
 
+//This structure is represent RAW data returned by node
 type Result struct {
 	Header
 	NodeId int32
-	Data []byte
+	Data   []byte
 }
 
 func NewResult(id int64, nodeId int32, ttype int32, size int32, data []byte) *Result {

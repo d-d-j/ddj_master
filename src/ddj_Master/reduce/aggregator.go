@@ -1,3 +1,4 @@
+//This package ocntains function used to reduce aggregation results from nodes
 package reduce
 
 import (
@@ -7,28 +8,32 @@ import (
 	"sort"
 )
 
+//This type is function that will handle aggregation of given input
 type Aggregator func([]Aggregates) dto.Dtos
 
+//This is alias for argument types of aggregation method
 type Aggregates dto.Dto
 
 var aggregations map[int32]Aggregator
 
+//Initialize aggregations. Should be called before GetAggregator
 func Initialize() {
 	aggregations = map[int32]Aggregator{
-		AGGREGATION_NONE:               NonAggregation,
-		AGGREGATION_MAX:                MaxAggregation,
-		AGGREGATION_MIN:                MinAggregation,
-		AGGREGATION_ADD:                AddAggregation,
-		AGGREGATION_AVERAGE:            AverageAggregation,
-		AGGREGATION_VARIANCE:           Variance,
-		AGGREGATION_STDDEVIATION:       StandartdDeviation,
-		AGGREGATION_INTEGRAL:           Integral,
-		AGGREGATION_HISTOGRAM_BY_TIME:  Histogram,
-		AGGREGATION_HISTOGRAM_BY_VALUE: Histogram,
-		AGGREGATION_SERIES_SUM:         SeriesSum,
+		AGGREGATION_NONE:               nonAggregation,
+		AGGREGATION_MAX:                maxAggregation,
+		AGGREGATION_MIN:                minAggregation,
+		AGGREGATION_ADD:                addAggregation,
+		AGGREGATION_AVERAGE:            averageAggregation,
+		AGGREGATION_VARIANCE:           variance,
+		AGGREGATION_STDDEVIATION:       standartdDeviation,
+		AGGREGATION_INTEGRAL:           integral,
+		AGGREGATION_HISTOGRAM_BY_TIME:  histogram,
+		AGGREGATION_HISTOGRAM_BY_VALUE: histogram,
+		AGGREGATION_SERIES_SUM:         seriesSum,
 	}
 }
 
+//Return Aggregator proper for given aggregation type
 func GetAggregator(aggregationType int32) Aggregator {
 	aggregator := aggregations[aggregationType]
 	if aggregator == nil {
@@ -37,7 +42,7 @@ func GetAggregator(aggregationType int32) Aggregator {
 	return aggregator
 }
 
-func NonAggregation(input []Aggregates) dto.Dtos {
+func nonAggregation(input []Aggregates) dto.Dtos {
 
 	output := make([]dto.Dto, 0, len(input))
 	for _, element := range input {
@@ -50,7 +55,7 @@ func NonAggregation(input []Aggregates) dto.Dtos {
 	return output
 }
 
-func MaxAggregation(input []Aggregates) dto.Dtos {
+func maxAggregation(input []Aggregates) dto.Dtos {
 
 	if len(input) < 1 {
 		return dto.Dtos{}
@@ -67,7 +72,7 @@ func MaxAggregation(input []Aggregates) dto.Dtos {
 	return dto.Dtos{&max}
 }
 
-func MinAggregation(input []Aggregates) dto.Dtos {
+func minAggregation(input []Aggregates) dto.Dtos {
 
 	if len(input) < 1 {
 		return dto.Dtos{}
@@ -84,7 +89,7 @@ func MinAggregation(input []Aggregates) dto.Dtos {
 	return dto.Dtos{&min}
 }
 
-func AddAggregation(input []Aggregates) dto.Dtos {
+func addAggregation(input []Aggregates) dto.Dtos {
 
 	if len(input) < 1 {
 		return dto.Dtos{}
@@ -99,7 +104,7 @@ func AddAggregation(input []Aggregates) dto.Dtos {
 	return dto.Dtos{&sum}
 }
 
-func AverageAggregation(input []Aggregates) dto.Dtos {
+func averageAggregation(input []Aggregates) dto.Dtos {
 
 	if len(input) < 1 {
 		return dto.Dtos{}
@@ -121,7 +126,7 @@ func AverageAggregation(input []Aggregates) dto.Dtos {
 	return dto.Dtos{&average}
 }
 
-func StandartdDeviation(input []Aggregates) dto.Dtos {
+func standartdDeviation(input []Aggregates) dto.Dtos {
 
 	length := len(input)
 	if length < 1 {
@@ -134,12 +139,12 @@ func StandartdDeviation(input []Aggregates) dto.Dtos {
 		data[index] = variance.(*dto.VarianceElement)
 	}
 
-	σ := dto.Value(math.Sqrt(variance(data)))
+	σ := dto.Value(math.Sqrt(varianceHelper(data)))
 
 	return dto.Dtos{&σ}
 }
 
-func Variance(input []Aggregates) dto.Dtos {
+func variance(input []Aggregates) dto.Dtos {
 
 	length := len(input)
 	if length < 1 {
@@ -152,12 +157,12 @@ func Variance(input []Aggregates) dto.Dtos {
 		data[index] = variance.(*dto.VarianceElement)
 	}
 
-	σ := dto.Value(variance(data))
+	σ := dto.Value(varianceHelper(data))
 
 	return dto.Dtos{&σ}
 }
 
-func variance(data []*dto.VarianceElement) float64 {
+func varianceHelper(data []*dto.VarianceElement) float64 {
 
 	length := len(data)
 	if length == 1 && data[0].Count <= 1 {
@@ -184,7 +189,7 @@ func variance(data []*dto.VarianceElement) float64 {
 	return float64(x.M2 / dto.Value(x.Count-1))
 }
 
-func Integral(input []Aggregates) dto.Dtos {
+func integral(input []Aggregates) dto.Dtos {
 
 	var integral dto.Value
 	length := len(input)
@@ -211,7 +216,7 @@ func Integral(input []Aggregates) dto.Dtos {
 	return dto.Dtos{&integral}
 }
 
-func Histogram(input []Aggregates) dto.Dtos {
+func histogram(input []Aggregates) dto.Dtos {
 
 	if len(input) < 1 {
 		return dto.Dtos{}
@@ -229,7 +234,7 @@ func Histogram(input []Aggregates) dto.Dtos {
 	return dto.Dtos{&histogram}
 }
 
-func SeriesSum(input []Aggregates) dto.Dtos {
+func seriesSum(input []Aggregates) dto.Dtos {
 
 	if len(input) < 1 {
 		return dto.Dtos{}

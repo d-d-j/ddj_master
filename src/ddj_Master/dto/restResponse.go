@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+//This structure will be returned by REST API to client.
 type RestResponse struct {
 	Error  string `json:",omitempty"`
 	TaskId int64

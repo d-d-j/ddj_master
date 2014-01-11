@@ -7,11 +7,13 @@ import (
 	"net"
 )
 
+//Listener is responsible for accepting new connections.
 type Listener struct {
-	netListen    net.Listener
-	idGenerator  common.Int32Generator
+	netListen   net.Listener
+	idGenerator common.Int32Generator
 }
 
+//Listener's constructor take service on which listener should listen
 func NewListener(service string) *Listener {
 	_, error := net.ResolveTCPAddr("tcp", service)
 	if error != nil {
@@ -30,6 +32,8 @@ func NewListener(service string) *Listener {
 	return l
 }
 
+//This method should be run as a gorutine it task channel  that is required by Node. When new node try to connect this method
+//accept connection and create new Node using it's constructorand run it
 func (l *Listener) WaitForNodes(getTaskChannel chan dto.GetTaskRequest) {
 	for {
 		log.Info("Waiting for nodes")
@@ -45,6 +49,7 @@ func (l *Listener) WaitForNodes(getTaskChannel chan dto.GetTaskRequest) {
 	}
 }
 
+//Stop listener
 func (l *Listener) Close() {
 	l.netListen.Close()
 }

@@ -6,16 +6,16 @@ import (
 	"fmt"
 )
 
+//This structure is received for integral aggregation. It represents integral for one chunk from GPU
 type IntegralElement struct {
-	Integral Value
-	// left store element
-	LeftValue Value
-	LeftTime  int64
-	// right store element
+	Integral   Value
+	LeftValue  Value
+	LeftTime   int64
 	RightValue Value
 	RightTime  int64
 }
 
+//This type is used to sort IntegralElements by LeftTime.
 type ByLeftTime []*IntegralElement
 
 func (this ByLeftTime) Len() int      { return len(this) }
@@ -29,8 +29,9 @@ func (this *IntegralElement) String() string {
 		this.Integral, this.LeftValue, this.LeftTime, this.RightValue, this.RightTime)
 }
 
+//This method is used only for tests and to fulfill dto interface. It shouldn't be used
 func (this *IntegralElement) Encode() ([]byte, error) {
-	//Only for tests
+
 	buf := new(bytes.Buffer)
 
 	binary.Write(buf, binary.LittleEndian, this.Integral)

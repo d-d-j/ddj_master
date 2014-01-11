@@ -1,3 +1,5 @@
+//Here are integration tests for project. Following test load some data and then do multiple selects to check
+//if every integration is working
 package integrationTests
 
 import (
@@ -13,34 +15,41 @@ import (
 	"testing"
 )
 
+//This is response element for simple select without aggregation. Returned data are simple Elements
 type RestResponse struct {
 	Error  string
 	TaskId int64
 	Data   []dto.Element
 }
+
+//This is response element for simple aggregation (not series aggregation) that return array of values
 type RestForAggregation struct {
 	Error  string
 	TaskId int64
 	Data   []dto.Value
 }
+
+//This is response elment for Histogram aggregation
 type RestForHistogram struct {
 	Error  string
 	TaskId int64
 	Data   []dto.Histogram
 }
+
+//This is response element for series aggregation (with interpolation)
 type RestForSeries struct {
 	Error  string
 	TaskId int64
 	Data   []dto.InterpolateElement
 }
 
+//Test set up constants
 const (
-	NUMBER_OF_TAGS_PER_METRICS int = 4
-	NUMBER_OF_METRICS          int = 4
-	INSERTED_DATA              int = 10000
-	// TODO: use cfg values instead of hardcoded port
-	HOST string  = "http://localhost:8888/data"
-	eps  float64 = 0.01
+	NUMBER_OF_TAGS_PER_METRICS int     = 4
+	NUMBER_OF_METRICS          int     = 4
+	INSERTED_DATA              int     = 10000
+	HOST                       string  = "http://localhost:8888/data"
+	eps                        float64 = 0.01
 )
 
 var (
@@ -50,6 +59,7 @@ var (
 	random           *rand.Rand
 )
 
+//This method generate data and load data to DB. It will populate expected slice with data uploaded to nodes.
 func SetUp(b *testing.B) {
 
 	if insert_completed != true {

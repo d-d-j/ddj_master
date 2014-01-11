@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+//This structure is revived for series operation
 type InterpolateElement struct {
 	Data []Value
 }

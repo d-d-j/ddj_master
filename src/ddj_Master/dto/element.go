@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+//This structure contains store elements information and match with structure on node side.
 type Element struct {
 	Tag, Metric int32
 	Time        int64
@@ -14,6 +15,7 @@ type Element struct {
 	Padding     int32 `json:"-"`
 }
 
+//This is constructor for Element
 func NewElement(Tag int32, Metric int32, Time int64, Value Value) *Element {
 	e := new(Element)
 	e.Tag = Tag

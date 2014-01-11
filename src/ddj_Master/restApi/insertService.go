@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-//Service Definition
+//Insert Service definition
 type InsertService struct {
 	gorest.RestService `root:"/" consumes:"application/json" produces:"application/json"`
 	insertData         gorest.EndPoint `method:"POST" path:"/data/" postdata:"ddj_Master.dto.Element"`
@@ -16,6 +16,7 @@ type InsertService struct {
 	getOptions         gorest.EndPoint `method:"OPTIONS" path:"/data/{...:string}"`
 }
 
+//Return all avaliable options for service. It enable CORS
 func (serv InsertService) GetOptions(_ ...string) {
 	serv.setHeader()
 	log.Debug("Return available options")
@@ -48,6 +49,7 @@ func (serv InsertService) setInsertResponse(response *dto.RestResponse) {
 	}
 }
 
+//This method handle post request to inser data
 func (serv InsertService) InsertData(PostData dto.Element) {
 	serv.setHeader()
 	log.Finest("Inserting data - data to insert: ", PostData)
@@ -58,6 +60,7 @@ func (serv InsertService) InsertData(PostData dto.Element) {
 	serv.setInsertResponse(response)
 }
 
+//This method handle flush request
 func (serv InsertService) FlushBuffer(_ string) {
 	serv.setHeader()
 	log.Finest("Flush GPU buffer")

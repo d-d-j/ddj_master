@@ -6,12 +6,15 @@ import (
 	"net"
 )
 
+//This structure handle network communication with node. It will send data that came on Incoming channel and pass read
+//data on Outgoing
 type Communication struct {
 	Incoming   chan []byte
 	Outgoing   chan dto.Result
 	connection net.Conn
 }
 
+//Constructor for communication. It take net.Conn of established node connection
 func NewCommunication(conn net.Conn) *Communication {
 	com := new(Communication)
 	com.Incoming = make(chan []byte)

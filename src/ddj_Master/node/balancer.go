@@ -6,11 +6,15 @@ import (
 	"ddj_Master/dto"
 )
 
+//This structure is responsible for node balancing. It expose CurrentInsertNodeId as a flag that can be read by workers
+//to send to proper node
 type LoadBalancer struct {
 	CurrentInsertNodeId int32
 	nodes               map[int32]*Node
 }
 
+//Constructor of LoadBalancer. It takes nodes map that should be same map as used by NodeManager balancer will use
+//this map only to read information about nodes
 func NewLoadBalancer(nodes map[int32]*Node) *LoadBalancer {
 	lb := new(LoadBalancer)
 	lb.reset()
@@ -24,6 +28,7 @@ func (this *LoadBalancer) reset() {
 	this.CurrentInsertNodeId = common.CONST_UNINITIALIZED
 }
 
+//This method start balancer on given info channel
 func (this *LoadBalancer) Balance(info <-chan []*dto.Info) {
 
 	log.Info("Node manager balancer started")
@@ -47,26 +52,28 @@ func (this *LoadBalancer) update(newInfos []*dto.Info) {
 
 	this.CurrentInsertNodeId = int32(bestNodeId)
 
-	if (this.CurrentInsertNodeId == common.CONST_UNINITIALIZED) {	return	}
+	if this.CurrentInsertNodeId == common.CONST_UNINITIALIZED {
+		return
+	}
 
 	log.Info("Insert Node Id is now: %d GPUId: %d", this.CurrentInsertNodeId, this.nodes[this.CurrentInsertNodeId].PreferredDeviceId)
 }
 
 func (this *LoadBalancer) removeDeadNodes(newInfos []*dto.Info) {
 
-	aliveNodes :=  make(map[int32]bool)
+	aliveNodes := make(map[int32]bool)
 
-	for _,info := range newInfos {
+	for _, info := range newInfos {
 		aliveNodes[info.NodeId] = true
 	}
 
 	nodesToRemove := make(map[int32]bool)
-	for id,_ := range this.nodes {
+	for id, _ := range this.nodes {
 		if aliveNodes[id] == false {
 			nodesToRemove[id] = true
 		}
 	}
-	for nodeId,_ := range nodesToRemove {
+	for nodeId, _ := range nodesToRemove {
 		NodeManager.DelChan <- nodeId
 	}
 }
@@ -90,7 +97,7 @@ func (this *LoadBalancer) chooseTheBestNode(nodeInfos []*dto.Info) int {
 
 func (this *LoadBalancer) calculateNodeRank(node *Node, nodeInfos []*dto.Info) uint64 {
 	nodeRank := uint64(0)
-	bestGpuRank := common.CONST_UINT64_MAX_VALUE;
+	bestGpuRank := common.CONST_UINT64_MAX_VALUE
 	for _, info := range nodeInfos {
 		if info.NodeId != node.Id {
 			continue
@@ -108,6 +115,7 @@ func (this *LoadBalancer) calculateNodeRank(node *Node, nodeInfos []*dto.Info) u
 	return nodeRank
 }
 
+//This method check if LoadBalancer is uninitialized
 func (this *LoadBalancer) IsUnitialized() bool {
 	return this.CurrentInsertNodeId == common.CONST_UNINITIALIZED
 }

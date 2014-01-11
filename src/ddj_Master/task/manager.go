@@ -5,14 +5,15 @@ import (
 	"ddj_Master/dto"
 )
 
+//This struct is used to get task with specific Id
 type GetTaskRequest struct {
 	TaskId   int64
 	BackChan chan *dto.Task
 }
 
-// TODO: get rid of this global variable
 var TaskManager = NewManager()
 
+//Task Manager is similar to Node Manager and do same things but operates on tasks
 type Manager struct {
 	tasks    map[int64]*dto.Task
 	AddChan  chan *dto.Task
@@ -31,6 +32,7 @@ func NewManager() *Manager {
 	return m
 }
 
+//This methods handle request that came on Manager channels. It should be run as a gorutine
 func (m *Manager) Manage() {
 	log.Info("Task manager started managing")
 	for {

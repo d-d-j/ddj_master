@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+//This is Header of the message that is send to node. Each message must be preceded by this header.
 type Header struct {
 	TaskId   int64
 	Type     int32

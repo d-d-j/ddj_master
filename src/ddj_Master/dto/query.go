@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+//This is structure that will be send to node for every select query.
 type Query struct {
 	MetricsCount    int32
 	Metrics         []int32

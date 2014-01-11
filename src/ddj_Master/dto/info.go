@@ -11,14 +11,15 @@ type Info struct {
 	MemoryInfo
 }
 
+//This structure will be received from node and it contains node information
 type MemoryInfo struct {
-	GpuId           int32
-	MemoryTotal     int32
-	MemoryFree      int32
-	GpuMemoryTotal  int32
-	GpuMemoryFree   int32
-	_               int32
-	DBMemoryFree	uint64
+	GpuId          int32
+	MemoryTotal    int32
+	MemoryFree     int32
+	GpuMemoryTotal int32
+	GpuMemoryFree  int32
+	_              int32
+	DBMemoryFree   uint64
 }
 
 func (this *MemoryInfo) String() string {
@@ -56,6 +57,7 @@ func (this *MemoryInfo) Decode(buf []byte) error {
 	return binary.Read(buffer, binary.LittleEndian, this)
 }
 
+//This method is used only for tests and to fulfill dto interface. It shouldn't be used
 func (this *MemoryInfo) Encode() ([]byte, error) {
 	buf := new(bytes.Buffer)
 

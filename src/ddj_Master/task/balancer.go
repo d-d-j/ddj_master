@@ -1,3 +1,4 @@
+//this package is responsible for handling tasks.
 package task
 
 import (
@@ -8,12 +9,7 @@ import (
 	"time"
 )
 
-/* TODO: 	Implement stop function for balancer
-it should wait for all workers to finish their jobs
-but it shouldn't delegate more tasks to workers
-after that balance function should return
-*/
-
+//Balancer is responsible for dispaching task to different worker and taking care of sending node info request.
 type Balancer struct {
 	pool Pool
 	done chan Worker
@@ -22,7 +18,7 @@ type Balancer struct {
 func NewBalancer(workersCount int32, jobForWorkerCount int32, loadBal *node.LoadBalancer) *Balancer {
 	log.Info("Creating new task balancer with %d workers and %d pending jobs per each", workersCount, jobForWorkerCount)
 	b := new(Balancer)
-	done := make(chan Worker, workersCount + 1)
+	done := make(chan Worker, workersCount+1)
 	p := NewWorkersPool(workersCount, jobForWorkerCount, done, loadBal)
 	b.pool = p
 	b.done = done
@@ -33,7 +29,7 @@ func (b *Balancer) Balance(work <-chan dto.RestRequest, timeoutSeconds int32) {
 	log.Info("Task manager balancer started")
 	index := 0
 
-	timeoutDuration := time.Duration(timeoutSeconds)*time.Second
+	timeoutDuration := time.Duration(timeoutSeconds) * time.Second
 	timeout := time.After(timeoutDuration)
 
 	for {
@@ -44,10 +40,10 @@ func (b *Balancer) Balance(work <-chan dto.RestRequest, timeoutSeconds int32) {
 			select {
 			case req := <-work:
 				b.dispatch(req, index)
-				index = (index + 1)%b.pool.Len()
+				index = (index + 1) % b.pool.Len()
 			case <-timeout:
 				b.dispatch(dto.RestRequest{Type: common.TASK_INFO, Data: new(dto.EmptyElement), Response: nil}, index)
-				index = (index + 1)%b.pool.Len()
+				index = (index + 1) % b.pool.Len()
 				timeout = time.After(timeoutDuration)
 			}
 		}

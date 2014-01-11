@@ -1,3 +1,5 @@
+//This package contains definition of structures that are adapter for node. It hides all network traffic and
+//expose data via channels
 package node
 
 // Imports required packages
@@ -11,8 +13,7 @@ import (
 	"time"
 )
 
-// Defines a Node with Id, many GpuIds, a connection object, and
-// some channels for sending and receiving data.
+// This is main structure that define node abstraction in master
 type Node struct {
 	Communication
 	Id                int32
@@ -23,6 +24,7 @@ type Node struct {
 	PreferredDeviceId int32
 }
 
+//Node constructor. It takes new node id, it's connection and channel to get task from node Manager
 func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest) *Node {
 	n := new(Node)
 	n.Status = common.NODE_CONNECTED
@@ -34,18 +36,15 @@ func NewNode(id int32, connection net.Conn, taskChannel chan dto.GetTaskRequest)
 	return n
 }
 
+//This method wait for node's  login message and after login it start communication with this node.
 func (n *Node) StartWork(balancerChannel chan<- []*dto.Info) {
 	err := n.waitForLogin()
 	if err == nil {
 		go n.readerRoutine()
 		go n.senderRoutine()
 	}
-	balancerChannel <- []*dto.Info{&dto.Info{NodeId: n.Id, MemoryInfo: dto.MemoryInfo{GpuId: n.GpuIds[0], MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal:  1,GpuMemoryFree: 1, DBMemoryFree: 1}}}
+	balancerChannel <- []*dto.Info{&dto.Info{NodeId: n.Id, MemoryInfo: dto.MemoryInfo{GpuId: n.GpuIds[0], MemoryTotal: 1, MemoryFree: 1, GpuMemoryTotal: 1, GpuMemoryFree: 1, DBMemoryFree: 1}}}
 	log.Debug("Node %d READY", n.Id)
-}
-
-func (n *Node) EndWork() {
-	n.stop <- true
 }
 
 func (n *Node) waitForLogin() error {

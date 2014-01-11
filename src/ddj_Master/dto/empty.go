@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+//EmptyElement is NullObject Pattern implementation. It's used when dto is required as a parameter but it should be empty
 type EmptyElement struct{}
 
 func (this *EmptyElement) String() string {

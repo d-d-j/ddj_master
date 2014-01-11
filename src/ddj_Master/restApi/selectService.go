@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-//Service Definition
+//Select Service definition
 type SelectService struct {
 	gorest.RestService    `root:"/" consumes:"application/json" produces:"application/json"`
 	selectQuery           gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/{times:string}/aggregation/{aggr:string}" output:"RestResponse"`
@@ -19,6 +19,7 @@ type SelectService struct {
 	interpolateQuery      gorest.EndPoint `method:"GET" path:"/data/metric/{metrics:string}/tag/{tags:string}/time/from/{from:int64}/to/{to:int64}/aggregation/series/sum/samples/{samples:int32}" output:"RestResponse"`
 }
 
+//This method handle  standard select query
 func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) dto.RestResponse {
 	log.Finest("Selecting data")
 	serv.setHeader()
@@ -37,6 +38,7 @@ func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) dto.Res
 	return *response
 }
 
+//This method handle query to aggregate with series interpolation
 func (serv SelectService) InterpolateQuery(metrics, tags string, from, to int64, samples int32) dto.RestResponse {
 	log.Finest("Selecting Series")
 	serv.setHeader()
@@ -58,6 +60,7 @@ func (serv SelectService) InterpolateQuery(metrics, tags string, from, to int64,
 	return *response
 }
 
+//This method handle histogram by value select
 func (serv SelectService) HistogramByValueQuery(metrics, tags, times string, from, to float32, buckets int32) dto.RestResponse {
 	log.Finest("Selecting Histogram")
 	serv.setHeader()
@@ -78,6 +81,7 @@ func (serv SelectService) HistogramByValueQuery(metrics, tags, times string, fro
 	return *response
 }
 
+//This method handle histogram by time select
 func (serv SelectService) HistogramByTimeQuery(metrics, tags, times string, from, to int64, buckets int32) dto.RestResponse {
 	log.Finest("Selecting Histogram")
 	serv.setHeader()

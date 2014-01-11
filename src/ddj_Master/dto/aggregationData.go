@@ -5,26 +5,31 @@ import (
 	"encoding/binary"
 )
 
+//This interface is used for additional data that could be send with some aggregations
 type AggregationData interface {
 	Encoder
 	Size() int
 	GetBucketCount() int32
 }
 
+//This structure keeps additional data for histogram by value aggregation
 type HistogramValueData struct {
 	Min         float32
 	Max         float32
 	BucketCount int32
 }
 
+//This structure keeps additional data for histogram by time aggregation
 type HistogramTimeData struct {
 	Min         int64
 	Max         int64
 	BucketCount int32
 }
 
+//This structure keeps additional data for series aggregation with interpolation
 type InterpolatedData int32
 
+//This method do binary encoding and return result as a slice of bytes
 func (this InterpolatedData) Encode() ([]byte, error) {
 	buf := new(bytes.Buffer)
 

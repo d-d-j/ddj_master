@@ -22,15 +22,15 @@ const (
 	NODE_READY     int32 = 2
 )
 
-//Constants
+//Common constants
 const (
-	CONST_UNINITIALIZED = -1
-	CONST_INT_MIN_VALUE = -CONST_INT_MAX_VALUE
-	CONST_INT_MAX_VALUE = (int(^uint(0) >> 1))
-	CONST_UINT64_MAX_VALUE = ((^(uint64(0))))
+	CONST_UNINITIALIZED    = -1
+	CONST_INT_MIN_VALUE    = -CONST_INT_MAX_VALUE
+	CONST_INT_MAX_VALUE    = (int(^uint(0) >> 1))
+	CONST_UINT64_MAX_VALUE = (^(uint64(0)))
 )
 
-//DEVICE
+//Device
 const (
 	ALL_GPUs           = CONST_UNINITIALIZED
 	TASK_UNINITIALIZED = CONST_UNINITIALIZED

@@ -14,19 +14,19 @@ type job func(dto.RestRequest) bool
 func (w *TaskWorker) getJob(taskType int32) job {
 	switch taskType {
 	case common.TASK_INSERT:
-		return w.Insert
+		return w.insert
 	case common.TASK_SELECT:
-		return w.Select
+		return w.selectTask
 	case common.TASK_INFO:
-		return w.Info
+		return w.info
 	case common.TASK_FLUSH:
-		return w.Flush
+		return w.flush
 	}
 	log.Error("Worker can't handle task type ", taskType)
 	return func(req dto.RestRequest) bool { return false }
 }
 
-func (w *TaskWorker) Insert(req dto.RestRequest) bool {
+func (w *TaskWorker) insert(req dto.RestRequest) bool {
 	log.Finest(w, " is processing [insert] task")
 
 	// GET NODE FOR INSERT
@@ -62,7 +62,7 @@ func (w *TaskWorker) Insert(req dto.RestRequest) bool {
 	return true
 }
 
-func (w *TaskWorker) Select(req dto.RestRequest) bool {
+func (w *TaskWorker) selectTask(req dto.RestRequest) bool {
 	log.Debug(w, " is processing [select] task")
 
 	availableNodes := node.NodeManager.GetNodesLen()
@@ -87,7 +87,7 @@ func (w *TaskWorker) Select(req dto.RestRequest) bool {
 	return true
 }
 
-func (w *TaskWorker) Info(req dto.RestRequest) bool {
+func (w *TaskWorker) info(req dto.RestRequest) bool {
 	log.Debug(w, " is processing [info] task")
 	// TODO: Handle errors better
 
@@ -138,7 +138,7 @@ func parseResultsToInfos(results []*dto.Result) []*dto.Info {
 	return elements
 }
 
-func (w *TaskWorker) Flush(req dto.RestRequest) bool {
+func (w *TaskWorker) flush(req dto.RestRequest) bool {
 	log.Debug(w, " is processing flush task")
 
 	availableNodes := node.NodeManager.GetNodesLen()
