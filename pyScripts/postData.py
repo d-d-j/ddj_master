@@ -40,7 +40,8 @@ def postValues(number, tag, metric, url, func):
             sys.exit(1)
 
         if i % 100 == 0:
-            print i
+            sys.stdout.write(str(i) + " ")
+            sys.stdout.flush()
 
 
 def main():
