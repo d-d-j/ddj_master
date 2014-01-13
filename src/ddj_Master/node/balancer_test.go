@@ -138,26 +138,3 @@ func Test_CalculateNodeRank(t *testing.T) {
 		t.Errorf("Wrong card selected. Expected #%d but get #%d", 0, nodes[2].PreferredDeviceId)
 	}
 }
-
-func Test_RemoveDeadNodes_OneDeadNode(t *testing.T) {
-
-	nodes := make(map[int32]*Node)
-	nodes[1] = NewNode(1, nil, nil)
-	nodes[1].GpuIds = []int32{0, 1}
-	nodes[2] = NewNode(2, nil, nil)
-	nodes[2].GpuIds = []int32{0, 1}
-
-	go NodeManager.Manage()
-	NodeManager.nodes = nodes
-	lb:=NewLoadBalancer(NodeManager.GetNodes())
-	info := []*dto.Info{&dto.Info{1, dto.MemoryInfo{GpuId:0, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 14, DBMemoryFree:  1123123123}}, &dto.Info{1, dto.MemoryInfo{GpuId:1, MemoryTotal:  1, MemoryFree:  1, GpuMemoryTotal:   1, GpuMemoryFree: 14, DBMemoryFree: 4545531}}}
-
-	lb.removeDeadNodes(info)
-	if len(lb.nodes) != 1 || lb.nodes[2] != nil {
-		t.Errorf("Node #%d should have been removed from Balancer, but wasn't.", 2)
-	}
-	if NodeManager.GetNodesLen() != 1 || NodeManager.GetNodes()[2]!= nil {
-		t.Errorf("Node #%d should have been removed from Manager, but wasn't.", 2)
-	}
-
-}

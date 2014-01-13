@@ -36,7 +36,6 @@ func (this *LoadBalancer) Balance(info <-chan []*dto.Info) {
 		select {
 		case nodeInfos := <-info:
 			log.Debug("Balancer got nodeInfos: %v", nodeInfos)
-			this.removeDeadNodes(nodeInfos)
 			this.update(nodeInfos)
 		}
 	}
@@ -57,25 +56,6 @@ func (this *LoadBalancer) update(newInfos []*dto.Info) {
 	}
 
 	log.Info("Insert Node Id is now: %d GPUId: %d", this.CurrentInsertNodeId, this.nodes[this.CurrentInsertNodeId].PreferredDeviceId)
-}
-
-func (this *LoadBalancer) removeDeadNodes(newInfos []*dto.Info) {
-
-	aliveNodes := make(map[int32]bool)
-
-	for _, info := range newInfos {
-		aliveNodes[info.NodeId] = true
-	}
-
-	nodesToRemove := make(map[int32]bool)
-	for id, _ := range this.nodes {
-		if aliveNodes[id] == false {
-			nodesToRemove[id] = true
-		}
-	}
-	for nodeId, _ := range nodesToRemove {
-		NodeManager.DelChan <- nodeId
-	}
 }
 
 func (this *LoadBalancer) chooseTheBestNode(nodeInfos []*dto.Info) int {
