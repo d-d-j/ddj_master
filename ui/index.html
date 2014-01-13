@@ -10,11 +10,10 @@
 
 
 <div class="container">
-
     <div class="page-header text-center">
         <h1>DDJ Time Series DB</h1>
     </div>
-    <div class="row">
+    <div class="row" style="display: none;">
         <div class="col-md-12">
             <div class="form-group">
                 <label class="control-label" for="url">Server Url</label>
@@ -37,22 +36,40 @@
 
             </div>
         </div>
-        <div class="col-md-6">
-            <legend>CSV Data Sets</legend>
-
-            <button class="btn btn-default btn-file">Choose File<input accept=".csv" type="file" id="file-input"/>
-            </button>
-            <button id="start-upload" class="btn btn-info">
-                UPLOAD
-            </button>
-            <span id="upload-result"></span>
-
-        </div>
-        <div class="col-md-6">
-            <div id="data-to-upload"></div>
-        </div>
 
     </div>
+    <div class="row">
+        <div class="col-md-12">
+            <legend>Generate Data</legend>
+        </div>
+        <div id="generate-data" class="col-md-6 form-inline">
+
+            <label>Function to insert: </label>
+            <select class="form-control" id="upload-function">
+                <option>Sine</option>
+                <option>Cosine</option>
+            </select>
+
+            <div class="clearfix"></div>
+            <div class="form-group col-md-6"><label>Metric:</label><input class="form-control"
+                                                                           id="upload-metric"
+                                                                           value="1"/></div>
+            <div class="form-group col-md-6"><label>Tag:</label><input class="form-control" id="upload-tag"
+                                                                       value="1"/>
+            </div>
+            <div class="form-group col-md-6"><label>Number of records:</label><input class="form-control"
+                                                                                  id="upload-number"
+                                                                                  value="1000"/>
+            </div>
+            <div class="form-group col-md-6"><label> </label>
+                <button id="upload-button" class="btn btn-info form-control">Upload Generated data</button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="upload-result"></div>
+        </div>
+    </div>
+
     <div class="clearfix"></div>
     <div class="row">
         <div class="col-md-12">
@@ -61,7 +78,7 @@
         <div class="col-md-6">
             <div class="form-group">
                 <input id="query-input" class="form-control" type="text"
-                       value="/data/metric/all/tag/all/time/0-100000000/aggregation/none"/>
+                       value="/data/metric/all/tag/all/time/0-100000000/aggregation/avg"/>
                 <button id="query-button" class="btn btn-info">Execute Query</button>
             </div>
         </div>
@@ -83,12 +100,12 @@
             </select>
 
             <div class="clearfix"></div>
-            <div class="form-group col-md-6"><label>Tags:</label><input class="form-control" id="histogram-tags"
-                                                                        value="all"/>
-            </div>
             <div class="form-group col-md-6"><label>Metrics:</label><input class="form-control"
                                                                            id="histogram-metrics"
                                                                            value="all"/></div>
+            <div class="form-group col-md-6"><label>Tags:</label><input class="form-control" id="histogram-tags"
+                                                                        value="all"/>
+            </div>
             <div class="form-group col-md-6"><label>From:</label><input class="form-control"
                                                                         id="histogram-time-from"
                                                                         value="-1"/></div>
@@ -114,19 +131,19 @@
         <div id="series" class="col-md-6 form-inline">
             <div class="clearfix"></div>
             <div class="form-group col-md-6"><label>Metric</label><input class="form-control" id="series-metric"
-                                                                         value="0"/></div>
+                                                                         value="1"/></div>
             <div class="clearfix"></div>
             <div class="form-group col-md-6"><label>Tag1</label><input class="form-control" id="series-tag1"
-                                                                       value="0"/></div>
-            <div class="form-group col-md-6"><label>Tag2</label><input class="form-control" id="series-tag2"
                                                                        value="1"/></div>
+            <div class="form-group col-md-6"><label>Tag2</label><input class="form-control" id="series-tag2"
+                                                                       value="2"/></div>
             <div class="form-group col-md-6"><label>From:</label><input class="form-control" id="series-time-from"
-                                                                        value="100"/></div>
+                                                                        value="0"/></div>
             <div class="form-group col-md-6"><label>To:</label><input class="form-control" id="series-time-to"
-                                                                       value="250"/></div>
+                                                                       value="1000"/></div>
 
             <div class="form-group col-md-6"><label>Number of samples:</label><input class="form-control" id="series-num-samples"
-                                                                       value="150"/></div>
+                                                                       value="1000"/></div>
 
             <div class="form-group col-md-6"><label> </label>
                 <button id="series-button" class="btn btn-info form-control">Show Plot</button>

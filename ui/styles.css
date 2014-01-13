@@ -9,6 +9,14 @@
     border: 1px solid;
 }
 
+legend {
+    margin-top: 40px;
+}
+
+button {
+    margin-top: 5px;
+}
+
 .btn-file {
     position: relative;
     overflow: hidden;

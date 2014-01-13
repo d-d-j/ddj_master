@@ -1,23 +1,5 @@
-var uploadData;
-
 $(document).ready(function () {
     $('#post-data').val("{\n\"tag\":1,\n\"metric\":2,\n\"time\":1383501407,\n\"value\":0.5\n}");
-
-    $("#file-input").change(function (e) {
-        var file = e.target.files[0];
-        var reader = new FileReader();
-        reader.readAsText(file);
-        reader.onload = function (event) {
-            var csv = event.target.result;
-            uploadData = {objectsToUpload: $.csv.toObjects(csv)};
-
-            var dataDiv = $('#data-to-upload');
-            dataDiv.html('');
-            uploadData.objectsToUpload.forEach(function (element) {
-                dataDiv.append(JSON.stringify(element));
-            });
-        };
-    });
 
     $('#query-button').click(function (e) {
         $('#query-result').html(" ");
@@ -25,7 +7,7 @@ $(document).ready(function () {
             contentType: "application/json",
             type: "GET",
             success: function (data) {
-                $('#query-result').html(data.Data.length + '<br>' + syntaxHighlight(JSON.stringify(data.Data, undefined, 4)));
+                $('#query-result').html('Response data length:' + data.Data.length + '<br>' + syntaxHighlight(JSON.stringify(data.Data, undefined, 4)));
             },
             error: function (data) {
                 $('#query-result').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
@@ -33,13 +15,47 @@ $(document).ready(function () {
         })
     });
 
-    $('#start-upload').click(function (e) {
-        if (uploadData != undefined && uploadData.objectsToUpload.length > 0) {
-            console.log("upload", uploadData.objectsToUpload.length);
-            sendElementsToServer(uploadData.objectsToUpload);
-        } else {
-            $('#upload-result').html('<span class="error-result"> No data to upload </span>');
+
+    $('#upload-button').click(function (e) {
+        var promises = [];
+        var number = $('#upload-number').val();
+        var tag = $('#upload-tag').val();
+        var metric = $('#upload-metric').val();
+        var functionName = $('#upload-function').val();
+
+
+        var fun = Math.sin;
+        if (functionName === 'Cosine') {
+            fun = Math.cos;
         }
+
+        for (var i = 1; i <= number; i++) {
+            var promise = $.ajax($("#url").val() + "/data", {
+                contentType: "application/json",
+                dataType: "json",
+                data: elementToJSONString({tag: tag, metric: metric, time: i, value: fun(0.01 * i)}),
+                type: "POST",
+                error: function (data) {
+                    if (data.status !== 202) {
+                        $('#upload-result').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
+                    }
+                }
+            });
+            promises.push(promise);
+        }
+
+        $.when.apply($, promises).always(function () {
+            $.ajax($("#url").val() + "/data/flush", {
+                contentType: "application/json",
+                type: "POST"
+            });
+            console.log("promises");
+            $('#upload-result').html('<span class="success-result">Data Upload Completed</span>');
+            setTimeout(function () {
+                $('#upload-result').html(' ');
+            }, 3000);
+        });
+
     });
 
     $('#post-button').click(function (e) {
@@ -118,10 +134,16 @@ $(document).ready(function () {
                     type: "GET"
                 })
             ).then(function (aggregatedData, series1Data, series2Data) {
-                drawSeriesAggregation(parseElementsToPoints(series1Data[0].Data), parseElementsToPoints(series2Data[0].Data),
-                    parseSeriesAggregationResultsToPoints(aggregatedData[0].Data[0].Data, timeFrom, timeTo, numSamples), 'series-chart', 'aggregation');
+                if (aggregatedData.length > 0 && series1Data.length > 0 && series2Data.length > 0) {
+                    drawSeriesAggregation(parseElementsToPoints(series1Data[0].Data), parseElementsToPoints(series2Data[0].Data),
+                        parseSeriesAggregationResultsToPoints(aggregatedData[0].Data[0].Data, timeFrom, timeTo, numSamples), 'series-chart', 'aggregation');
+                }
+                else {
+                    $('#series-chart').html("no data to display");
+                }
 
             }, function () {
+                $('#series-chart').html("no data to display");
             });
     });
 });
@@ -154,37 +176,6 @@ var elementToJSONString = function (element) {
         "time": parseInt(element.time, 10),
         "value": parseFloat(element.value)
     });
-};
-
-var sendElementsToServer = function (dataToSend) {
-    $('#upload-result').html(" ");
-    var promises = [];
-    dataToSend.forEach(function (dataElement) {
-
-        var promise = $.ajax($("#url").val() + "/data", {
-            contentType: "application/json",
-            dataType: "json",
-            data: elementToJSONString(dataElement),
-            type: "POST",
-            error: function (data) {
-                if (data.status === 202) {
-                    $('#upload-result').html('Response: <span class="success-result">' + data.status + " " + data.statusText + '</span>');
-                } else {
-                    $('#upload-result').html('Response: <span class="error-result">' + data.status + " " + data.statusText + '</span>');
-                }
-            }
-        });
-        promises.push(promise);
-
-    });
-
-    $.when.apply($, promises).always(function () {
-        $.ajax($("#url").val() + "/data/flush", {
-            contentType: "application/json",
-            type: "POST"
-        });
-    });
-
 };
 
 
