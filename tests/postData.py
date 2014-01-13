@@ -43,6 +43,11 @@ def postValues(number, tag, metric, url, func):
             sys.stdout.write(str(i) + " ")
             sys.stdout.flush()
 
+    print ""
+    requests.post(url + '/flush')
+
+    print "flushed buffers"
+
 
 def main():
     func = math.sin
