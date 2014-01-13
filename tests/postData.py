@@ -44,6 +44,8 @@ def postValues(number, tag, metric, url, func):
             sys.stdout.flush()
 
     print ""
+
+    s.close()
     requests.post(url + '/flush')
 
     print "flushed buffers"
