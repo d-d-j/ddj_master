@@ -10,6 +10,8 @@ import (
 	"ddj_Master/task"
 	"fmt"
 	"runtime"
+	"os"
+	"os/signal"
 )
 
 func loadMasterConfiguration() *common.Config {
@@ -63,6 +65,10 @@ func main() {
 
 	// TODO: Wait for console instructions (q - quit for example)
 	// Wait for some input end exit (only for now)
-	var i int
-	fmt.Scanf("%d", &i)
+	//var i int
+	//fmt.Scanf("%d", &i)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
+	return
 }
