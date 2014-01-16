@@ -334,21 +334,25 @@
             "tag":{
                "type":"integer",
                "format":"int32",
+               "required":true,
                "description":"Unique identifier of tag"
             },
             "metric":{
                "type":"integer",
                "format":"int32",
+               "required":true,
                "description":"Unique identifier of metric"
             },
             "time":{
                "type":"integer",
                "format":"int64",
-               "description":"First name of the user"
+               "required":true,
+               "description":"64bits timestamp"
             },
             "value":{
                "type":"float",
                "format":"float32",
+               "required":true,
                "description":"A value of element"
             }
          }
