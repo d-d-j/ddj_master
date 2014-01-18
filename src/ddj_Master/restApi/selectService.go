@@ -26,9 +26,10 @@ func (serv SelectService) SelectQuery(metrics, tags, times, aggr string) dto.Res
 	responseChan := make(chan *dto.RestResponse)
 	data, err := prepareQuery(metrics, tags, times, aggr)
 	if err != nil {
-		log.Error("Return HTTP 400")
+		log.Error("Return HTTP 400", err)
+		msg := fmt.Sprintf("The request could not be understood by the server due to malformed syntax. You SHOULD NOT repeat the request without modifications.\n%s", err)
 		serv.ResponseBuilder().SetResponseCode(400).WriteAndOveride(
-			[]byte("The request could not be understood by the server due to malformed syntax. You SHOULD NOT repeat the request without modifications."))
+			[]byte(msg))
 		return dto.RestResponse{}
 	}
 	log.Fine("Query: ", &data)
@@ -109,13 +110,32 @@ func prepareQuery(metrics, tags, times, aggr string) (dto.Query, error) {
 		return dto.Query{}, err
 	}
 
-	aggregation, err := prepareAggregationType(aggr)
+	query.AggregationType, err = prepareAggregationType(aggr)
 	if err != nil {
 		return dto.Query{}, err
 	}
 
-	query.AggregationType = aggregation
+	ok, err := validateQuery(query)
+	if !ok {
+		return dto.Query{}, err
+	}
+
 	return query, nil
+}
+
+func validateQuery(query dto.Query) (bool, error) {
+
+	if query.AggregationType == common.AGGREGATION_INTEGRAL && (query.MetricsCount != 1 || query.TagsCount != 1) {
+		return false, fmt.Errorf("Integral can be done only for one series")
+	}
+
+	for i := int32(0); i < query.TimeSpansCount; i += 2 {
+		if query.TimeSpans[i] > query.TimeSpans[i+1] {
+			return false, fmt.Errorf("Beginning of time span must be less or equal then end")
+		}
+	}
+
+	return true, nil
 }
 
 func prepareQueryWithoutAggregationType(metrics, tags, times string) (dto.Query, error) {
@@ -191,14 +211,20 @@ func prepareTagsOrMetrics(input string) ([]int32, error) {
 		return make([]int32, 0), nil
 	}
 
+	set := make(map[int32]bool)
+
 	inputSplited := strings.Split(input, ",")
-	inputArr := make([]int32, len(inputSplited))
-	for i, element := range inputSplited {
+	for _, element := range inputSplited {
 		value, err := strconv.Atoi(element)
 		if err != nil {
 			return nil, err
 		}
-		inputArr[i] = int32(value)
+		set[int32(value)] = true
+	}
+
+	inputArr := make([]int32, 0, len(set))
+	for element := range set {
+		inputArr = append(inputArr, element)
 	}
 
 	return inputArr, nil

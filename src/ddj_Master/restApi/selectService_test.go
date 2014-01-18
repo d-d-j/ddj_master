@@ -78,6 +78,43 @@ func Test_Preapare_Query_For_All_Tags_And_All_Metrics_And_All_Times(t *testing.T
 	}
 }
 
+func Test_Preapare_Query_For_All_Tags_And_All_Metrics_And_All_Times_For_Integral_Should_Return_Error(t *testing.T) {
+	metrics := ALL
+	tags := ALL
+	times := ALL
+	aggr := "int"
+	_, err := prepareQuery(metrics, tags, times, aggr)
+	if err == nil {
+		t.Error("Error was expected")
+	}
+}
+
+func Test_Preapare_Query_For_All_Tags_And_All_Metrics_And_Invalid_Time_Spans_Shoudl_Return_Error(t *testing.T) {
+	metrics := ALL
+	tags := ALL
+	times := "10-5"
+	aggr := "none"
+	_, err := prepareQuery(metrics, tags, times, aggr)
+	if err == nil {
+		t.Error("Error was expected")
+	}
+}
+
+func Test_prepareTagsOrMetrics_Should_Return_Sorted_And_Unique_Arraya_of_Numbers(t *testing.T) {
+	input := "1,1,2,5,7,2,5,1"
+	expected := []int32{1, 2, 5, 7}
+	actual, _ := prepareTagsOrMetrics(input)
+	if len(expected) != len(actual) {
+		t.Error("Element count doesn't match.")
+	}
+
+	for index, e := range expected {
+		if e != actual[index] {
+			t.Error("Expected ", e, " but got ", actual[index])
+		}
+	}
+}
+
 func Test_Preapare_Query_For_Invalid_Arguments(t *testing.T) {
 	metrics := "invalid"
 	tags := "invalid"
