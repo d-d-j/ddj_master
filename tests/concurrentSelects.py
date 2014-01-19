@@ -8,6 +8,7 @@ import math
 import requests
 import threading
 import datetime
+import argparse
 
 
 def postValues(number, tag, metric, url, func):
@@ -32,16 +33,16 @@ def postValues(number, tag, metric, url, func):
             print e
             sys.exit(1)
 
-        if i % 100 == 0:
-            sys.stdout.write(str(i) + " ")
-            sys.stdout.flush()
+        # if i % 100 == 0:
+        #     sys.stdout.write(str(i) + " ")
+        #     sys.stdout.flush()
 
-    print ""
+    # print ""
 
     s.close()
     requests.post(url + '/flush')
 
-    print "flushed buffers"
+    # print "flushed buffers"
 
 
 def insertThread(metric, tag, stop_event):
@@ -88,7 +89,6 @@ def runSelects(aggregationType, numberOfSelects, numberOfValues):
     end = datetime.datetime.now()
 
     s.close()
-    # print "finished running " + str(numberOfSelects) + " integrals"
 
     return end-start
 
@@ -111,19 +111,36 @@ def runSelectsWithNInsertThreads(n, numberOfSelects, numberOfValues):
 
 
 def main():
-    numberOfValues = 10000
-    numberOfSelects = 1000
+    parser = argparse.ArgumentParser(description='Post some data into DB.')
+    parser.add_argument('-nv', '--number-of-values', type=int, dest='numberOfValues', default=1000,
+                        help='Number of values in one select')
+    parser.add_argument('-ns', '--number-of-selects', type=int, dest='numberOfSelects', default=100,
+                        help='Number of selects for each test')
+    parser.add_argument('-mt', '--max-threads', type=int, dest='maxThreads', default=15,
+                    help='maximum number of threads')
+
+
+    parser.add_argument('-s', '--silent', help='use to disable progress logging', dest='silent', action='store_true')
+    args = parser.parse_args()
+
+    numberOfValues = args.numberOfValues
+    numberOfSelects = args.numberOfSelects
+    maxThreads = args.maxThreads
+    silent = False
+    if args.silent:
+        silent = True
     postValues(numberOfValues, 1, 1, 'http://localhost:8888/data', math.sin)
 
     results = {}
-    for i in range(1, 16):
+    for i in range(1, maxThreads + 1):
         results[i] = runSelectsWithNInsertThreads(i, numberOfSelects, numberOfValues)
-        print str(i) + " threads FINISHED"
+        if not silent:
+            print str(i) + " threads FINISHED"
 
     print "finished testing for " + str(numberOfSelects) + "selects on " + str(numberOfValues) + "values"
-    print "threads" + "\t" + "integrals" + "\t" + "sums"
+    print "threads" + "\t" + "integrals [micro sec]" + "\t" + "sums [micro sec]"
     for key, value in results.items():
-        print str(key) + "\t" + str(value['integrals']) + '\t' + str(value['sums'])
+        print str(key) + "\t" + str(value['integrals'].microseconds) + '\t' + str(value['sums'].microseconds)
 
 
 if __name__ == "__main__":
