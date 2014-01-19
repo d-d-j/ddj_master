@@ -66,10 +66,10 @@ def insertThread(metric, tag, stop_event):
             sys.exit(1)
 
 
-def selectIntegral(numberOfSelects, numberOfValues):
+def runSelects(aggregationType, numberOfSelects, numberOfValues):
     s = requests.Session()
     headers = {'content-type': 'application/json'}
-    req = requests.Request('GET', "http://localhost:8888/data/metric/1/tag/1/time/0-" + str(numberOfValues) + "/aggregation/int",
+    req = requests.Request('GET', "http://localhost:8888/data/metric/1/tag/1/time/0-" + str(numberOfValues) + "/aggregation/" + aggregationType,
                            headers=headers)
 
     start = datetime.datetime.now()
@@ -85,11 +85,10 @@ def selectIntegral(numberOfSelects, numberOfValues):
             print e
             sys.exit(1)
 
-    print ""
     end = datetime.datetime.now()
 
     s.close()
-    print "finished running " + str(numberOfSelects) + " integrals"
+    # print "finished running " + str(numberOfSelects) + " integrals"
 
     return end-start
 
@@ -102,25 +101,29 @@ def runSelectsWithNInsertThreads(n, numberOfSelects, numberOfValues):
         thread = threading.Thread(target=insertThread, args=(1, i, stop))
         thread.start()
 
-    time = selectIntegral(numberOfSelects, numberOfValues)
+    integralsTime = runSelects('int', numberOfSelects, numberOfValues)
+    sumsTime = runSelects('sum', numberOfSelects, numberOfValues)
 
     for stop in threadStops:
         stop.set()
 
-    return time
+    return {'integrals': integralsTime, 'sums': sumsTime}
 
 
 def main():
-    numberOfValues = 1000
-    numberOfSelects = 100
+    numberOfValues = 10000
+    numberOfSelects = 1000
     postValues(numberOfValues, 1, 1, 'http://localhost:8888/data', math.sin)
 
     results = {}
-    for i in range(1, 15):
+    for i in range(1, 16):
         results[i] = runSelectsWithNInsertThreads(i, numberOfSelects, numberOfValues)
+        print str(i) + " threads FINISHED"
 
+    print "finished testing for " + str(numberOfSelects) + "selects on " + str(numberOfValues) + "values"
+    print "threads" + "\t" + "integrals" + "\t" + "sums"
     for key, value in results.items():
-        print str(key) + "  " + str(value)
+        print str(key) + "\t" + str(value['integrals']) + '\t' + str(value['sums'])
 
 
 if __name__ == "__main__":
