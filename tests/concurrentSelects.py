@@ -107,7 +107,7 @@ def runSelectsWithNInsertThreads(n, numberOfSelects, numberOfValues):
     for stop in threadStops:
         stop.set()
 
-    return {'integrals': integralsTime, 'sums': sumsTime}
+    return {'integrals': integralsTime/numberOfSelects, 'sums': sumsTime/numberOfSelects}
 
 
 def main():
@@ -132,15 +132,15 @@ def main():
     postValues(numberOfValues, 1, 1, 'http://localhost:8888/data', math.sin)
 
     results = {}
-    for i in range(1, maxThreads + 1):
+    for i in range(0, maxThreads + 1):
         results[i] = runSelectsWithNInsertThreads(i, numberOfSelects, numberOfValues)
         if not silent:
             print str(i) + " threads FINISHED"
 
     print "finished testing for " + str(numberOfSelects) + "selects on " + str(numberOfValues) + "values"
-    print "threads" + "\t" + "integrals [micro sec]" + "\t" + "sums [micro sec]"
+    print "threads" + "\t" + "integrals" + "\t" + "sums"
     for key, value in results.items():
-        print str(key) + "\t" + str(value['integrals'].microseconds) + '\t' + str(value['sums'].microseconds)
+        print str(key) + "\t" + str(value['integrals']) + '\t' + str(value['sums'])
 
 
 if __name__ == "__main__":

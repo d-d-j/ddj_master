@@ -1,17 +1,8 @@
-set xlabel "Liczba klientów wysyłających zapytania"
-set ylabel "Liczba obsłużonych zapytań na sekundę"
+set xlabel "Liczba wątków wysyłających INSERT"
+set ylabel "Czas wykonania 1000 zapytań SELECT na 1000000 rekordów"
 
 set term png
-set output "concurrencyTest.png"
+set output "concurrentSelectsTest.png"
 
-plot 'newtest.tst' using 8:4 smooth sbezier notitle
+plot 'serverTests/1000select100000values.txt' using 3:1 smooth sbezier notitle
 
-set xlabel "Liczba klientów wysyłających zapytania"
-set ylabel "Liczba obsłużonych zapytań na sekundę na klienta"
-
-set output
-
-set term png
-set output "concurrencyTestPerThread.png"
-
-plot 'newtest.tst' using 8:($4/$8) smooth sbezier notitle
