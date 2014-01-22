@@ -1,5 +1,5 @@
-set term png
-set output "threadsTest.png"
+set term eps
+set output "threadsTest.eps"
 set xlabel "Zapytanie"
 set ylabel "Czas odpowiedzi [ms]"
 set xtics 20000
