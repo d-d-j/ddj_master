@@ -7,14 +7,14 @@ import (
 )
 
 func Test_ParseResultsToElements_Should_Return_Empty_Slice_For_Nil_Imput(t *testing.T) {
-	actual := parseResultsToElements(nil)
+	actual := parseResultsUsingCreator(nil, &dto.Element{})
 	if len(actual) != 0 {
 		t.Error("Expected empty slice but got ", actual)
 	}
 }
 
 func Test_ParseResultsToElements_Should_Return_Empty_Slice_For_Empty_Imput(t *testing.T) {
-	actual := parseResultsToElements([]*dto.Result{})
+	actual := parseResultsUsingCreator([]*dto.Result{}, &dto.Element{})
 	if len(actual) != 0 {
 		t.Error("Expected empty slice but got ", actual)
 	}
@@ -23,7 +23,7 @@ func Test_ParseResultsToElements_Should_Return_Empty_Slice_For_Empty_Imput(t *te
 func Test_ParseResultsToElements_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *testing.T) {
 	data := []byte{}
 	result := dto.NewResult(0, 1, common.TASK_SELECT, 0, data)
-	actual := parseResultsToElements([]*dto.Result{result, result, result})
+	actual := parseResultsUsingCreator([]*dto.Result{result, result, result}, &dto.Element{})
 	if len(actual) != 0 {
 		t.Error("Expected empty slice but got ", actual)
 	}
@@ -37,7 +37,7 @@ func Test_ParseResultsToElements_Should_Return_One_Element_When_Called_With_One_
 		t.Error("Error occurred", err)
 	}
 	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
-	actual := parseResultsToElements([]*dto.Result{result})
+	actual := parseResultsUsingCreator([]*dto.Result{result}, &dto.Element{})
 	for _, elem := range actual {
 		AssertEqual(expected, elem.(*dto.Element), t)
 	}
@@ -51,7 +51,7 @@ func Test_ParseResultsToElements_Should_Return_All_Elements_From_Single_Input(t 
 		t.Error("Error occurred", err)
 	}
 	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
-	actual := parseResultsToElements([]*dto.Result{result})
+	actual := parseResultsUsingCreator([]*dto.Result{result}, &dto.Element{})
 	// ASSERTIONS
 
 	if len(actual) != 3 {
@@ -73,7 +73,7 @@ func Test_ParseResultsToElements_Should_Return_All_Elements_From_Input(t *testin
 		t.Error("Error occurred", err)
 	}
 	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
-	actual := parseResultsToElements([]*dto.Result{result, result, result, result})
+	actual := parseResultsUsingCreator([]*dto.Result{result, result, result, result}, &dto.Element{})
 	// ASSERTIONS
 
 	expected = append(expected, expected...)
@@ -91,7 +91,7 @@ func Test_ParseResultsToElements_Should_Return_All_Elements_From_Input(t *testin
 func Test_ParseResultsToIntegralElements_Should_Return_Empty_Slice_For_Empty_Data_Imput(t *testing.T) {
 	data := []byte{}
 	result := dto.NewResult(0, 1, common.TASK_SELECT, 0, data)
-	actual := parseResultsToIntegralElements([]*dto.Result{result, result, result})
+	actual := parseResultsUsingCreator([]*dto.Result{result, result, result}, dto.IntegralElement{})
 	if len(actual) != 0 {
 		t.Error("Expected empty slice but got ", actual)
 	}
@@ -105,7 +105,7 @@ func Test_ParseResultsToIntegralElements_Should_Return_One_Element_When_Called_W
 		t.Error("Error occurred", err)
 	}
 	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
-	actual := parseResultsToIntegralElements([]*dto.Result{result})
+	actual := parseResultsUsingCreator([]*dto.Result{result}, dto.IntegralElement{})
 	for _, elem := range actual {
 		AssertEqual(expected, elem.(*dto.IntegralElement), t)
 	}
@@ -119,7 +119,7 @@ func Test_ParseResultsToIntegralElements_Should_Return_All_IntegralElements_From
 		t.Error("Error occurred", err)
 	}
 	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
-	actual := parseResultsToIntegralElements([]*dto.Result{result})
+	actual := parseResultsUsingCreator([]*dto.Result{result}, dto.IntegralElement{})
 	// ASSERTIONS
 
 	if len(actual) != 3 {
@@ -141,7 +141,7 @@ func Test_ParseResultsToVariance_Should_Return_All_Elements_From_Input(t *testin
 		t.Error("Error occurred", err)
 	}
 	result := dto.NewResult(0, 1, common.TASK_SELECT, int32(expected.Size()), data)
-	actual := parseResultsToVariance([]*dto.Result{result, result, result, result})
+	actual := parseResultsUsingCreator([]*dto.Result{result, result, result, result}, dto.VarianceElement{})
 	// ASSERTIONS
 
 	expected = append(expected, expected...)

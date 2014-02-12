@@ -19,3 +19,9 @@ type Encoder interface {
 type Decoder interface {
 	Decode(buf []byte) error
 }
+
+//This interface is similar to Decoder but instead of changing existing object it return new instance of Dto.
+type Creator interface {
+	Create(buf []byte) (Dto, error)
+	Size() int
+}

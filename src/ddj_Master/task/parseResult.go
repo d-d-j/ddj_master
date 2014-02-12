@@ -11,15 +11,16 @@ func parseResults(results []*dto.Result, query *dto.Query) []reduce.Aggregates {
 	aggregationType := query.AggregationType
 	switch aggregationType {
 	case common.AGGREGATION_ADD:
-		return parseResultsToValues(results)
+		var value dto.Value
+		return parseResultsUsingCreator(results, value)
 	case common.AGGREGATION_AVERAGE:
-		return parseResultsToAverage(results)
+		return parseResultsUsingCreator(results, dto.AverageElement{})
 	case common.AGGREGATION_STDDEVIATION:
-		return parseResultsToVariance(results)
+		return parseResultsUsingCreator(results, dto.VarianceElement{})
 	case common.AGGREGATION_VARIANCE:
-		return parseResultsToVariance(results)
+		return parseResultsUsingCreator(results, dto.VarianceElement{})
 	case common.AGGREGATION_INTEGRAL:
-		return parseResultsToIntegralElements(results)
+		return parseResultsUsingCreator(results, dto.IntegralElement{})
 	case common.AGGREGATION_HISTOGRAM_BY_TIME:
 		return parseResultsToHistograms(results, int(query.AdditionalData.GetBucketCount()))
 	case common.AGGREGATION_HISTOGRAM_BY_VALUE:
@@ -27,105 +28,27 @@ func parseResults(results []*dto.Result, query *dto.Query) []reduce.Aggregates {
 	case common.AGGREGATION_SERIES_SUM:
 		return parseResultsToInterpolateElement(results, int(query.AdditionalData.GetBucketCount()))
 	default:
-		return parseResultsToElements(results)
+		return parseResultsUsingCreator(results, dto.Element{})
 	}
 }
 
-func parseResultsToElements(results []*dto.Result) []reduce.Aggregates {
-	elementSize := (&dto.Element{}).Size()
+func parseResultsUsingCreator(results []*dto.Result, creator dto.Creator) []reduce.Aggregates {
+	elementSize := creator.Size()
 	resultsCount := len(results)
 	elements := make([]reduce.Aggregates, 0, resultsCount)
 
 	for _, result := range results {
 		length := len(result.Data) / elementSize
 		for j := 0; j < length; j++ {
-			var e dto.Element
-			err := e.Decode(result.Data[j*elementSize:])
+			e, err := creator.Create(result.Data[j*elementSize:])
 			if err != nil {
 				log.Error("Problem with parsing data", err)
 				continue
 			}
-			elements = append(elements, &e)
+			elements = append(elements, e)
 		}
 	}
 	return elements
-}
-
-func parseResultsToValues(results []*dto.Result) []reduce.Aggregates {
-	elementSize := (dto.Value(0)).Size()
-	resultsCount := len(results)
-	values := make([]reduce.Aggregates, 0, resultsCount)
-	log.Fine("Parsing %d results", resultsCount)
-	for _, result := range results {
-		length := len(result.Data) / elementSize
-		for j := 0; j < length; j++ {
-			var e dto.Value
-			err := e.Decode(result.Data[j*elementSize:])
-			if err != nil {
-				log.Error("Problem with parsing data", err)
-				continue
-			}
-			values = append(values, &e)
-		}
-	}
-	return values
-}
-
-func parseResultsToAverage(results []*dto.Result) []reduce.Aggregates {
-	elementSize := (&dto.AverageElement{}).Size()
-	resultsCount := len(results)
-	values := make([]reduce.Aggregates, 0, resultsCount)
-	for _, result := range results {
-		length := len(result.Data) / elementSize
-		for j := 0; j < length; j++ {
-			var e dto.AverageElement
-			err := e.Decode(result.Data[j*elementSize:])
-			if err != nil {
-				log.Error("Problem with parsing data", err)
-				continue
-			}
-			values = append(values, &e)
-		}
-	}
-	return values
-}
-
-func parseResultsToVariance(results []*dto.Result) []reduce.Aggregates {
-	elementSize := (&dto.VarianceElement{}).Size()
-	resultsCount := len(results)
-	values := make([]reduce.Aggregates, 0, resultsCount)
-	for _, result := range results {
-		length := len(result.Data) / elementSize
-		for j := 0; j < length; j++ {
-			var e dto.VarianceElement
-			err := e.Decode(result.Data[j*elementSize:])
-			if err != nil {
-				log.Error("Problem with parsing data", err)
-				continue
-			}
-			values = append(values, &e)
-		}
-	}
-	return values
-}
-
-func parseResultsToIntegralElements(results []*dto.Result) []reduce.Aggregates {
-	elementSize := dto.IntegralElement{}.Size()
-	resultsCount := len(results)
-	values := make([]reduce.Aggregates, 0, resultsCount)
-	for _, result := range results {
-		length := len(result.Data) / elementSize
-		for j := 0; j < length; j++ {
-			var e dto.IntegralElement
-			err := e.Decode(result.Data[j*elementSize:])
-			if err != nil {
-				log.Error("Problem with parsing data", err)
-				continue
-			}
-			values = append(values, &e)
-		}
-	}
-	return values
 }
 
 func parseResultsToHistograms(results []*dto.Result, bucketCount int) []reduce.Aggregates {

@@ -60,3 +60,9 @@ func (this IntegralElement) Size() int {
 
 	return binary.Size(this) + 4
 }
+
+func (this IntegralElement) Create(buf []byte) (Dto, error) {
+	var newValue IntegralElement
+	err := newValue.Decode(buf)
+	return &newValue, err
+}

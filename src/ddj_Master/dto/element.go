@@ -48,7 +48,13 @@ func (e *Element) Decode(buf []byte) error {
 	return binary.Read(buffer, binary.LittleEndian, e)
 }
 
-func (e *Element) Size() int {
+func (e Element) Size() int {
 
 	return binary.Size(e)
+}
+
+func (v Element) Create(buf []byte) (Dto, error) {
+	element := Element{}
+	err := element.Decode(buf)
+	return &element, err
 }

@@ -34,9 +34,15 @@ func (this *VarianceElement) Decode(buf []byte) error {
 	return binary.Read(buffer, binary.LittleEndian, this)
 }
 
-func (this *VarianceElement) Size() int {
+func (this VarianceElement) Size() int {
 
 	return binary.Size(this)
+}
+
+func (v VarianceElement) Create(buf []byte) (Dto, error) {
+	element := VarianceElement{}
+	err := element.Decode(buf)
+	return &element, err
 }
 
 type AverageElement struct {
@@ -66,7 +72,12 @@ func (this *AverageElement) Decode(buf []byte) error {
 	return binary.Read(buffer, binary.LittleEndian, this)
 }
 
-func (this *AverageElement) Size() int {
-
+func (this AverageElement) Size() int {
 	return binary.Size(this)
+}
+
+func (v AverageElement) Create(buf []byte) (Dto, error) {
+	element := AverageElement{}
+	err := element.Decode(buf)
+	return &element, err
 }

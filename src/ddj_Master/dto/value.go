@@ -27,7 +27,6 @@ func (v Value) Encode() ([]byte, error) {
 }
 
 func (v *Value) Decode(buf []byte) error {
-
 	buffer := bytes.NewBuffer(buf)
 	return binary.Read(buffer, binary.LittleEndian, v)
 }
@@ -39,4 +38,10 @@ func (v Value) Size() int {
 
 func (v Value) Less(y Value) bool {
 	return v < y
+}
+
+func (v Value) Create(buf []byte) (Dto, error) {
+	var newValue Value
+	err := newValue.Decode(buf)
+	return &newValue, err
 }
