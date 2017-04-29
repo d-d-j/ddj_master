@@ -1,15 +1,17 @@
-all:
+all: test ddj_master
+
+ddj_master:
 	go build
 debug:
 	go build -ldflags "-s"
 
-run: all
+run: ddj_master
 	./ddj_master
 
-test: all
+test: ddj_master
 	go test $(shell go list ./... | grep -v /vendor/) -cover	
 
-integrationTest: all
+integrationTest: test
 	go test ./integrationTests/ -bench="."
 
 clean:
