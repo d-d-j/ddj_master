@@ -3,10 +3,10 @@ DDJ_Master
 
 ## Set up
 1. Install go
-	- version 1.1.2 or above required
+	- version 1.5 or above required (with vendor support)
 
-    wget http://go.googlecode.com/files/go1.2.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xzf go1.2.linux-amd64.tar.gz
+    wget http://go.googlecode.com/files/go1.8.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go1.8.linux-amd64.tar.gz
 
 append `export PATH=$PATH:/usr/local/go/bin` to `/etc/profile`
 
@@ -18,16 +18,20 @@ append `export PATH=$PATH:/usr/local/go/bin` to `/etc/profile`
 1. Insert single element
         Send JSON using method POST to address: http://localhost:8888/data
         JSON STRUCTURE:
+        ```json
            {
            "tag":1,                   <- int
            "metric":2,                <- int
            "time":1383501407,         <- int64 (unsigned)
            "value":0.5                <- float32
            }
+        ```
 
         EXAMPLE:
+        ```
         element="{\"series\":7,\"tag\":2,\"time\":`date -u +%s`,\"value\":0.5}"
 		curl -X POST -d $element http://localhost:8888/data --header "Content-Type:application/json"
+        ```
 
 2. Select
 

@@ -1,17 +1,17 @@
 all:
-	go build ddj_Master
+	go build
 debug:
-	go build -ldflags "-s" ddj_Master
+	go build -ldflags "-s"
 
 run: all
-	./ddj_Master
+	./ddj_master
 
 test: all
-	go test -cover ./src/...
+	go test $(shell go list ./... | grep -v /vendor/) -cover	
 
 integrationTest: all
-	go test ./src/ddj_Master/integrationTests/ -bench="."
+	go test ./integrationTests/ -bench="."
 
 clean:
-	rm -f ddj_Master
-	go clean ddj_Master
+	rm -f ddj_master
+	go clean ./
